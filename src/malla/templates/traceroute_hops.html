@@ -59,8 +59,8 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1><i class="bi bi-broadcast-pin"></i> Traceroute RF Hop Analysis</h1>
-        <p class="text-muted">Analyze radio frequency hops between any two nodes using traceroute data</p>
+        <h1><i class="bi bi-broadcast-pin"></i> Análise de HOPS em RF via Traceroute</h1>
+        <p class="text-muted">Analisar hops de rf entre quaisquer dois nós utilizando dados de traceroute</p>
     </div>
 </div>
 
@@ -68,23 +68,23 @@
 <div class="row">
     <div class="col-md-6">
         <div class="node-selector">
-            <h5><i class="bi bi-1-circle"></i> Select First Node</h5>
+            <h5><i class="bi bi-1-circle"></i> Selecionar Primeiro Node</h5>
             {{ node_picker(
             field_name="node1",
             field_id="node1-select",
             label="",
             selected_value="",
             selected_display="",
-            placeholder="Choose first node..."
+            placeholder="Escolha o primeiro node..."
             ) }}
             <div id="node1-info" class="mt-2 text-muted"></div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="node-selector">
-            <h5><i class="bi bi-2-circle"></i> Select Second Node</h5>
+            <h5><i class="bi bi-2-circle"></i> Selecionar Segundo Node</h5>
             <select id="node2-select" class="form-select">
-                <option value="">Choose second node...</option>
+                <option value="">Escolha o segundo node...</option>
             </select>
             <div id="node2-info" class="mt-2 text-muted"></div>
         </div>
@@ -94,13 +94,13 @@
 <div class="row">
     <div class="col-12">
         <button id="analyze-btn" class="btn btn-primary btn-lg" disabled>
-            <i class="bi bi-search"></i> Analyze RF Hop
+            <i class="bi bi-search"></i> Análise de Hop em RF
         </button>
         <div class="loading-spinner" id="loading">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">Carregando...</span>
             </div>
-            <p>Analyzing traceroute data...</p>
+            <p>Analisando dados de traceroute...</p>
         </div>
     </div>
 </div>
@@ -112,32 +112,32 @@
         <div class="col-12">
             <div class="card hop-analysis-card">
                 <div class="card-header">
-                    <h5><i class="bi bi-bar-chart"></i> RF Hop Summary</h5>
+                    <h5><i class="bi bi-bar-chart"></i> Sumário de Hops em RF</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="text-center">
                                 <h3 id="total-hops" class="text-primary">-</h3>
-                                <small class="text-muted">Total Hops Seen</small>
+                                <small class="text-muted">Total de HOPS vistos</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
                                 <h3 id="avg-snr" class="text-success">-</h3>
-                                <small class="text-muted">Average SNR (dB)</small>
+                                <small class="text-muted">Méd. SNR (dB)</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
                                 <h3 id="geo-distance" class="distance-display">-</h3>
-                                <small class="text-muted">Geographic Distance</small>
+                                <small class="text-muted">Distância geográfica</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
                                 <h3 id="last-seen" class="text-info">-</h3>
-                                <small class="text-muted">Last Seen</small>
+                                <small class="text-muted">Visto em:</small>
                             </div>
                         </div>
                     </div>
@@ -156,7 +156,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h6><i class="bi bi-graph-up"></i> SNR Over Time</h6>
+                    <h6><i class="bi bi-graph-up"></i> SNR segundo tempo</h6>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -168,7 +168,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h6><i class="bi bi-pie-chart"></i> Direction Distribution</h6>
+                    <h6><i class="bi bi-pie-chart"></i> Direção da Distribuição</h6>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -184,7 +184,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6><i class="bi bi-list-ul"></i> Individual Traceroutes</h6>
+                    <h6><i class="bi bi-list-ul"></i> Traceroutes individuais</h6>
                     <span id="traceroute-count" class="badge bg-primary">0</span>
                 </div>
                 <div class="card-body">
@@ -198,9 +198,9 @@
 <!-- No Data Message -->
 <div id="no-data-section" class="no-data" style="display: none;">
     <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
-    <h4 class="mt-3">No RF Hop Data Found</h4>
-    <p>No traceroutes found containing a direct RF hop between these two nodes.<br>
-        This could mean they're not directly connected via radio frequency.</p>
+    <h4 class="mt-3">Sem dados de HOPS em RF encontrado</h4>
+    <p>Nenhum traceroute encontrado contendo HOP de RF direto entre estes dois nodes.<br>
+        Isto pode significar que não estão ligados diretamente via rf.</p>
 </div>
 {% endblock %}
 
@@ -762,10 +762,10 @@
                 routeDisplay = '<div class="table-responsive"><table class="table table-sm table-borderless mb-0" style="font-size: 0.85em;">';
                 routeDisplay += '<thead><tr class="text-muted" style="font-size: 0.75em;">';
                 routeDisplay += '<th style="width: 12%;">Hop</th>';
-                routeDisplay += '<th style="width: 30%;">From</th>';
-                routeDisplay += '<th style="width: 30%;">To</th>';
+                routeDisplay += '<th style="width: 30%;">De</th>';
+                routeDisplay += '<th style="width: 30%;">Para</th>';
                 routeDisplay += '<th style="width: 13%;">SNR</th>';
-                routeDisplay += '<th style="width: 15%;">Direction</th>';
+                routeDisplay += '<th style="width: 15%;">Direção</th>';
                 routeDisplay += '</tr></thead><tbody>';
 
                 hopsToShow.forEach(hop => {
@@ -786,9 +786,9 @@
                     let directionDisplay = '—';
                     if (hop.direction) {
                         if (hop.direction === 'forward_rf') {
-                            directionDisplay = '<span class="badge bg-primary" style="font-size: 0.7em;">Forward</span>';
+                            directionDisplay = '<span class="badge bg-primary" style="font-size: 0.7em;">Para</span>';
                         } else if (hop.direction === 'return_rf') {
-                            directionDisplay = '<span class="badge bg-success" style="font-size: 0.7em;">Return</span>';
+                            directionDisplay = '<span class="badge bg-success" style="font-size: 0.7em;">Volta</span>';
                         } else {
                             directionDisplay = `<span class="badge bg-secondary" style="font-size: 0.7em;">${hop.direction}</span>`;
                         }
