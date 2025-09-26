@@ -207,3 +207,5 @@ Thumbs.db
 # Local configuration (do not commit real config)
 config.yaml
 config_*.yaml
+scripts/preview_styles.py
+scripts/test_template_styles.py

@@ -265,8 +265,8 @@ def create_highlighted_route_display(
 
         if is_highlighted:
             row_class = 'class="table-primary"'
-            from_style = 'style="font-weight: bold; color: #0d6efd;"'
-            to_style = 'style="font-weight: bold; color: #0d6efd;"'
+            from_style = 'style="font-weight: bold; color: var(--bs-primary);;"'
+            to_style = 'style="font-weight: bold; color: var(--bs-primary);;"'
 
         table_html += f"""
                 <tr {row_class}>

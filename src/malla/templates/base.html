@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+        integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
 
     <!-- Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-2.30.0.min.js" integrity="sha384-H7GB7Kme/VbPI/0S4LNq7OixFNVRgRGE8kyqTntBuiXle1KBm8KWLQh/Ah6bXCYW" crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"
+        integrity="sha384-H7GB7Kme/VbPI/0S4LNq7OixFNVRgRGE8kyqTntBuiXle1KBm8KWLQh/Ah6bXCYW"
+        crossorigin="anonymous"></script>
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g"
+        crossorigin="anonymous"></script>
 
     <!-- Inter Font for modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,26 +34,43 @@
         .navbar-brand {
             font-weight: bold;
         }
+
         .card-metric {
             text-align: center;
             padding: 1.5rem;
         }
+
         .metric-value {
             font-size: 2rem;
             font-weight: bold;
-            color: #0d6efd;
+            color: var(--bs-primary);
         }
+
         .metric-label {
             color: #6c757d;
             font-size: 0.9rem;
         }
-        .signal-excellent { color: #198754; }
-        .signal-good { color: #ffc107; }
-        .signal-fair { color: #fd7e14; }
-        .signal-poor { color: #dc3545; }
+
+        .signal-excellent {
+            color: #198754;
+        }
+
+        .signal-good {
+            color: #ffc107;
+        }
+
+        .signal-fair {
+            color: #fd7e14;
+        }
+
+        .signal-poor {
+            color: #dc3545;
+        }
+
         .table-responsive {
             max-height: 70vh;
         }
+
         .footer {
             margin-top: 3rem;
             padding: 2rem 0;
@@ -58,7 +82,7 @@
         /* Node tooltip styles */
         .node-link {
             position: relative;
-            color: #0d6efd;
+            color: var(--bs-primary);
             font-weight: 500;
         }
 
@@ -107,6 +131,7 @@
 
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="z-index: 1040;">
@@ -123,50 +148,58 @@
                 <ul class="navbar-nav me-auto">
                     <!-- Dashboard -->
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if request.endpoint == 'main.dashboard' }}" href="{{ url_for('main.dashboard') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'main.dashboard' }}"
+                            href="{{ url_for('main.dashboard') }}">
                             <i class="bi bi-speedometer2"></i> Dashboard
                         </a>
                     </li>
 
                     <!-- Packets -->
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if 'packet' in request.endpoint }}" href="{{ url_for('packet.packets') }}">
+                        <a class="nav-link {{ 'active' if 'packet' in request.endpoint }}"
+                            href="{{ url_for('packet.packets') }}">
                             <i class="bi bi-box"></i> Packets
                         </a>
                     </li>
 
                     <!-- Nodes -->
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if 'node' in request.endpoint }}" href="{{ url_for('node.nodes') }}">
+                        <a class="nav-link {{ 'active' if 'node' in request.endpoint }}"
+                            href="{{ url_for('node.nodes') }}">
                             <i class="bi bi-router"></i> Nodes
                         </a>
                     </li>
 
                     <!-- Traceroutes (list) -->
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if request.endpoint == 'traceroute.traceroute' }}" href="{{ url_for('traceroute.traceroute') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'traceroute.traceroute' }}"
+                            href="{{ url_for('traceroute.traceroute') }}">
                             <i class="bi bi-diagram-3"></i> Traceroutes
                         </a>
                     </li>
 
                     <!-- Map -->
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if request.endpoint == 'main.map_view' }}" href="{{ url_for('main.map_view') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'main.map_view' }}"
+                            href="{{ url_for('main.map_view') }}">
                             <i class="bi bi-map"></i> Map
                         </a>
                     </li>
 
                     <!-- Network Graph -->
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if request.endpoint == 'traceroute.traceroute_graph' }}" href="{{ url_for('traceroute.traceroute_graph') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'traceroute.traceroute_graph' }}"
+                            href="{{ url_for('traceroute.traceroute_graph') }}">
                             <i class="bi bi-diagram-2"></i> Network Graph
                         </a>
                     </li>
 
                     <!-- Tools dropdown -->
                     <li class="nav-item dropdown">
-                        {% set tools_active = request.endpoint in ['traceroute.traceroute_hops', 'gateway.gateway_compare', 'main.longest_links'] %}
-                        <a class="nav-link dropdown-toggle {{ 'active' if tools_active }}" href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown">
+                        {% set tools_active = request.endpoint in ['traceroute.traceroute_hops',
+                        'gateway.gateway_compare', 'main.longest_links'] %}
+                        <a class="nav-link dropdown-toggle {{ 'active' if tools_active }}" href="#" id="toolsDropdown"
+                            role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-tools"></i> Tools
                         </a>
                         <ul class="dropdown-menu">
@@ -359,7 +392,7 @@
         }
 
         // Initialize tooltips when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeNodeTooltips();
         });
 
@@ -374,4 +407,5 @@
 
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

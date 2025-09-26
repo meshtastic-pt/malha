@@ -5,53 +5,70 @@
 {% block extra_css %}
 <style>
     .analysis-card {
-        border-left: 4px solid #0d6efd;
+        border-left: 4px solid var(--bs-primary);
+        ;
     }
+
     .direct-link-badge {
         background: #28a745;
     }
+
     .indirect-link-badge {
         background: #6f42c1;
     }
+
     .distance-display {
         font-weight: bold;
-        color: #0d6efd;
+        color: var(--bs-primary);
+        ;
         font-size: 1.2em;
     }
+
     .snr-display {
         font-size: 0.9em;
     }
+
     .hop-count {
         font-size: 0.8rem;
         color: #6c757d;
     }
+
     .link-type-tabs .nav-link.active {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+        background-color: var(--bs-primary);
+        ;
+        border-color: var(--bs-primary);
+        ;
         color: white;
     }
+
     .table-responsive {
         max-height: 600px;
         overflow-y: auto;
     }
+
     .loading-container {
         text-align: center;
         padding: 3rem;
         display: none;
     }
+
     .no-data {
         text-align: center;
         padding: 2rem;
         color: #6c757d;
     }
+
     .link-analysis-btn {
         padding: 0.2rem 0.5rem;
         font-size: 0.8rem;
     }
+
     .node-link {
-        color: #0d6efd;
+        color: var(--bs-primary);
+        ;
         text-decoration: none;
     }
+
     .node-link:hover {
         text-decoration: underline;
     }
@@ -146,8 +163,10 @@
             </div>
             <div class="card-body">
                 <p class="mb-2"><strong>Direct Links:</strong> Single RF hops between two nodes</p>
-                <p class="mb-2"><strong>Indirect Links:</strong> Complete traceroute paths (sum of all hop distances)</p>
-                <p class="mb-0"><small class="text-muted">Distances calculated using GPS coordinates from position packets</small></p>
+                <p class="mb-2"><strong>Indirect Links:</strong> Complete traceroute paths (sum of all hop distances)
+                </p>
+                <p class="mb-0"><small class="text-muted">Distances calculated using GPS coordinates from position
+                        packets</small></p>
             </div>
         </div>
     </div>
@@ -166,13 +185,15 @@
     <div class="col-12">
         <ul class="nav nav-tabs link-type-tabs" id="linkTypeTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="direct-tab" data-bs-toggle="tab" data-bs-target="#direct-panel" type="button" role="tab">
+                <button class="nav-link active" id="direct-tab" data-bs-toggle="tab" data-bs-target="#direct-panel"
+                    type="button" role="tab">
                     <span class="badge direct-link-badge me-2">Direct</span>
                     Single RF Hops
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="indirect-tab" data-bs-toggle="tab" data-bs-target="#indirect-panel" type="button" role="tab">
+                <button class="nav-link" id="indirect-tab" data-bs-toggle="tab" data-bs-target="#indirect-panel"
+                    type="button" role="tab">
                     <span class="badge indirect-link-badge me-2">Indirect</span>
                     Complete Paths
                 </button>
@@ -250,7 +271,8 @@
                 <div id="indirect-no-data" class="no-data" style="display: none;">
                     <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
                     <h4 class="mt-3">No Complete Paths Found</h4>
-                    <p>No complete traceroute paths found matching your criteria.<br>Try adjusting the filters above.</p>
+                    <p>No complete traceroute paths found matching your criteria.<br>Try adjusting the filters above.
+                    </p>
                 </div>
             </div>
         </div>
@@ -264,14 +286,14 @@
     let currentData = null;
 
     // Load data on page load
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         loadLongestLinks();
         setupEventListeners();
     });
 
     function setupEventListeners() {
         document.getElementById('refresh-btn').addEventListener('click', loadLongestLinks);
-        
+
         // Refresh when filters change
         document.getElementById('min-distance').addEventListener('change', debounce(loadLongestLinks, 500));
         document.getElementById('min-snr').addEventListener('change', debounce(loadLongestLinks, 500));
@@ -334,7 +356,7 @@
 
         // Display direct links
         displayDirectLinks(data.direct_links);
-        
+
         // Display indirect links
         displayIndirectLinks(data.indirect_links);
 
@@ -354,16 +376,16 @@
         }
 
         noDataDiv.style.display = 'none';
-        
+
         let html = '';
         links.forEach((link, index) => {
             const snrBadgeClass = getSNRBadgeClass(link.avg_snr);
             const snrText = link.avg_snr !== null ? `${link.avg_snr.toFixed(1)} dB` : 'N/A';
-            
+
             // Handle null distance values
             const distanceText = link.distance_km !== null ? `${link.distance_km.toFixed(2)} km` : 'Unknown';
             const isLongDistance = link.distance_km !== null && link.distance_km >= 10;
-            
+
             html += `
                 <tr>
                     <td><strong>${index + 1}</strong></td>
@@ -384,7 +406,7 @@
                         <a href="${link.packet_url}" class="btn btn-sm btn-outline-primary" title="View packet details">
                             <i class="fas fa-eye"></i> Packet ${link.packet_id}
                         </a>
-                        <a href="/traceroute-hops?from_node=${link.from_node_id}&to_node=${link.to_node_id}" 
+                        <a href="/traceroute-hops?from_node=${link.from_node_id}&to_node=${link.to_node_id}"
                            class="btn btn-sm btn-outline-info ms-1" title="Analyze this link">
                             <i class="fas fa-route"></i> Analyze
                         </a>
@@ -407,16 +429,16 @@
         }
 
         noDataDiv.style.display = 'none';
-        
+
         let html = '';
         links.forEach((link, index) => {
             const snrBadgeClass = getSNRBadgeClass(link.avg_snr);
             const snrText = link.avg_snr !== null ? `${link.avg_snr.toFixed(1)} dB` : 'N/A';
-            
+
             // Handle null distance values
             const distanceText = link.total_distance_km !== null ? `${link.total_distance_km.toFixed(2)} km` : 'Unknown';
             const isVeryLongPath = link.total_distance_km !== null && link.total_distance_km >= 20;
-            
+
             // Format route display
             let routeDisplay = '';
             if (link.route_preview && link.route_preview.length > 0) {
@@ -429,7 +451,7 @@
             } else {
                 routeDisplay = 'Direct route';
             }
-            
+
             html += `
                 <tr>
                     <td><strong>${index + 1}</strong></td>
@@ -451,7 +473,7 @@
                         <a href="${link.packet_url}" class="btn btn-sm btn-outline-primary" title="View packet details">
                             <i class="fas fa-eye"></i> Packet ${link.packet_id}
                         </a>
-                        <a href="/traceroute-hops?from_node=${link.from_node_id}&to_node=${link.to_node_id}" 
+                        <a href="/traceroute-hops?from_node=${link.from_node_id}&to_node=${link.to_node_id}"
                            class="btn btn-sm btn-outline-info ms-1" title="Analyze this path">
                             <i class="fas fa-route"></i> Analyze
                         </a>
@@ -474,7 +496,7 @@
     function getRelativeTime(timestamp) {
         const now = Date.now() / 1000;
         const diff = now - timestamp;
-        
+
         if (diff < 60) return 'Just now';
         if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
         if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -482,4 +504,4 @@
         return `${Math.floor(diff / 2592000)}mo ago`;
     }
 </script>
-{% endblock %} 
+{% endblock %}

@@ -14,14 +14,13 @@
   --bs-headings-font-weight: 500;
 
   /* Enhanced color palette - Bootstrap native */
-  --bs-primary: #0d6efd;
-  --bs-primary-rgb: 13, 110, 253;
+  --bs-primary: #6B8E23;
+  --bs-primary-rgb: 107, 142, 35;
   --bs-secondary: #6c757d;
   --bs-success: #198754;
   --bs-info: #0dcaf0;
   --bs-warning: #ffc107;
   --bs-danger: #dc3545;
-
   /* Surface colors with better contrast */
   --bs-body-bg: #fafbfc;
   --bs-body-bg-rgb: 250, 251, 252;
@@ -56,12 +55,23 @@ html body {
 }
 
 /* Headings with appropriate weights */
-h1, h2, h3, h4, h5, h6,
-.h1, .h2, .h3, .h4, .h5, .h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
   font-weight: var(--bs-headings-font-weight);
 }
 
-h1, .h1 {
+h1,
+.h1 {
   font-weight: 600;
 }
 
@@ -85,7 +95,7 @@ h1, .h1 {
   font-size: 0.875rem;
 }
 
-.table > :not(caption) > * > * {
+.table> :not(caption)>*>* {
   border-bottom-width: 1px;
   border-color: var(--bs-border-color);
   padding: 0.5rem;
@@ -113,6 +123,17 @@ h1, .h1 {
   font-weight: 400;
   transition: var(--bs-transition);
   border-radius: var(--bs-border-radius);
+  --bs-btn-bg: #6b8e23 !important;
+  --bs-btn-border-color: #6b8e23;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #5b7a1f;
+  --bs-btn-hover-border-color: #52711c;
+  --bs-btn-focus-shadow-rgb: 49, 132, 253;
+  --bs-btn-active-bg: #52711c;
+  --bs-btn-active-border-color: #496417;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-bg: #6b8e23;
+  --bs-btn-disabled-border-color: #6b8e23;
 }
 
 .btn:hover {
@@ -148,6 +169,38 @@ h1, .h1 {
 .nav-link {
   font-weight: 400;
   transition: var(--bs-transition);
+}
+
+#indirect-tab,
+#direct-tab {
+  --bs-nav-link-color: black;
+}
+
+#indirect-tab:hover,
+#direct-tab:hover {
+  --bs-link-hover-color: #6b8e23;
+  color: var(--bs-link-hover-color);
+}
+
+.form-check-input:checked {
+  background-color: #6b8e23;
+  border-color: #6b8e23;
+}
+
+.dropdown-item:active {
+  --bs-dropdown-link-active-bg: #6b8e23;
+}
+
+a {
+  color: #6b8e23;
+}
+
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-info,
+.btn-outline-success {
+  --bs-secondary-color: #fff;
+  --bs-btn-color: var(--bs-secondary-color);
 }
 
 .navbar-brand {
@@ -317,12 +370,14 @@ h1, .h1 {
 /* Mobile responsiveness for tables */
 @media (max-width: 768px) {
   .modern-table {
-    font-size: 0.8rem; /* Even smaller on mobile */
+    font-size: 0.8rem;
+    /* Even smaller on mobile */
   }
 
   .modern-table thead th,
   .modern-table tbody td {
-    padding: 0.4rem 0.3rem; /* Very compact on mobile */
+    padding: 0.4rem 0.3rem;
+    /* Very compact on mobile */
   }
 }
 
@@ -332,6 +387,7 @@ h1, .h1 {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -344,6 +400,7 @@ h1, .h1 {
 
 /* Print styles - Bootstrap compatible */
 @media print {
+
   .table-sidebar,
   .btn,
   .navbar {
