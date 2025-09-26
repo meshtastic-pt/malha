@@ -20,7 +20,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: var(--bs-primary, #6B8E23);
+    background: var(--bs-primary, #3ec57e);
     color: white;
     border-radius: 0.5rem 0.5rem 0 0;
 }
@@ -54,7 +54,7 @@
 }
 
 .modern-table thead th {
-    background: var(--bs-primary, #6B8E23);
+    background: var(--bs-primary, #3ec57e);
     color: white;
     font-weight: 500;
     border: none;

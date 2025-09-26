@@ -103,6 +103,10 @@
     order: 2;
 }
 
+[data-bs-theme=dark] .sidebar {
+    background: var(--bs-tertiary-bg);
+}
+
 .sidebar.collapsed {
     margin-right: -320px;
 }
@@ -126,6 +130,10 @@
     background: #f8f9fa;
 }
 
+[data-bs-theme=dark] .sidebar-header {
+    background: #343a40;
+}
+
 .sidebar-header h5 {
     margin: 0;
     flex-grow: 1;
@@ -139,6 +147,10 @@
 .sidebar-section h6 {
     margin-bottom: 0.75rem;
     color: #495057;
+}
+
+[data-bs-theme=dark] .sidebar-section h6 {
+    color: #f1f3f4;
 }
 
 .stats-content {

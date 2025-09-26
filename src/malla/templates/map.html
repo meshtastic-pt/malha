@@ -225,6 +225,10 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         z-index: 1;
     }
 
+    [data-bs-theme=dark] .map-container {
+        background: var(--bs-tertiary-bg);
+    }
+
     .map-main {
         flex: 1;
         position: relative;
@@ -250,6 +254,11 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         align-items: center;
         background: rgba(248, 249, 250, 0.9);
         z-index: 100;
+    }
+
+    [data-bs-theme=dark] .loading-overlay,
+    [data-bs-theme=dark] .error-overlay {
+        background: var(--bs-tertiary-bg);
     }
 
     .error-overlay {
@@ -278,12 +287,13 @@ controls_section, stats_section, legend_section, sidebar_styles %}
 
     .node-list-item:hover {
         background-color: #f8f9fa;
+        color: var(--bs-tertiary-bg);
     }
 
     .node-list-item.selected {
         background-color: #e7f3ff;
         border-color: var(--bs-primary);
-        ;
+        color: var(--bs-tertiary-bg);
     }
 
     .signal-indicator {

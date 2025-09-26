@@ -162,6 +162,11 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         z-index: 100;
     }
 
+    [data-bs-theme=dark] .loading-overlay,
+    [data-bs-theme=dark] .error-overlay {
+        background: var(--bs-tertiary-bg);
+    }
+
     .error-overlay {
         color: #dc3545;
     }
