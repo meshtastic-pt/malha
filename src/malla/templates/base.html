@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -87,7 +87,7 @@
         }
 
         .node-link:hover {
-            color: #0a58ca;
+            color: #1a5c00;
         }
 
         .tooltip.bs-tooltip-top .tooltip-inner,
@@ -158,7 +158,7 @@
                     <li class="nav-item">
                         <a class="nav-link {{ 'active' if 'packet' in request.endpoint }}"
                             href="{{ url_for('packet.packets') }}">
-                            <i class="bi bi-box"></i> Packets
+                            <i class="bi bi-box"></i> Pacotes
                         </a>
                     </li>
 
@@ -182,7 +182,7 @@
                     <li class="nav-item">
                         <a class="nav-link {{ 'active' if request.endpoint == 'main.map_view' }}"
                             href="{{ url_for('main.map_view') }}">
-                            <i class="bi bi-map"></i> Map
+                            <i class="bi bi-map"></i> Mapa
                         </a>
                     </li>
 
@@ -190,7 +190,8 @@
                     <li class="nav-item">
                         <a class="nav-link {{ 'active' if request.endpoint == 'traceroute.traceroute_graph' }}"
                             href="{{ url_for('traceroute.traceroute_graph') }}">
-                            <i class="bi bi-diagram-2"></i> Network Graph
+
+                            <i class="bi bi-diagram-2"></i> Grafico Rede
                         </a>
                     </li>
 
@@ -200,25 +201,33 @@
                         'gateway.gateway_compare', 'main.longest_links'] %}
                         <a class="nav-link dropdown-toggle {{ 'active' if tools_active }}" href="#" id="toolsDropdown"
                             role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-tools"></i> Tools
+                            <i class="bi bi-tools"></i> Ferramentas
                         </a>
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('traceroute.traceroute_hops') }}">
-                                    <i class="bi bi-graph-up"></i> Hop Analysis
+                                    <i class="bi bi-graph-up"></i> Análise de Hops
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('gateway.gateway_compare') }}">
-                                    <i class="bi bi-router-fill"></i> Gateway Compare
+                                    <i class="bi bi-router-fill"></i> Comparar Gateways
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{{ url_for('main.longest_links') }}">
-                                    <i class="bi bi-rulers"></i> Longest Links
+                                    <i class="bi bi-rulers"></i> Links Record
                                 </a>
                             </li>
                         </ul>
+                    </li>
+                </ul>
+                <!-- Theme Toggle -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="btn btn-outline-light" type="button">
+                            <i class="bi bi-moon-fill"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -235,7 +244,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <small>Powered by <a href="https://github.com/zenitraM/malla">Malla</a></small>
+                    <small>Powered by <a href="https://github.com/zenitraM/malla"> Malla</a>- 🙏🙏🙏🙏 | Nota: A base de dados é renovada a cada 15 dias.</small>
                 </div>
             </div>
         </div>
@@ -403,6 +412,49 @@
 
         // Make reinitializeTooltips available globally for dynamic content
         window.reinitializeTooltips = reinitializeTooltips;
+    </script>
+
+    <!-- Theme switching functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+
+            // Check for saved theme preference or respect OS preference
+            const savedTheme = localStorage.getItem('theme');
+            const osPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            // Set initial theme
+            if (savedTheme) {
+                htmlElement.setAttribute('data-bs-theme', savedTheme);
+                updateToggleIcon(savedTheme);
+            } else if (osPrefersDark) {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                updateToggleIcon('dark');
+            }
+
+            // Theme toggle functionality
+            themeToggle.addEventListener('click', function () {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateToggleIcon(newTheme);
+            });
+
+            // Update toggle button icon based on theme
+            function updateToggleIcon(theme) {
+                const icon = themeToggle.querySelector('i');
+                if (theme === 'dark') {
+                    icon.classList.remove('bi-moon-fill');
+                    icon.classList.add('bi-sun-fill');
+                } else {
+                    icon.classList.remove('bi-sun-fill');
+                    icon.classList.add('bi-moon-fill');
+                }
+            }
+        });
     </script>
 
     {% block extra_js %}{% endblock %}

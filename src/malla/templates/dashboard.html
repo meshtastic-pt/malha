@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Mesh Network Dashboard - {{ APP_NAME }}{% endblock %}
+{% block title %}Meshtastic.PT Metrics - {{ APP_NAME }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -19,7 +19,7 @@
 
     <div class="row mb-4">
         <div class="col">
-            <h1 class="h2">Mesh Metrics</h1>
+            <h1 class="h2">Meshtastic.PT</h1>
         </div>
     </div>
 
@@ -29,8 +29,8 @@
             <div class="card h-100">
                 <div class="card-body card-metric">
                     <div class="metric-value">{{ stats.total_nodes }}</div>
-                    <div class="metric-label">Total Nodes</div>
-                    <small class="text-muted">Known mesh participants</small>
+                    <div class="metric-label">Total de Nodes</div>
+                    <small class="text-muted">nodes conhecidos</small>
                 </div>
             </div>
         </div>
@@ -38,10 +38,10 @@
             <div class="card h-100">
                 <div class="card-body card-metric">
                     <div class="metric-value text-success">{{ stats.active_nodes_24h }}</div>
-                    <div class="metric-label">Active Nodes (24h)</div>
+                    <div class="metric-label">Atividades dos Nodes (24h)</div>
                     {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
                     {% set coverage_pct = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
-                    <small class="text-muted">{{ coverage_pct }}% network coverage</small>
+                    <small class="text-muted">{{ coverage_pct }}% cobertura da rede</small>
                 </div>
             </div>
         </div>
@@ -49,8 +49,8 @@
             <div class="card h-100">
                 <div class="card-body card-metric">
                     <div class="metric-value text-warning">{{ gateway_count }}</div>
-                    <div class="metric-label">Gateway Diversity</div>
-                    <small class="text-muted">Data source reliability</small>
+                    <div class="metric-label">Diversidade de Gateways</div>
+                    <small class="text-muted">fiabilidade dos dados</small>
                 </div>
             </div>
         </div>
@@ -58,8 +58,8 @@
             <div class="card h-100">
                 <div class="card-body card-metric">
                     <div class="metric-value text-info">{{ stats.packet_types|length }}</div>
-                    <div class="metric-label">Protocol Diversity</div>
-                    <small class="text-muted">Message types in use</small>
+                    <div class="metric-label">Diversidade de Protocolos</div>
+                    <small class="text-muted">tipos de sms usados</small>
                 </div>
             </div>
         </div>
@@ -67,8 +67,8 @@
             <div class="card h-100">
                 <div class="card-body card-metric">
                     <div class="metric-value">{{ "{:,}".format(stats.total_packets) }}</div>
-                    <div class="metric-label">Total Messages</div>
-                    <small class="text-muted">Network activity</small>
+                    <div class="metric-label">Total de Mensages</div>
+                    <small class="text-muted">atividade da Rede</small>
                 </div>
             </div>
         </div>
@@ -77,8 +77,8 @@
                 <div class="card-body card-metric">
                     {% set success_class = 'text-success' if stats.success_rate >= 95 else 'text-warning' if stats.success_rate >= 85 else 'text-danger' %}
                     <div class="metric-value {{ success_class }}">{{ stats.success_rate }}%</div>
-                    <div class="metric-label">Processing Success</div>
-                    <small class="text-muted">Message reliability</small>
+                    <div class="metric-label">Processadas com sucesso</div>
+                    <small class="text-muted">Fiabilidade da SMS</small>
                 </div>
             </div>
         </div>
@@ -90,14 +90,14 @@
         <div class="col-md-8 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-graph-up-arrow"></i> Network Activity Trends (7 Days)</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-graph-up-arrow"></i> Tendência Atividade na Rede (7 Dias)</h5>
                 </div>
                 <div class="card-body">
                     <div id="timeSeriesChartLoading" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">A carregar...</span>
                         </div>
-                        <p class="mt-2 text-muted">Loading chart data...</p>
+                        <p class="mt-2 text-muted">Carregar os dados do grafico...</p>
                     </div>
                     <canvas id="timeSeriesChart" style="height: 300px; display: none;"></canvas>
                 </div>
@@ -108,11 +108,11 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-activity"></i> Network Health</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-activity"></i> Saúde da Rede</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <h6>Network Coverage</h6>
+                        <h6>Cobertura da Rede</h6>
                         <div class="progress mb-2">
                             {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
                             {% set activity_percentage = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
@@ -125,25 +125,25 @@
                     </div>
 
                     <div class="mb-3">
-                        <h6>Message Success Rate</h6>
+                        <h6>Taxa de sucesso das SMS</h6>
                         <div class="progress mb-2">
                             {% set success_bar_class = 'bg-success' if stats.success_rate >= 95 else 'bg-warning' if stats.success_rate >= 85 else 'bg-danger' %}
                             <div class="progress-bar {{ success_bar_class }}" style="width: {{ stats.success_rate }}%;">
                                 {{ stats.success_rate }}%
                             </div>
                         </div>
-                        <small class="text-muted">Packet processing reliability</small>
+                        <small class="text-muted">Fiabilidade de pacotes processados</small>
                     </div>
 
                     <div class="mb-3">
-                        <h6>Gateway Diversity</h6>
+                        <h6>Diversidade de Gateways</h6>
                         <div class="progress mb-2">
                             {% set gateway_diversity = (gateway_count / 10 * 100)|int if gateway_count <= 10 else 100 %}
                             <div class="progress-bar bg-primary" style="width: {{ gateway_diversity }}%;">
                                 {{ gateway_count }} sources
                             </div>
                         </div>
-                        <small class="text-muted">Multiple data sources improve reliability</small>
+                        <small class="text-muted">Multiplas entradas de dados melhoram a fiabilidade</small>
                     </div>
 
                     <hr>
@@ -152,12 +152,12 @@
                         <div class="col-6">
                             <div class="border-end">
                                 <div class="fw-bold text-primary">{{ stats.recent_packets }}</div>
-                                <small class="text-muted">Recent Activity</small>
+                                <small class="text-muted">Atividades Recentes</small>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="fw-bold text-success">{{ stats.packet_types|length }}</div>
-                            <small class="text-muted">Protocol Types</small>
+                            <small class="text-muted">Tipos de Protocolos</small>
                         </div>
                     </div>
                 </div>
@@ -171,12 +171,12 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-people"></i> Node Activity Distribution</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-people"></i> Distribuição de Nodes</h5>
                 </div>
                 <div class="card-body">
                     <div id="nodeActivityChartLoading" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">A Carregar...</span>
                         </div>
                     </div>
                     <canvas id="nodeActivityChart" style="height: 300px; display: none;"></canvas>
@@ -188,12 +188,12 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-router-fill"></i> Gateway Activity Distribution</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-router-fill"></i> Distribuição de Gateways</h5>
                 </div>
                 <div class="card-body">
                     <div id="gatewayActivityChartLoading" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">A Carregar...</span>
                         </div>
                     </div>
                     <canvas id="gatewayActivityChart" style="height: 300px; display: none;"></canvas>
@@ -205,12 +205,12 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-reception-4"></i> Signal Quality Distribution</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-reception-4"></i> Distribuição Qualidade de Sinal</h5>
                 </div>
                 <div class="card-body">
                     <div id="signalDistributionChartLoading" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">A Carregar...</span>
                         </div>
                     </div>
                     <canvas id="signalDistributionChart" style="height: 300px; display: none;"></canvas>
@@ -225,12 +225,12 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-router"></i> Message Routing Patterns</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-router"></i> Padrões de Routing das Mensagens</h5>
                 </div>
                 <div class="card-body">
                     <div id="hopDistributionChartLoading" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">A Carregar...</span>
                         </div>
                     </div>
                     <canvas id="hopDistributionChart" style="height: 300px; display: none;"></canvas>
@@ -242,20 +242,20 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-pie-chart"></i> Protocol Usage (24h)</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-pie-chart"></i> Protocolos Usados (24h)</h5>
                 </div>
                 <div class="card-body">
                     {% if stats.packet_types %}
                     <div id="packetTypesChartLoading" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">A Carregar...</span>
                         </div>
                     </div>
                     <canvas id="packetTypesChart" style="height: 300px; display: none;"></canvas>
                     {% else %}
                     <div class="text-center text-muted py-4">
                         <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                        <p class="mt-2">No packet data available</p>
+                        <p class="mt-2">Sem pacotes disponíveis</p>
                     </div>
                     {% endif %}
                 </div>
@@ -268,12 +268,12 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-trophy"></i> Most Active Nodes</h5>
+                    <h5 class="card-title mb-0"><i class="bi bi-trophy"></i> Nodes Mais Ativos</h5>
                 </div>
                 <div class="card-body">
                     <div id="topNodesLoading" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">A Carregar...</span>
                         </div>
                     </div>
                     <div class="table-responsive" style="display: none;" id="topNodesTableContainer">
@@ -281,8 +281,8 @@
                             <thead>
                                 <tr>
                                     <th>Node</th>
-                                    <th>Messages</th>
-                                    <th>Signal</th>
+                                    <th>Mensagens</th>
+                                    <th>Sinal</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -300,16 +300,16 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Network Information</h6>
+                    <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Informação da Rede</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
-                            <strong>Total Nodes:</strong><br>
+                            <strong>Total de Nodes:</strong><br>
                             <span class="text-primary">{{ stats.total_nodes }}</span>
                         </div>
                         <div class="col-6">
-                            <strong>Active (24h):</strong><br>
+                            <strong>Atividade (24h):</strong><br>
                             <span class="text-success">{{ stats.active_nodes_24h }}</span>
                         </div>
                     </div>
@@ -320,7 +320,7 @@
                             <span class="text-warning">{{ gateway_count }}</span>
                         </div>
                         <div class="col-6">
-                            <strong>Protocols:</strong><br>
+                            <strong>Protocolos:</strong><br>
                             <span class="text-info">{{ stats.packet_types|length }}</span>
                         </div>
                     </div>
@@ -331,23 +331,23 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h6 class="card-title mb-0"><i class="bi bi-activity"></i> Activity Summary</h6>
+                    <h6 class="card-title mb-0"><i class="bi bi-activity"></i>Atividade:</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
-                            <strong>Total Messages:</strong><br>
+                            <strong>Total de SMS:</strong><br>
                             <span class="text-primary">{{ "{:,}".format(stats.total_packets) }}</span>
                         </div>
                         <div class="col-6">
-                            <strong>Recent (1h):</strong><br>
+                            <strong>Recentes (1h):</strong><br>
                             <span class="text-success">{{ stats.recent_packets }}</span>
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-12">
-                            <strong>Success Rate:</strong><br>
+                            <strong>Taxa de sucesso:</strong><br>
                             {% set success_class = 'text-success' if stats.success_rate >= 95 else 'text-warning' if stats.success_rate >= 85 else 'text-danger' %}
                             <span class="{{ success_class }}">{{ stats.success_rate }}%</span>
                         </div>
@@ -359,31 +359,31 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h6 class="card-title mb-0"><i class="bi bi-reception-4"></i> Signal Quality</h6>
+                    <h6 class="card-title mb-0"><i class="bi bi-reception-4"></i> Qualidade do Sinal</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
-                            <strong>Avg RSSI:</strong><br>
+                            <strong>Med. RSSI:</strong><br>
                             <span class="text-primary">{{ stats.avg_rssi|format_rssi }}dBm</span>
                         </div>
                         <div class="col-6">
-                            <strong>Avg SNR:</strong><br>
+                            <strong>Med. SNR:</strong><br>
                             <span class="text-success">{{ stats.avg_snr|format_snr }}dB</span>
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-12">
-                            <strong>Network Health:</strong><br>
+                            <strong>Sáude da Rede:</strong><br>
                             {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
                             {% set activity_percentage = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
                             {% if activity_percentage >= 70 %}
-                                <span class="text-success">Excellent</span>
+                                <span class="text-success">Excelente</span>
                             {% elif activity_percentage >= 40 %}
-                                <span class="text-warning">Good</span>
+                                <span class="text-warning">Bom</span>
                             {% else %}
-                                <span class="text-danger">Needs Attention</span>
+                                <span class="text-danger">Necessita Análise</span>
                             {% endif %}
                         </div>
                     </div>
@@ -499,7 +499,7 @@ function createNodeActivityChart(nodeData) {
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Very Active (>100)', 'Moderately Active (10-100)', 'Lightly Active (1-10)', 'Inactive'],
+            labels: ['Muito Ativo (>100)', 'Moderadamente Ativo (10-100)', 'Levemente Ativo (1-10)', 'Inativo'],
             datasets: [{
                 data: [
                     activityDist.very_active || 0,
@@ -544,7 +544,7 @@ function createGatewayActivityChart(gatewayData) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Messages Received',
+                label: 'Messagens Recebidas',
                 data: data,
                 backgroundColor: colors.slice(0, data.length)
             }]
@@ -583,9 +583,9 @@ function createSignalDistributionChart(signalData) {
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Excellent (>-70dBm)', 'Good (-70 to -80dBm)', 'Fair (-80 to -90dBm)', 'Poor (<-90dBm)'],
+            labels: ['Excelente (>-70dBm)', 'Muito bom (-70 to -80dBm)', 'OK (-80 to -90dBm)', 'Fraco (<-90dBm)'],
             datasets: [{
-                label: 'Signal Quality Distribution',
+                label: 'Distribuição da Qualidade de Sinal',
                 data: [rssiDist.excellent || 0, rssiDist.good || 0, rssiDist.fair || 0, rssiDist.poor || 0],
                 backgroundColor: ['#28a745', '#ffc107', '#17a2b8', '#dc3545']
             }]
@@ -613,7 +613,7 @@ function createHopDistributionChart(temporalData) {
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Direct Messages', 'Routed Messages', 'Multi-hop Messages'],
+            labels: ['SMS Diretas', 'SMS Roteadas', 'SMS de Multi-hops'],
             datasets: [{
                 data: [60, 30, 10], // Placeholder data - could be enhanced with real hop analysis
                 backgroundColor: ['#28a745', '#ffc107', '#dc3545']
@@ -690,16 +690,16 @@ function populateTopNodesTable(topNodes) {
         if (node.avg_rssi && node.avg_rssi !== 0) {
             if (node.avg_rssi > -70) {
                 signalClass = 'text-success';
-                signalText = 'Excellent';
+                signalText = 'Excelente';
             } else if (node.avg_rssi > -80) {
                 signalClass = 'text-warning';
-                signalText = 'Good';
+                signalText = 'Bom';
             } else if (node.avg_rssi > -90) {
                 signalClass = 'text-info';
-                signalText = 'Fair';
+                signalText = 'OK';
             } else {
                 signalClass = 'text-danger';
-                signalText = 'Poor';
+                signalText = 'Fraco';
             }
         }
 

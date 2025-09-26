@@ -95,15 +95,15 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/">Home</a></li>
                     <li class="breadcrumb-item"><a href="/packets">Packets</a></li>
-                    <li class="breadcrumb-item active">Packet #{{ packet.id }}</li>
+                    <li class="breadcrumb-item active">Pacote #{{ packet.id }}</li>
                 </ol>
             </nav>
             <h1>
-                <i class="bi bi-envelope"></i> Packet #{{ packet.id }}
+                <i class="bi bi-envelope"></i> Pacote #{{ packet.id }}
                 {% if packet.success %}
-                    <span class="badge bg-success">Success</span>
+                    <span class="badge bg-success">Successo</span>
                 {% else %}
-                    <span class="badge bg-danger">Failed</span>
+                    <span class="badge bg-danger">Sucesso Parcial</span>
                 {% endif %}
             </h1>
             <p class="text-muted">{{ packet.portnum_name or "Unknown Protocol" }} packet from {{ packet.from_node_name }} to {{ packet.to_node_name }}</p>
@@ -116,7 +116,7 @@
             <div class="card card-metric">
                 <div class="card-body">
                     <div class="metric-value">{{ reception_count }}</div>
-                    <div class="metric-label">Total Receptions</div>
+                    <div class="metric-label">Total Recepções</div>
                 </div>
             </div>
         </div>
@@ -124,7 +124,7 @@
             <div class="card card-metric">
                 <div class="card-body">
                     <div class="metric-value">{{ gateway_count }}</div>
-                    <div class="metric-label">Unique Gateways</div>
+                    <div class="metric-label">Gateways Únicos</div>
                 </div>
             </div>
         </div>
@@ -138,7 +138,7 @@
                             ?
                         {% endif %}
                     </div>
-                    <div class="metric-label">Hop Count</div>
+                    <div class="metric-label">Contagem de Hops</div>
                 </div>
             </div>
         </div>
@@ -146,7 +146,7 @@
             <div class="card card-metric">
                 <div class="card-body">
                     <div class="metric-value">{{ packet.payload_length or 0 }}</div>
-                    <div class="metric-label">Payload Bytes</div>
+                    <div class="metric-label">Conteúdo Bytes</div>
                 </div>
             </div>
         </div>
@@ -157,7 +157,7 @@
         <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="bi bi-info-circle"></i> Packet Information</h5>
+                    <h5><i class="bi bi-info-circle"></i> Informação de Pacotes/h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -172,25 +172,25 @@
                                     <td>
                                         {% if packet.mesh_packet_id %}
                                             <code>0x{{ "%08x"|format(packet.mesh_packet_id) }}</code>
-                                            <br><small class="text-muted">Used for correlation across gateways</small>
+                                            <br><small class="text-muted">Utilizado para correlação entre gateways</small>
                                         {% else %}
-                                            <span class="text-muted">Not available</span>
-                                            <br><small class="text-warning">Legacy packet - correlation by time</small>
+                                            <span class="text-muted">Não disponível</span>
+                                            <br><small class="text-warning">Pacote legacy - correlação por tempo</small>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Timestamp:</th>
+                                    <th>Tempo:</th>
                                     <td>{{ packet.timestamp_str }} UTC</td>
                                 </tr>
                                 <tr>
-                                    <th>From Node:</th>
+                                    <th>Do Node:</th>
                                     <td>
                                         {{ node_link(packet.from_node_id, packet.from_node_name) }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>To Node:</th>
+                                    <th>Para o Node:</th>
                                     <td>
                                         {% if packet.to_node_id %}
                                             {{ node_link(packet.to_node_id, packet.to_node_name) }}
@@ -201,17 +201,17 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Success:</th>
+                                    <th>Successo:</th>
                                     <td>
                                         {% if packet.success %}
-                                            <span class="badge bg-success">Processed</span>
+                                            <span class="badge bg-success">Processado</span>
                                         {% else %}
-                                            <span class="badge bg-danger">Failed</span>
+                                            <span class="badge bg-danger">Falha</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Protocol:</th>
+                                    <th>Protocolo:</th>
                                     <td>
                                         {{ protocol_badge(packet.portnum_name or "Unknown") }}
                                         <br><small class="text-muted">Port: {{ packet.portnum }}</small>
@@ -232,7 +232,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Channel:</th>
+                                    <th>Canal:</th>
                                     <td>{{ packet.channel_id or "Unknown" }}</td>
                                 </tr>
                                 <tr>
@@ -256,11 +256,11 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Hop Info:</th>
+                                    <th>Info Hop:</th>
                                     <td>
                                         {% if packet.hop_start is not none and packet.hop_limit is not none %}
                                             <span class="hop-badge">{{ packet.hop_start - packet.hop_limit }}/{{ packet.hop_start }} hops</span>
-                                            <br><small class="text-muted">Start: {{ packet.hop_start }}, Limit: {{ packet.hop_limit }}</small>
+                                            <br><small class="text-muted">Início: {{ packet.hop_start }}, Limite: {{ packet.hop_limit }}</small>
                                         {% else %}
                                             <span class="text-muted">Unknown</span>
                                         {% endif %}
@@ -276,22 +276,22 @@
             {% if payload_info %}
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5><i class="bi bi-file-binary"></i> Payload Data</h5>
+                    <h5><i class="bi bi-file-binary"></i> Conteúdo dados</h5>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <strong>Protocol:</strong> {{ payload_info.portnum }}
+                            <strong>Protocol:o</strong> {{ payload_info.portnum }}
                         </div>
                         <div class="col-md-4">
-                            <strong>Size:</strong> {{ payload_info.size }} bytes
+                            <strong>Tamanho:</strong> {{ payload_info.size }} bytes
                         </div>
                         <div class="col-md-4">
                             <strong>Decoded:</strong>
                             {% if payload_info.decoded %}
-                                <span class="badge bg-success">Yes</span>
+                                <span class="badge bg-success">Sim</span>
                             {% else %}
-                                <span class="badge bg-warning">No</span>
+                                <span class="badge bg-warning">Não</span>
                             {% endif %}
                         </div>
                     </div>
@@ -304,14 +304,14 @@
 
                     {% if payload_info.text %}
                         <div class="mb-3">
-                            <h6>Text Content:</h6>
+                            <h6>Comteúdo da SMS:</h6>
                             <div class="payload-hex">{{ payload_info.text }}</div>
                         </div>
                     {% endif %}
 
                     {% if payload_info.data %}
                         <div class="mb-3">
-                            <h6>Decoded Data:</h6>
+                            <h6>Dados:</h6>
                             {% if payload_info.portnum == 'POSITION_APP' %}
                                 <table class="table table-sm">
                                     {% if payload_info.data.latitude %}
@@ -324,10 +324,10 @@
                                         <tr><th>Altitude:</th><td>{{ payload_info.data.altitude }} m</td></tr>
                                     {% endif %}
                                     {% if payload_info.data.sats_in_view %}
-                                        <tr><th>Satellites:</th><td>{{ payload_info.data.sats_in_view }}</td></tr>
+                                        <tr><th>Satelites:</th><td>{{ payload_info.data.sats_in_view }}</td></tr>
                                     {% endif %}
                                     {% if payload_info.data.precision_bits %}
-                                        <tr><th>Precision:</th><td>{{ payload_info.data.precision_bits }} bits</td></tr>
+                                        <tr><th>Precisão:</th><td>{{ payload_info.data.precision_bits }} bits</td></tr>
                                     {% endif %}
                                 </table>
                             {% elif payload_info.portnum == 'NODEINFO_APP' %}
@@ -350,74 +350,74 @@
                                 </table>
                             {% elif payload_info.portnum == 'TELEMETRY_APP' %}
                                 {% if payload_info.data.device_metrics %}
-                                    <h6>Device Metrics:</h6>
+                                    <h6>Métricas do Dispositivo:</h6>
                                     <table class="table table-sm">
                                         {% if payload_info.data.device_metrics.battery_level %}
-                                            <tr><th>Battery:</th><td>{{ payload_info.data.device_metrics.battery_level }}%</td></tr>
+                                            <tr><th>Bateria:</th><td>{{ payload_info.data.device_metrics.battery_level }}%</td></tr>
                                         {% endif %}
                                         {% if payload_info.data.device_metrics.voltage %}
-                                            <tr><th>Voltage:</th><td>{{ "%.2f"|format(payload_info.data.device_metrics.voltage) }} V</td></tr>
+                                            <tr><th>Voltagem:</th><td>{{ "%.2f"|format(payload_info.data.device_metrics.voltage) }} V</td></tr>
                                         {% endif %}
                                         {% if payload_info.data.device_metrics.channel_utilization %}
-                                            <tr><th>Channel Usage:</th><td>{{ "%.1f"|format(payload_info.data.device_metrics.channel_utilization) }}%</td></tr>
+                                            <tr><th>Ch Util.:</th><td>{{ "%.1f"|format(payload_info.data.device_metrics.channel_utilization) }}%</td></tr>
                                         {% endif %}
                                         {% if payload_info.data.device_metrics.air_util_tx %}
-                                            <tr><th>Air Util TX:</th><td>{{ "%.1f"|format(payload_info.data.device_metrics.air_util_tx) }}%</td></tr>
+                                            <tr><th>Air Util.:</th><td>{{ "%.1f"|format(payload_info.data.device_metrics.air_util_tx) }}%</td></tr>
                                         {% endif %}
                                     </table>
                                 {% endif %}
                                 {% if payload_info.data.environment_metrics %}
-                                    <h6>Environment Metrics:</h6>
+                                    <h6>Métricas Sensores:</h6>
                                     <table class="table table-sm">
                                         {% if payload_info.data.environment_metrics.temperature %}
-                                            <tr><th>Temperature:</th><td>{{ "%.1f"|format(payload_info.data.environment_metrics.temperature) }}°C</td></tr>
+                                            <tr><th>Temperatura:</th><td>{{ "%.1f"|format(payload_info.data.environment_metrics.temperature) }}°C</td></tr>
                                         {% endif %}
                                         {% if payload_info.data.environment_metrics.relative_humidity %}
-                                            <tr><th>Humidity:</th><td>{{ "%.1f"|format(payload_info.data.environment_metrics.relative_humidity) }}%</td></tr>
+                                            <tr><th>Humidade:</th><td>{{ "%.1f"|format(payload_info.data.environment_metrics.relative_humidity) }}%</td></tr>
                                         {% endif %}
                                         {% if payload_info.data.environment_metrics.barometric_pressure %}
-                                            <tr><th>Pressure:</th><td>{{ "%.1f"|format(payload_info.data.environment_metrics.barometric_pressure) }} hPa</td></tr>
+                                            <tr><th>Pressão:</th><td>{{ "%.1f"|format(payload_info.data.environment_metrics.barometric_pressure) }} hPa</td></tr>
                                         {% endif %}
                                     </table>
                                 {% endif %}
                             {% elif payload_info.portnum == 'NEIGHBORINFO_APP' %}
-                                <h6><i class="bi bi-diagram-3"></i> Neighbor Information Report</h6>
+                                <h6><i class="bi bi-diagram-3"></i> Relatório de informação:</h6>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <table class="table table-sm">
                                             {% if payload_info.data.node_id %}
-                                                <tr><th>Reporting Node:</th><td>{{ node_link(payload_info.data.node_id, payload_info.data.node_name) }}</td></tr>
+                                                <tr><th>Node que reporta:</th><td>{{ node_link(payload_info.data.node_id, payload_info.data.node_name) }}</td></tr>
                                             {% endif %}
                                             {% if payload_info.data.last_sent_by_id %}
-                                                <tr><th>Last Sent By:</th><td>{{ node_link(payload_info.data.last_sent_by_id, payload_info.data.last_sent_by_name) }}</td></tr>
+                                                <tr><th>Enviado pela última vez em:</th><td>{{ node_link(payload_info.data.last_sent_by_id, payload_info.data.last_sent_by_name) }}</td></tr>
                                             {% endif %}
                                             {% if payload_info.data.node_broadcast_interval_secs %}
-                                                <tr><th>Broadcast Interval:</th><td>{{ payload_info.data.node_broadcast_interval_secs }} seconds</td></tr>
+                                                <tr><th>Intervalo de Broadcast:</th><td>{{ payload_info.data.node_broadcast_interval_secs }} seconds</td></tr>
                                             {% endif %}
-                                            <tr><th>Neighbors Found:</th><td>{{ payload_info.data.neighbor_count }}</td></tr>
+                                            <tr><th>Vizinhos Encontrados:</th><td>{{ payload_info.data.neighbor_count }}</td></tr>
                                         </table>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="card bg-light">
                                             <div class="card-body text-center">
                                                 <h5 class="card-title mb-1">{{ payload_info.data.neighbor_count }}</h5>
-                                                <p class="card-text text-muted mb-0">Active Neighbors</p>
+                                                <p class="card-text text-muted mb-0">Vizinhos Activos</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {% if payload_info.data.neighbors %}
-                                    <h6><i class="bi bi-people"></i> Neighbor Details</h6>
+                                    <h6><i class="bi bi-people"></i> Detalhes do vizinho</h6>
                                     <div class="table-responsive">
                                         <table class="table table-sm table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th>Neighbor Node</th>
+                                                    <th>Node vizinho</th>
                                                     <th>SNR</th>
-                                                    <th>Last Heard</th>
-                                                    <th>Broadcast Interval</th>
-                                                    <th>Signal Quality</th>
+                                                    <th>Visto em</th>
+                                                    <th>Intervalo de Broadcast</th>
+                                                    <th>Qualidade do Sinal</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -446,13 +446,13 @@
                                                     <td>
                                                         {% if neighbor.snr is not none %}
                                                             {% if neighbor.snr >= 5 %}
-                                                                <span class="badge bg-success">Excellent</span>
+                                                                <span class="badge bg-success">Excelente</span>
                                                             {% elif neighbor.snr >= 0 %}
-                                                                <span class="badge bg-warning text-dark">Good</span>
+                                                                <span class="badge bg-warning text-dark">Bom</span>
                                                             {% elif neighbor.snr >= -5 %}
-                                                                <span class="badge bg-warning text-dark">Fair</span>
+                                                                <span class="badge bg-warning text-dark">OK</span>
                                                             {% else %}
-                                                                <span class="badge bg-danger">Poor</span>
+                                                                <span class="badge bg-danger">Fraco</span>
                                                             {% endif %}
                                                         {% else %}
                                                             <span class="text-muted">Unknown</span>
@@ -467,24 +467,24 @@
                                     <div class="mt-3">
                                         <small class="text-muted">
                                             <i class="bi bi-info-circle"></i>
-                                            This neighbor information was reported by {{ payload_info.data.node_name }}
-                                            and shows which nodes it can directly communicate with and their signal quality.
+                                            Informações sobre o seu vizinho foram relatadas por {{ payload_info.data.node_name }}
+                                            e mostra com que nodes pode comunicar diretamente e a sua qualidade de sinal.
                                         </small>
                                     </div>
                                 {% else %}
                                     <div class="alert alert-info">
-                                        <i class="bi bi-info-circle"></i> No neighbors reported by this node.
+                                        <i class="bi bi-info-circle"></i> Nenhum vizinho reportado por este node.
                                     </div>
                                 {% endif %}
                             {% elif payload_info.portnum == 'TRACEROUTE_APP' %}
                                 <!-- Enhanced Traceroute Information -->
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <h6><i class="bi bi-route"></i> Route Information</h6>
+                                        <h6><i class="bi bi-route"></i> Info. da Rota</h6>
                                         <table class="table table-sm">
                                             {% if payload_info.data.route_nodes %}
                                                 <tr>
-                                                    <th>Route Path:</th>
+                                                    <th>Caminho da Rota:</th>
                                                     <td>
                                                         {% for node_id in payload_info.data.route_nodes %}
                                                             {{ node_link(node_id, display_text=payload_info.data.route_node_names.get(node_id)) }}
@@ -493,11 +493,11 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Hop Count:</th>
+                                                    <th>Quantidade de Hops:</th>
                                                     <td>{{ payload_info.data.route_nodes|length - 1 }} hops</td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Status:</th>
+                                                    <th>Estado:</th>
                                                     <td>
                                                         {% if payload_info.data.traceroute_packet %}
                                                             {% set status = payload_info.data.traceroute_packet.get_completion_status() %}
@@ -505,7 +505,7 @@
                                                                 <span class="badge bg-success">
                                                                     <i class="bi bi-check-circle"></i> {{ status }}
                                                                 </span>
-                                                            {% elif "in progress" in status %}
+                                                            {% elif "em progresso" in status %}
                                                                 <span class="badge bg-info">
                                                                     <i class="bi bi-arrow-clockwise"></i> {{ status }}
                                                                 </span>
@@ -518,11 +518,11 @@
                                                             {# Fallback to legacy logic #}
                                                             {% if payload_info.data.route_nodes and payload_info.data.route_nodes[-1] == packet.to_node_id %}
                                                                 <span class="badge bg-success">
-                                                                    <i class="bi bi-check-circle"></i> Reached destination
+                                                                    <i class="bi bi-check-circle"></i> Chegou ao destino
                                                                 </span>
                                                             {% else %}
                                                                 <span class="badge bg-warning text-dark">
-                                                                    <i class="bi bi-clock"></i> In progress - last hop: {{ node_link(payload_info.data.route_nodes[-1], display_text=payload_info.data.route_node_names.get(payload_info.data.route_nodes[-1])) if payload_info.data.route_nodes else "Unknown" }}
+                                                                    <i class="bi bi-clock"></i> Em progresso - último hop: {{ node_link(payload_info.data.route_nodes[-1], display_text=payload_info.data.route_node_names.get(payload_info.data.route_nodes[-1])) if payload_info.data.route_nodes else "Unknown" }}
                                                                 </span>
                                                             {% endif %}
                                                         {% endif %}
@@ -531,7 +531,7 @@
                                             {% endif %}
                                             {% if payload_info.data.snr_towards %}
                                                 <tr>
-                                                    <th>SNR Towards:</th>
+                                                    <th>SNR para:</th>
                                                     <td>
                                                         {% for snr in payload_info.data.snr_towards %}
                                                             <span class="badge {% if snr >= 5 %}bg-success{% elif snr >= 0 %}bg-warning{% else %}bg-danger{% endif %} me-1">{{ snr }} dB</span>
@@ -541,7 +541,7 @@
                                             {% endif %}
                                             {% if payload_info.data.route_back %}
                                                 <tr>
-                                                    <th>Return Path:</th>
+                                                    <th>Caminho percorrido:</th>
                                                     <td>
                                                         {% for node_id in payload_info.data.route_back %}
                                                             {{ node_link(node_id, display_text=payload_info.data.route_node_names.get(node_id)) }}
@@ -552,7 +552,7 @@
                                             {% endif %}
                                             {% if payload_info.data.snr_back %}
                                                 <tr>
-                                                    <th>SNR Back:</th>
+                                                    <th>SNR de:</th>
                                                     <td>
                                                         {% for snr in payload_info.data.snr_back %}
                                                             <span class="badge {% if snr >= 5 %}bg-success{% elif snr >= 0 %}bg-warning{% else %}bg-danger{% endif %} me-1">{{ snr }} dB</span>
@@ -565,21 +565,21 @@
 
                                     {% if payload_info.data.route_nodes and payload_info.data.route_nodes|length > 1 %}
                                     <div class="col-md-6">
-                                        <h6><i class="bi bi-map"></i> Route Visualization</h6>
+                                        <h6><i class="bi bi-map"></i> Visualização da Rota</h6>
                                         <div id="traceroute-map" style="height: 300px; border: 1px solid #dee2e6; border-radius: 0.375rem;" data-route-nodes="{% if payload_info and payload_info.data and payload_info.data.route_nodes %}{{ payload_info.data.route_nodes | safe_json | safe }}{% else %}null{% endif %}">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="spinner-border text-primary" role="status">
-                                                        <span class="visually-hidden">Loading...</span>
+                                                        <span class="visually-hidden">Carregando...</span>
                                                     </div>
-                                                    <p class="mt-2 text-muted">Loading route map...</p>
+                                                    <p class="mt-2 text-muted">Carregando o mapa da rota...</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mt-2">
                                             <small class="text-muted">
                                                 <i class="bi bi-info-circle"></i>
-                                                Map shows the geographic path if nodes have shared location data.
+                                                O mapa mostra o caminho geográfico se os nós tiverem dados de localização partilhados.
                                             </small>
                                         </div>
                                     </div>
@@ -589,18 +589,18 @@
                                 <!-- Traceroute Steps Table -->
                                 {% if payload_info.data.route_nodes or payload_info.data.forward_hops %}
                                 <div class="mt-4">
-                                    <h6><i class="bi bi-list-ol"></i> Traceroute Steps</h6>
+                                    <h6><i class="bi bi-list-ol"></i> Passos do Traceroute</h6>
                                     <div class="table-responsive">
                                         <table class="table table-sm table-striped">
                                             <thead>
                                                 <tr>
                                                     <th>Hop</th>
-                                                    <th>From Node</th>
-                                                    <th>To Node</th>
-                                                    <th>Distance</th>
+                                                    <th>Do Node</th>
+                                                    <th>Para Node</th>
+                                                    <th>Distancia</th>
                                                     <th>SNR (dB)</th>
-                                                    <th>Direction</th>
-                                                    <th>Analysis</th>
+                                                    <th>Direção</th>
+                                                    <th>Análise</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -656,11 +656,11 @@
                                                         <td>
                                                             <i class="bi bi-arrow-right text-primary"></i>
                                                             {% if hop.hop_number == 1 %}
-                                                                <small class="text-muted">Origin</small>
+                                                                <small class="text-muted">Orige,</small>
                                                             {% elif hop.hop_number == payload_info.data.forward_hops|length and payload_info.data.is_complete %}
-                                                                <small class="text-muted">Destination</small>
+                                                                <small class="text-muted">Destino</small>
                                                             {% else %}
-                                                                <small class="text-muted">Relay</small>
+                                                                <small class="text-muted">Reptido</small>
                                                             {% endif %}
                                                         </td>
                                                         <td>
@@ -675,7 +675,7 @@
                                                     <tr class="table-warning">
                                                         <td colspan="7" class="text-center">
                                                             <i class="bi bi-exclamation-triangle"></i>
-                                                            <strong>Traceroute incomplete</strong> - Final destination not reached
+                                                            <strong>Traceroute incompleto</strong> - Não alcançou o destino final
                                                         </td>
                                                     </tr>
                                                     {% endif %}
@@ -684,10 +684,10 @@
                                                     <tr class="table-info">
                                                         <td colspan="7" class="text-center">
                                                             <i class="bi bi-info-circle"></i>
-                                                            <strong>Legacy traceroute data</strong> - Enhanced analysis not available
+                                                            <strong>Dados Legacy Traceroute</strong> - Análise pormenorizada não disponível
                                                             <br><small class="text-muted">
-                                                                Route nodes: {{ payload_info.data.route_nodes|length if payload_info.data.route_nodes else 0 }},
-                                                                SNR values: {{ payload_info.data.snr_towards|length if payload_info.data.snr_towards else 0 }}
+                                                                Rota dos nodes: {{ payload_info.data.route_nodes|length if payload_info.data.route_nodes else 0 }},
+                                                                SNR: {{ payload_info.data.snr_towards|length if payload_info.data.snr_towards else 0 }}
                                                                 {% if payload_info.data.route_back %}, Return path available{% endif %}
                                                             </small>
                                                         </td>
@@ -700,18 +700,18 @@
                                     <!-- Return Path Steps if available -->
                                     {% if payload_info.data.route_back or payload_info.data.return_hops %}
                                     <div class="mt-3">
-                                        <h6><i class="bi bi-arrow-left-right"></i> Return Path Steps</h6>
+                                        <h6><i class="bi bi-arrow-left-right"></i> Caminho de Retorno</h6>
                                         <div class="table-responsive">
                                             <table class="table table-sm table-striped">
                                                 <thead>
                                                     <tr>
                                                         <th>Hop</th>
-                                                        <th>From Node</th>
-                                                        <th>To Node</th>
-                                                        <th>Distance</th>
+                                                        <th>Do Node</th>
+                                                        <th>Para Node</th>
+                                                        <th>Distancia</th>
                                                         <th>SNR (dB)</th>
-                                                        <th>Direction</th>
-                                                        <th>Analysis</th>
+                                                        <th>Direção</th>
+                                                        <th>Análise</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -740,7 +740,7 @@
                                                                         <span class="text-warning"
                                                                               data-bs-toggle="tooltip"
                                                                               data-bs-placement="top"
-                                                                              title="Location timestamp warnings: {{ location_warning | join(', ') }}">
+                                                                              title="Avisos de localização: {{ location_warning | join(', ') }}">
                                                                             <i class="bi bi-exclamation-triangle-fill"></i> {{ distance_text }}
                                                                         </span>
                                                                     {% else %}
@@ -750,7 +750,7 @@
                                                                     <span class="text-muted"
                                                                           data-bs-toggle="tooltip"
                                                                           data-bs-placement="top"
-                                                                          title="No location data available for one or both nodes">
+                                                                          title="Não há dados de localização disponíveis para um ou ambos os nodes">
                                                                         Unknown
                                                                     </span>
                                                                 {% endif %}
@@ -767,11 +767,11 @@
                                                             <td>
                                                                 <i class="bi bi-arrow-left text-secondary"></i>
                                                                 {% if hop.hop_number == 1 %}
-                                                                    <small class="text-muted">Return Start</small>
+                                                                    <small class="text-muted">Início do retorno:</small>
                                                                 {% elif hop.hop_number == payload_info.data.return_hops|length %}
-                                                                    <small class="text-muted">Return End</small>
+                                                                    <small class="text-muted">Fim do retorno:</small>
                                                                 {% else %}
-                                                                    <small class="text-muted">Return Relay</small>
+                                                                    <small class="text-muted">Repetição do retorno</small>
                                                                 {% endif %}
                                                             </td>
                                                             <td>
@@ -787,10 +787,10 @@
                                                         <tr class="table-info">
                                                             <td colspan="7" class="text-center">
                                                                 <i class="bi bi-info-circle"></i>
-                                                                <strong>Legacy return path data</strong> - Enhanced analysis not available
+                                                                <strong>Dados Legacy Traceroute</strong> - Análise pormenorizada não disponível
                                                                 <br><small class="text-muted">
-                                                                    Return nodes: {{ payload_info.data.route_back|length if payload_info.data.route_back else 0 }},
-                                                                    SNR values: {{ payload_info.data.snr_back|length if payload_info.data.snr_back else 0 }}
+                                                                    Rota de retorno dos nodes: {{ payload_info.data.route_back|length if payload_info.data.route_back else 0 }},
+                                                                    SNR: {{ payload_info.data.snr_back|length if payload_info.data.snr_back else 0 }}
                                                                 </small>
                                                             </td>
                                                         </tr>
@@ -807,7 +807,7 @@
                                             {% if payload_info.data.total_forward_distance %}
                                             <div class="col-md-6">
                                                 <div class="card card-body bg-light">
-                                                    <h6 class="card-title mb-1">Total Forward Distance</h6>
+                                                    <h6 class="card-title mb-1">Total caminho percorrido</h6>
                                                     <span class="h5 text-primary">
                                                         {% if payload_info.data.total_forward_distance < 1000 %}
                                                             {{ "%.0f m"|format(payload_info.data.total_forward_distance) }}
@@ -821,7 +821,7 @@
                                             {% if payload_info.data.total_return_distance %}
                                             <div class="col-md-6">
                                                 <div class="card card-body bg-light">
-                                                    <h6 class="card-title mb-1">Total Return Distance</h6>
+                                                    <h6 class="card-title mb-1">Distância</h6>
                                                     <span class="h5 text-secondary">
                                                         {% if payload_info.data.total_return_distance < 1000 %}
                                                             {{ "%.0f m"|format(payload_info.data.total_return_distance) }}

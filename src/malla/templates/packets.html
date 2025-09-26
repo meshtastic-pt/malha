@@ -24,74 +24,74 @@
     {% call filter_section("filtersForm", "Packet Filters") %}
         <div class="row g-3">
             <div class="col-12">
-                <label for="start_time" class="form-label">Start Time</label>
+                <label for="start_time" class="form-label">Inicio</label>
                 <input type="datetime-local" class="form-control form-control-sm" id="start_time" name="start_time">
             </div>
             <div class="col-12">
-                <label for="end_time" class="form-label">End Time</label>
+                <label for="end_time" class="form-label">Fim</label>
                 <input type="datetime-local" class="form-control form-control-sm" id="end_time" name="end_time">
             </div>
             <div class="col-12">
                 {{ node_picker(
                     field_name="from_node",
-                    label="From Node",
+                    label="Do Node",
                     selected_value="",
                     selected_display="",
-                    placeholder="All nodes",
+                    placeholder="Todos nodes",
                     include_broadcast=true
                 ) }}
             </div>
             <div class="col-12">
                 {{ node_picker(
                     field_name="to_node",
-                    label="To Node",
+                    label="Para Node",
                     selected_value="",
                     selected_display="",
-                    placeholder="All destination nodes",
+                    placeholder="Todos destinos",
                     include_broadcast=true
                 ) }}
             </div>
             <div class="col-12">
                 {{ node_picker(
                     field_name="exclude_from",
-                    label="Exclude From Node",
+                    label="Exclir o Node",
                     selected_value="",
                     selected_display="",
-                    placeholder="No exclusions",
+                    placeholder="Sem exclusões",
                     include_broadcast=true
                 ) }}
             </div>
             <div class="col-12">
                 {{ node_picker(
                     field_name="exclude_to",
-                    label="Exclude To Node",
+                    label="Excluir para Node",
                     selected_value="",
                     selected_display="",
-                    placeholder="No exclusions",
+                    placeholder="Sem exclusões",
                     include_broadcast=true
                 ) }}
             </div>
             <div class="col-12">
                 {{ gateway_picker(
                     field_name="gateway_id",
-                    label="Gateway (Receiver)",
+                    label="Gateway (Receprot)",
                     selected_value="",
                     selected_display="",
-                    placeholder="All gateways"
+                    placeholder="Todos gateways"
                 ) }}
             </div>
             <div class="col-12">
-                <label for="portnum" class="form-label">Packet Type</label>
+                <label for="portnum" class="form-label">Tipos de pacotes</label>
                 <select class="form-select form-select-sm" id="portnum" name="portnum">
-                    <option value="">All Types</option>
+                    <option value="">Todos Tipos</option>
                     <!-- Options will be loaded dynamically -->
                 </select>
             </div>
             <div class="col-12">
-                <label for="hop_count" class="form-label">Hop Count</label>
+                <label for="hop_count" class="form-label">Contagem Hop</label>
                 <select class="form-select form-select-sm" id="hop_count" name="hop_count">
-                    <option value="">Any Hops</option>
-                    <option value="0">Direct (0 hops)</option>
+                    <option value="">Todos Hops</option>
+                    <option value="0">Direto (0 hops)</option>
                     <option value="1">1 hop</option>
                     <option value="2">2 hops</option>
                     <option value="3">3 hops</option>
@@ -107,34 +107,34 @@
                 <div class="form-check d-flex align-items-center">
                     <input class="form-check-input me-2" type="checkbox" id="exclude_self" name="exclude_self">
                     <label class="form-check-label mb-0" for="exclude_self">
-                        Exclude gateway self messages
+                        Excluir gateway das prórpias sms
                     </label>
                 </div>
             </div>
             <div class="col-12">
-                <label for="primary_channel" class="form-label">Primary Channel</label>
+                <label for="primary_channel" class="form-label">Canal Primário</label>
                 <select class="form-select form-select-sm" id="primary_channel" name="primary_channel">
-                    <option value="">All Channels</option>
+                    <option value="">Todos Canais</option>
                     <!-- Options will be loaded dynamically -->
                 </select>
             </div>
         </div>
     {% endcall %}
 
-    {{ grouping_section("group_packets", "Group by Packet ID", "Group packets with the same mesh packet ID") }}
+    {{ grouping_section("group_packets", "Agrupar por ID", "Agrupa pacotes por ID") }}
 
     {% set table_controls = [
-        {"class": "btn-primary", "id": "applyFilters", "icon": "bi bi-search", "text": "Apply Filters", "type": "button"},
-        {"class": "btn-outline-secondary", "id": "clearFilters", "icon": "bi bi-x-circle", "text": "Clear Filters", "type": "button"},
-        {"class": "btn-outline-info", "id": "refreshTable", "icon": "bi bi-arrow-clockwise", "text": "Refresh", "type": "button"},
+        {"class": "btn-primary", "id": "applyFilters", "icon": "bi bi-search", "text": "Aplicar Filtros", "type": "button"},
+        {"class": "btn-outline-secondary", "id": "clearFilters", "icon": "bi bi-x-circle", "text": "Limpar Filtros", "type": "button"},
+        {"class": "btn-outline-info", "id": "refreshTable", "icon": "bi bi-arrow-clockwise", "text": "Atualizar", "type": "button"},
     ] %}
     {{ table_controls_section(table_controls) }}
 
     {% set stats_items = [
-        {"label": "Total Packets", "id": "statsTotal", "default": "0"},
-        {"label": "Filtered", "id": "statsFiltered", "default": "0"},
-        {"label": "Grouped", "id": "statsGrouped", "default": "0"},
-        {"label": "Last Update", "id": "statsLastUpdate", "default": "--"}
+        {"label": "Total de Pacotes", "id": "statsTotal", "default": "0"},
+        {"label": "Filtrados", "id": "statsFiltered", "default": "0"},
+        {"label": "Agrupados", "id": "statsGrouped", "default": "0"},
+        {"label": "Última actualização", "id": "statsLastUpdate", "default": "--"}
     ] %}
     {{ table_stats_section("tableStats", stats_items) }}
 </div>
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Timestamp',
                 sortable: true,
                 render: (value, row) => {
-                    return `<a href="/packet/${row.id}" class="text-decoration-none" title="View packet details">
+                    return `<a href="/packet/${row.id}" class="text-decoration-none" title="Ver detalhes de pacotes">
                                 <small>${value}</small>
                             </a>`;
                 }
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         return `<a href="/node/${row.from_node_id}" class="text-decoration-none node-link"
                                    data-node-id="${row.from_node_id}" data-bs-toggle="tooltip"
                                    data-bs-placement="top" data-bs-html="true"
-                                   data-bs-title="Loading..." title="View node details">
+                                   data-bs-title="Carregando..." title="Ver detalhe do node">
                                     ${shortName}
                                 </a>`;
                     }
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         return `<a href="/node/${row.to_node_id}" class="text-decoration-none node-link"
                                    data-node-id="${row.to_node_id}" data-bs-toggle="tooltip"
                                    data-bs-placement="top" data-bs-html="true"
-                                   data-bs-title="Loading..." title="View node details">
+                                   data-bs-title="Carregando..." title="Ver detalhes do node">
                                     ${shortName}
                                 </a>`;
                     }
@@ -306,11 +306,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (value) {
                         const typeMap = {
                             'TEXT_MESSAGE_APP': 'Text',
-                            'POSITION_APP': 'Position',
+                            'POSITION_APP': 'Posição',
                             'NODEINFO_APP': 'Node Info',
                             'ROUTING_APP': 'Routing',
                             'ADMIN_APP': 'Admin',
-                            'TELEMETRY_APP': 'Telemetry',
+                            'TELEMETRY_APP': 'Telemetria',
                             'TRACEROUTE_APP': 'Traceroute',
                             'NEIGHBORINFO_APP': 'Neighbor Info'
                         };
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
         always: [
             {
                 key: 'channel',
-                title: 'Channel',
+                title: 'Canal',
                 sortable: true,
                 render: (value, row) => {
                     if (value && value !== 'Unknown') {
@@ -346,13 +346,13 @@ document.addEventListener('DOMContentLoaded', function() {
             'TEXT_MESSAGE_APP': [
                 {
                     key: 'text_content',
-                    title: 'Message',
+                    title: 'SMS',
                     sortable: false,
                     render: (value, row) => {
                         if (value) {
                             return `<span class="text-break">${value}</span>`;
                         }
-                        return `<span class="text-muted">No content</span>`;
+                        return `<span class="text-muted">Sem conteúdo</span>`;
                     }
                 }
             ]
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             return `<a href="/node/${gatewayNodeId}" class="text-decoration-none node-link"
                                        data-node-id="${gatewayNodeId}" data-bs-toggle="tooltip"
                                        data-bs-placement="top" data-bs-html="true"
-                                       data-bs-title="Loading..." title="View node details">
+                                       data-bs-title="Carregando..." title="Ver detalhes do node">
                                         ${shortName}
                                     </a>`;
                         } else if (gatewayName && gatewayNodeId) {
@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             return `<a href="/node/${gatewayNodeId}" class="text-decoration-none node-link"
                                        data-node-id="${gatewayNodeId}" data-bs-toggle="tooltip"
                                        data-bs-placement="top" data-bs-html="true"
-                                       data-bs-title="Loading..." title="View node details">
+                                       data-bs-title="Carregando..." title="Ver detalhes do node">
                                         ${shortName}
                                     </a>`;
                         }
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 key: 'size',
-                title: 'Size',
+                title: 'Tamanho',
                 sortable: true,
                 render: (value, row) => {
                     if (row.is_grouped) {

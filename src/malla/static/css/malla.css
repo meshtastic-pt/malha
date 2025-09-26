@@ -17,7 +17,7 @@
   --bs-primary: #6B8E23;
   --bs-primary-rgb: 107, 142, 35;
   --bs-secondary: #6c757d;
-  --bs-success: #198754;
+  --bs-success: #036437;
   --bs-info: #0dcaf0;
   --bs-warning: #ffc107;
   --bs-danger: #dc3545;
@@ -162,6 +162,7 @@ h1,
 
 /* Navigation */
 .navbar {
+  background-color: var(--bs-primary) !important;
   box-shadow: var(--bs-box-shadow-sm);
   backdrop-filter: blur(10px);
 }
