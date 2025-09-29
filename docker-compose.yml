@@ -15,6 +15,7 @@ services:
     ports:
       - "${MALLA_WEB_PORT:-5008}:5008"
     environment:
+      - TZ=Europe/Lisbon
       - MALLA_HOST=0.0.0.0
       - MALLA_PORT=5008
       - MALLA_DATABASE_FILE=/app/data/meshtastic_history.db
@@ -36,6 +37,7 @@ services:
     # build: .
     command: ["/app/.venv/bin/malla-capture"]
     environment:
+      - TZ=Europe/Lisbon
       - MALLA_DATABASE_FILE=/app/data/meshtastic_history.db
       # MQTT Configuration - set these in your .env file
       - MALLA_MQTT_BROKER_ADDRESS=${MALLA_MQTT_BROKER_ADDRESS}
