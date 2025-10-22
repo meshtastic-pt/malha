@@ -375,7 +375,7 @@
                     <hr>
                     <div class="row">
                         <div class="col-12">
-                            <strong>Sáude da Rede:</strong><br>
+                            <strong>Saúde da Rede:</strong><br>
                             {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
                             {% set activity_percentage = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
                             {% if activity_percentage >= 70 %}
