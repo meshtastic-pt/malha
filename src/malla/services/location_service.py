@@ -19,12 +19,16 @@ class LocationService:
     @staticmethod
     def get_node_locations(
         filters: dict[str, Any] | None = None,
+        network_data: dict[str, Any] | None = None,
+        packet_links: list[dict[str, Any]] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get all node locations with formatted display information and network topology data.
 
         Args:
             filters: Optional filters to apply (start_time, end_time, gateway_id, node_ids, etc.)
+            network_data: Optional pre-computed network topology data from TracerouteService.get_network_graph_data()
+            packet_links: Optional pre-computed packet links from LocationService.get_packet_links()
 
         Returns:
             List of location dictionaries with additional display fields and network analysis
@@ -72,34 +76,38 @@ class LocationService:
         # Get network topology data from traceroute analysis
         network_start = time.time()
         try:
-            from ..services.traceroute_service import TracerouteService
+            # Use pre-computed network data if provided, otherwise fetch it
+            if network_data is None:
+                from ..services.traceroute_service import TracerouteService
 
-            # Extract time parameters from filters for network analysis
-            hours = 24  # Default to 24 hours – sufficient for map neighbour analysis
-            if filters.get("start_time") and filters.get("end_time"):
-                # Calculate hours from time range
-                time_diff = filters["end_time"] - filters["start_time"]
-                hours = max(
-                    1, min(168, int(time_diff / 3600))
-                )  # Between 1 and 168 hours
-            elif filters.get("max_age_hours"):
-                hours = min(168, filters["max_age_hours"])
+                # Extract time parameters from filters for network analysis
+                hours = (
+                    24  # Default to 24 hours – sufficient for map neighbour analysis
+                )
+                if filters.get("start_time") and filters.get("end_time"):
+                    # Calculate hours from time range
+                    time_diff = filters["end_time"] - filters["start_time"]
+                    hours = max(
+                        1, min(168, int(time_diff / 3600))
+                    )  # Between 1 and 168 hours
+                elif filters.get("max_age_hours"):
+                    hours = min(168, filters["max_age_hours"])
 
-            # Pass the same filters to network analysis for consistency
-            network_filters = {}
-            if filters.get("start_time"):
-                network_filters["start_time"] = filters["start_time"]
-            if filters.get("end_time"):
-                network_filters["end_time"] = filters["end_time"]
-            if filters.get("gateway_id"):
-                network_filters["gateway_id"] = filters["gateway_id"]
+                # Pass the same filters to network analysis for consistency
+                network_filters = {}
+                if filters.get("start_time"):
+                    network_filters["start_time"] = filters["start_time"]
+                if filters.get("end_time"):
+                    network_filters["end_time"] = filters["end_time"]
+                if filters.get("gateway_id"):
+                    network_filters["gateway_id"] = filters["gateway_id"]
 
-            network_data = TracerouteService.get_network_graph_data(
-                hours=hours,
-                include_indirect=False,
-                filters=network_filters,
-                limit_packets=2000,
-            )
+                network_data = TracerouteService.get_network_graph_data(
+                    hours=hours,
+                    include_indirect=False,
+                    filters=network_filters,
+                    limit_packets=2000,
+                )
         except Exception as e:
             logger.warning(f"Failed to get network topology data: {e}")
             network_data = {"nodes": [], "links": []}
@@ -152,16 +160,18 @@ class LocationService:
 
         # Get direct packet links to include in neighbor data
         try:
-            # Pass the same filters to get packet links for consistency
-            packet_filters = {}
-            if filters.get("start_time"):
-                packet_filters["start_time"] = filters["start_time"]
-            if filters.get("end_time"):
-                packet_filters["end_time"] = filters["end_time"]
-            if filters.get("gateway_id"):
-                packet_filters["gateway_id"] = filters["gateway_id"]
+            # Use pre-computed packet links if provided, otherwise fetch them
+            if packet_links is None:
+                # Pass the same filters to get packet links for consistency
+                packet_filters = {}
+                if filters.get("start_time"):
+                    packet_filters["start_time"] = filters["start_time"]
+                if filters.get("end_time"):
+                    packet_filters["end_time"] = filters["end_time"]
+                if filters.get("gateway_id"):
+                    packet_filters["gateway_id"] = filters["gateway_id"]
 
-            packet_links = LocationService.get_packet_links(packet_filters)
+                packet_links = LocationService.get_packet_links(packet_filters)
 
             # Process packet links to add to neighbor details
             for link in packet_links:
@@ -246,8 +256,8 @@ class LocationService:
             age_hours = (current_time - location["timestamp"]) / 3600
 
             # Format timestamp string
-            timestamp_dt = datetime.fromtimestamp(location["timestamp"])
-            timestamp_str = timestamp_dt.strftime("%Y-%m-%d %H:%M:%S")
+            timestamp_dt = datetime.fromtimestamp(location["timestamp"], UTC)
+            timestamp_str = timestamp_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
 
             # Get network data for this node
             network_node = network_nodes.get(node_id, {})
@@ -300,12 +310,14 @@ class LocationService:
     @staticmethod
     def get_traceroute_links(
         filters: dict[str, Any] | None = None,
+        network_data: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get traceroute links data for map visualization.
 
         Args:
             filters: Optional filters to apply (same as get_node_locations)
+            network_data: Optional pre-computed network topology data from TracerouteService.get_network_graph_data()
 
         Returns:
             List of traceroute link dictionaries
@@ -317,34 +329,36 @@ class LocationService:
         )
 
         try:
-            from ..services.traceroute_service import TracerouteService
+            # Use pre-computed network data if provided, otherwise fetch it
+            if network_data is None:
+                from ..services.traceroute_service import TracerouteService
 
-            # Extract time parameters from filters for network analysis
-            hours = 24  # Default to 24 hours for links
-            if filters.get("start_time") and filters.get("end_time"):
-                # Calculate hours from time range
-                time_diff = filters["end_time"] - filters["start_time"]
-                hours = max(
-                    1, min(168, int(time_diff / 3600))
-                )  # Between 1 and 168 hours
-            elif filters.get("max_age_hours"):
-                hours = min(168, filters["max_age_hours"])
+                # Extract time parameters from filters for network analysis
+                hours = 24  # Default to 24 hours for links
+                if filters.get("start_time") and filters.get("end_time"):
+                    # Calculate hours from time range
+                    time_diff = filters["end_time"] - filters["start_time"]
+                    hours = max(
+                        1, min(168, int(time_diff / 3600))
+                    )  # Between 1 and 168 hours
+                elif filters.get("max_age_hours"):
+                    hours = min(168, filters["max_age_hours"])
 
-            # Pass the same filters to network analysis for consistency
-            network_filters = {}
-            if filters.get("start_time"):
-                network_filters["start_time"] = filters["start_time"]
-            if filters.get("end_time"):
-                network_filters["end_time"] = filters["end_time"]
-            if filters.get("gateway_id"):
-                network_filters["gateway_id"] = filters["gateway_id"]
+                # Pass the same filters to network analysis for consistency
+                network_filters = {}
+                if filters.get("start_time"):
+                    network_filters["start_time"] = filters["start_time"]
+                if filters.get("end_time"):
+                    network_filters["end_time"] = filters["end_time"]
+                if filters.get("gateway_id"):
+                    network_filters["gateway_id"] = filters["gateway_id"]
 
-            network_data = TracerouteService.get_network_graph_data(
-                hours=hours,
-                include_indirect=False,
-                filters=network_filters,
-                limit_packets=2000,
-            )
+                network_data = TracerouteService.get_network_graph_data(
+                    hours=hours,
+                    include_indirect=False,
+                    filters=network_filters,
+                    limit_packets=2000,
+                )
 
             # Convert network links to map-compatible format
             traceroute_links = []
@@ -354,9 +368,9 @@ class LocationService:
                 # Calculate age in hours
                 age_hours = (current_time - link["last_seen"]) / 3600
 
-                # Format last seen string
-                last_seen_dt = datetime.fromtimestamp(link["last_seen"])
-                last_seen_str = last_seen_dt.strftime("%Y-%m-%d %H:%M:%S")
+                # Format last seen string with UTC timezone
+                last_seen_dt = datetime.fromtimestamp(link["last_seen"], UTC)
+                last_seen_str = last_seen_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
 
                 # Calculate success rate (using packet count as proxy)
                 # Higher packet count suggests more reliable link
@@ -368,6 +382,9 @@ class LocationService:
                     "success_rate": success_rate,
                     "avg_snr": link.get("avg_snr"),
                     "age_hours": round(age_hours, 2),
+                    "last_seen": link[
+                        "last_seen"
+                    ],  # Raw Unix timestamp for client-side formatting
                     "last_seen_str": last_seen_str,
                     "is_bidirectional": True,  # Network graph links are bidirectional by design
                     "total_hops_seen": link["packet_count"],
@@ -865,7 +882,7 @@ class LocationService:
                 "gateway_id IS NOT NULL",
                 "hop_start IS NOT NULL",
                 "hop_limit IS NOT NULL",
-                "(hop_start - hop_limit) = 0",  # 0-hop packets only
+                "hop_start = hop_limit",  # 0-hop packets only (index-friendly)
             ]
             params: list[Any] = []
 
@@ -944,8 +961,8 @@ class LocationService:
                     (now_ts - row["last_seen"]) / 3600.0 if row["last_seen"] else None
                 )
                 last_seen_str = (
-                    datetime.fromtimestamp(row["last_seen"]).strftime(
-                        "%Y-%m-%d %H:%M:%S"
+                    datetime.fromtimestamp(row["last_seen"], UTC).strftime(
+                        "%Y-%m-%d %H:%M:%S UTC"
                     )
                     if row["last_seen"]
                     else None

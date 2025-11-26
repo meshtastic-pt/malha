@@ -41,5 +41,17 @@ debug: false
 # mqtt_topic_prefix: "msh"
 # mqtt_topic_suffix: "/+/+/+/#"
 
-# Default channel key used for decrypting secondary channels (base64)
+# Default channel key(s) used for decrypting secondary channels (base64)
+# Supports multiple comma-separated keys - each key will be tried in order
+# until one successfully decrypts the packet
+# Examples:
+#   Single key:    "1PG7OiApB1nwvP+rz05pAQ=="
+#   Multiple keys: "1PG7OiApB1nwvP+rz05pAQ==,AQ4GCAwQFBgcICQoLDA0ODw=,another+base64+key=="
 # default_channel_key: "1PG7OiApB1nwvP+rz05pAQ=="
+
+# Number of hours after which to delete old data (0 = never delete)
+# data_retention_hours: 0
+
+# OpenTelemetry settings
+# Endpoint for sending traces (e.g. "http://localhost:4317")
+# otlp_endpoint: ""

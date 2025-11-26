@@ -259,9 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Timestamp',
                 sortable: true,
                 render: (value, row) => {
-                    return `<a href="/packet/${row.id}" class="text-decoration-none" title="Ver detalhes de pacotes">
-                                <small>${value}</small>
-                            </a>`;
+                    return renderTimestampColumn(row, 'timestamp', 'id', '/packet/{id}');
                 }
             },
             {
@@ -459,18 +457,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             {
-                key: 'size',
-                title: 'Tamanho',
+                key: 'relay_node',
+                title: 'Relay Node',
                 sortable: true,
                 render: (value, row) => {
-                    if (row.is_grouped) {
-                        return value ? `<small class="text-info">${value}</small>` : `<span class="text-muted">N/A</span>`;
-                    } else {
-                        return value ? `<small>${value}</small>` : `<span class="text-muted">N/A</span>`;
+                    // For grouped packets, value is already a formatted string (e.g., "0a, 3f*2")
+                    if (row.is_grouped && typeof value === 'string' && value) {
+                        return `<code>${value}</code>`;
                     }
+                    // For individual packets, value is an integer
+                    if (value !== null && value !== undefined && value !== 0 && typeof value === 'number') {
+                        // Extract last byte
+                        const relayHex = (value & 0xFF).toString(16).padStart(2, '0');
+                        return `<code>${relayHex}</code>`;
+                    }
+                    return `<span class="text-muted">-</span>`;
                 }
-            }
-        ],
+            },
+          ],
 
         // Final columns that are always at the end
         actions: [
@@ -517,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to determine which default columns to exclude for specific packet types
     function getExcludedDefaultColumns(portnum) {
         const exclusions = {
-            'TEXT_MESSAGE_APP': ['size']  // Hide size column for text messages
+            // No column exclusions currently needed
         };
         return exclusions[portnum] || [];
     }
@@ -529,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
         endpoint: '/api/packets/data',
         enableSearch: false,
         enablePagination: true,
-        pageSize: 25,
+        pageSize: 100,
         deferInitialLoad: true,  // Defer loading until after URL parameters are applied
         columns: getDynamicColumns()
     });

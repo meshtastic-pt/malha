@@ -197,10 +197,8 @@
 
                     <!-- Tools dropdown -->
                     <li class="nav-item dropdown">
-                        {% set tools_active = request.endpoint in ['traceroute.traceroute_hops',
-                        'gateway.gateway_compare', 'main.longest_links'] %}
-                        <a class="nav-link dropdown-toggle {{ 'active' if tools_active }}" href="#" id="toolsDropdown"
-                            role="button" data-bs-toggle="dropdown">
+                        {% set tools_active = request.endpoint in ['traceroute.traceroute_hops', 'gateway.gateway_compare', 'main.longest_links', 'main.line_of_sight'] %}
+                        <a class="nav-link dropdown-toggle {{ 'active' if tools_active }}" href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-tools"></i> Ferramentas
                         </a>
                         <ul class="dropdown-menu">
@@ -219,17 +217,30 @@
                                     <i class="bi bi-rulers"></i> Links Record
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.line_of_sight') }}">
+                                    <i class="bi bi-bezier"></i> Line of Sight
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
-                <!-- Theme Toggle -->
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <button id="theme-toggle" class="btn btn-outline-light" type="button">
-                            <i class="bi bi-moon-fill"></i>
-                        </button>
-                    </li>
-                </ul>
+
+                <!-- Timezone Toggle and Dark Mode Toggle -->
+                <div class="navbar-nav d-flex flex-row gap-2">
+                    <button id="timezone-toggle" class="btn btn-outline-light btn-sm" type="button"
+                            data-bs-toggle="tooltip" data-bs-placement="bottom"
+                            title="Toggle timezone"
+                            aria-label="Toggle timezone">
+                        <i class="bi bi-globe"></i>
+                    </button>
+                    <button id="theme-toggle" class="btn btn-outline-light btn-sm" type="button"
+                            data-bs-toggle="tooltip" data-bs-placement="bottom"
+                            title="Toggle theme mode"
+                            aria-label="Toggle theme mode">
+                        <i class="bi bi-circle-half"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -258,6 +269,12 @@
     <script src="{{ url_for('static', filename='js/url-filter-manager.js') }}"></script>
     <!-- NodeCache utility (shared across pages) -->
     <script src="{{ url_for('static', filename='js/node-cache.js') }}"></script>
+    <!-- Dark Mode Toggle -->
+    <script src="{{ url_for('static', filename='js/dark-mode-toggle.js') }}"></script>
+    <!-- Timezone Utilities (must load before timezone toggle) -->
+    <script src="{{ url_for('static', filename='js/timezone-utils.js') }}"></script>
+    <!-- Timezone Toggle -->
+    <script src="{{ url_for('static', filename='js/timezone-toggle.js') }}"></script>
 
     <!-- Node tooltip functionality -->
     <script>
@@ -403,6 +420,18 @@
         // Initialize tooltips when page loads
         document.addEventListener('DOMContentLoaded', function () {
             initializeNodeTooltips();
+
+            // Initialize theme toggle tooltip
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                new bootstrap.Tooltip(themeToggle);
+            }
+
+            // Initialize timezone toggle tooltip
+            const timezoneToggle = document.getElementById('timezone-toggle');
+            if (timezoneToggle) {
+                new bootstrap.Tooltip(timezoneToggle);
+            }
         });
 
         // Re-initialize tooltips when new content is loaded dynamically

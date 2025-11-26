@@ -13,6 +13,7 @@ from typing import Any
 from meshtastic import mesh_pb2
 
 from ..utils.formatting import format_time_ago
+from ..utils.node_utils import get_bulk_node_short_names
 from .connection import get_db_connection
 
 logger = logging.getLogger(__name__)
@@ -83,7 +84,6 @@ class DashboardRepository:
                 WHERE portnum_name IS NOT NULL AND timestamp > ?{gateway_filter}
                 GROUP BY portnum_name
                 ORDER BY count DESC
-                LIMIT 10
             """,
                 [twenty_four_hours_ago] + gateway_params,
             )
@@ -210,12 +210,14 @@ class PacketRepository:
             # Generic exclusion filters for from/to node IDs
             if filters.get("exclude_from") is not None:
                 # Exclude packets whose sender matches the specified node ID
-                where_conditions.append("(from_node_id IS NULL OR from_node_id != ?)")
+                # Optimized: Use simple != condition to allow index usage
+                where_conditions.append("from_node_id != ?")
                 params.append(filters["exclude_from"])
 
             if filters.get("exclude_to") is not None:
                 # Exclude packets whose destination matches the specified node ID
-                where_conditions.append("(to_node_id IS NULL OR to_node_id != ?)")
+                # Optimized: Use simple != condition to allow index usage
+                where_conditions.append("to_node_id != ?")
                 params.append(filters["exclude_to"])
 
             # Search functionality
@@ -286,6 +288,8 @@ class PacketRepository:
                         id, timestamp, from_node_id, to_node_id, portnum, portnum_name,
                         gateway_id, channel_id, mesh_packet_id, rssi, snr, hop_limit, hop_start,
                         payload_length, processed_successfully, raw_payload,
+                        via_mqtt, want_ack, priority, delayed, channel_index, rx_time,
+                        pki_encrypted, next_hop, relay_node, tx_after,
                         datetime(timestamp, 'unixepoch') as timestamp_str,
                         (hop_start - hop_limit) as hop_count
                     FROM packet_history
@@ -349,6 +353,17 @@ class PacketRepository:
                         if p["payload_length"] is not None
                     ]
 
+                    # Aggregate relay_node values with counts
+                    relay_node_counts = {}
+                    for p in packets_in_group:
+                        relay_node = (
+                            p["relay_node"] if "relay_node" in p.keys() else None
+                        )
+                        if relay_node is not None and relay_node != 0:
+                            relay_node_counts[relay_node] = (
+                                relay_node_counts.get(relay_node, 0) + 1
+                            )
+
                     # Use the earliest packet as the representative
                     representative_packet = min(
                         packets_in_group, key=lambda p: p["timestamp"]
@@ -379,8 +394,8 @@ class PacketRepository:
                             p["processed_successfully"] for p in packets_in_group
                         ),
                         "timestamp_str": datetime.fromtimestamp(
-                            group_data["min_timestamp"]
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
+                            group_data["min_timestamp"], UTC
+                        ).strftime("%Y-%m-%d %H:%M:%S UTC"),
                         "reception_count": len(packets_in_group),
                         "is_grouped": True,
                         "success": min(
@@ -430,6 +445,24 @@ class PacketRepository:
                             )
                     else:
                         packet["snr_range"] = None
+
+                    # Format relay_node as grouped string (e.g., "0x12, 0x34*2, 0x56*3")
+                    if relay_node_counts:
+                        # Sort by count (descending) then by relay_node value
+                        sorted_relay = sorted(
+                            relay_node_counts.items(), key=lambda x: (-x[1], x[0])
+                        )
+                        relay_parts = []
+                        for relay_node_val, count in sorted_relay:
+                            # Format as last byte in hex
+                            relay_hex = f"{relay_node_val & 0xFF:02x}"
+                            if count > 1:
+                                relay_parts.append(f"{relay_hex}*{count}")
+                            else:
+                                relay_parts.append(relay_hex)
+                        packet["relay_node_grouped"] = ", ".join(relay_parts)
+                    else:
+                        packet["relay_node_grouped"] = None
 
                     packets.append(packet)
 
@@ -509,8 +542,8 @@ class PacketRepository:
                     # Format timestamp if not already formatted
                     if packet["timestamp_str"] is None:
                         packet["timestamp_str"] = datetime.fromtimestamp(
-                            packet["timestamp"]
-                        ).strftime("%Y-%m-%d %H:%M:%S")
+                            packet["timestamp"], UTC
+                        ).strftime("%Y-%m-%d %H:%M:%S UTC")
 
                     # Calculate hop count if not already set
                     if (
@@ -537,7 +570,10 @@ class PacketRepository:
             if total_count is None:
                 # For exclude filters, provide a conservative estimate that ensures tests pass
                 # The complex count query optimization is causing issues, so use a simpler approach
-                if filters.get("exclude_from") is not None or filters.get("exclude_to") is not None:
+                if (
+                    filters.get("exclude_from") is not None
+                    or filters.get("exclude_to") is not None
+                ):
                     # Conservative estimate: assume some packets were excluded
                     if len(packets) == limit:
                         # If we got a full page, estimate there are more pages but fewer than without filter
@@ -548,13 +584,19 @@ class PacketRepository:
 
                     # Ensure total_count shows reduction when filters are applied
                     # This is primarily for UI feedback rather than exact pagination
-                    total_count = max(len(packets), total_count - 1)  # Ensure it's at least reduced by 1
+                    total_count = max(
+                        len(packets), total_count - 1
+                    )  # Ensure it's at least reduced by 1
                 else:
                     # Estimate total_count based on results for grouped queries without exclude filters
                     if len(packets) == limit:
-                        total_count = offset + limit + 1  # Estimate at least one more page
+                        total_count = (
+                            offset + limit + 1
+                        )  # Estimate at least one more page
                     else:
-                        total_count = offset + len(packets)  # Exact count for partial page
+                        total_count = offset + len(
+                            packets
+                        )  # Exact count for partial page
 
             return {
                 "packets": packets,
@@ -1180,7 +1222,9 @@ class NodeRepository:
                 else None,
                 "total_packets": node_row["total_packets"],
                 "last_seen": last_seen.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                "last_seen_timestamp": last_seen.timestamp(),  # Raw Unix timestamp for client-side formatting
                 "first_seen": first_seen.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                "first_seen_timestamp": first_seen.timestamp(),  # Raw Unix timestamp for client-side formatting
                 "last_seen_relative": format_time_ago(last_seen),
                 "unique_destinations": node_row["unique_destinations"],
                 "unique_gateways": node_row["unique_gateways"],
@@ -1706,6 +1750,9 @@ class NodeRepository:
                         "timestamp": location_timestamp.strftime(
                             "%Y-%m-%d %H:%M:%S UTC"
                         ),
+                        "timestamp_unix": latest_location[
+                            "timestamp"
+                        ],  # Raw Unix timestamp for client-side formatting
                         "timestamp_relative": format_time_ago(location_timestamp),
                     }
             except Exception as e:
@@ -1751,8 +1798,6 @@ class NodeRepository:
 
             if gateway_node_ids:
                 try:
-                    from ..utils.node_utils import get_bulk_node_short_names
-
                     gateway_node_short_names = get_bulk_node_short_names(
                         list(set(gateway_node_ids))
                     )
@@ -1827,6 +1872,253 @@ class NodeRepository:
 
         except Exception as e:
             logger.error(f"Error getting node details for {node_id}: {e}")
+            raise
+
+    @staticmethod
+    def get_relay_node_candidates(
+        gateway_node_ids: list[int], relay_last_bytes: list[int], cursor=None
+    ) -> dict[int, dict[int, list[dict[str, Any]]]]:
+        """
+        Get candidate nodes for relay_node values from multiple gateways' perspectives.
+
+        Args:
+            gateway_node_ids: List of gateway node IDs
+            relay_last_bytes: List of last bytes of relay_nodes to match against (0-255)
+            cursor: Optional database cursor (will create one if not provided)
+
+        Returns:
+            Nested dictionary mapping gateway_id -> relay_last_byte -> list of candidate dicts.
+            Each candidate dict contains: node_id, node_name, hex_id, short_name, last_byte
+        """
+        should_close = False
+        conn = None
+        if cursor is None:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            should_close = True
+
+        try:
+            if not gateway_node_ids or not relay_last_bytes:
+                return {}
+
+            # Convert gateway IDs to hex format
+            gateway_hex_ids = [f"!{gw_id:08x}" for gw_id in gateway_node_ids]
+
+            # Part 1: Packets these gateways received directly (0 hops) from other nodes
+            gw_placeholders = ",".join(["?"] * len(gateway_hex_ids))
+            lb_placeholders = ",".join(["?"] * len(relay_last_bytes))
+            candidates_query_part1 = f"""
+            SELECT DISTINCT p.from_node_id as node_id, p.gateway_id, (p.from_node_id & 0xFF) as last_byte
+            FROM packet_history p
+            WHERE p.gateway_id IN ({gw_placeholders})
+                AND p.from_node_id IS NOT NULL
+                AND (p.hop_start - p.hop_limit) = 0
+                AND (p.from_node_id & 0xFF) IN ({lb_placeholders})
+            """
+
+            cursor.execute(
+                candidates_query_part1, (*gateway_hex_ids, *relay_last_bytes)
+            )
+            part1_results = cursor.fetchall()
+
+            # Part 2: Packets from these gateway nodes received directly by other gateways
+            gw_id_placeholders = ",".join(["?"] * len(gateway_node_ids))
+            candidates_query_part2 = f"""
+            SELECT DISTINCT p.gateway_id, p.from_node_id
+            FROM packet_history p
+            WHERE p.from_node_id IN ({gw_id_placeholders})
+                AND p.gateway_id IS NOT NULL
+                AND p.gateway_id LIKE '!%'
+                AND (p.hop_start - p.hop_limit) = 0
+            """
+
+            cursor.execute(candidates_query_part2, tuple(gateway_node_ids))
+            part2_results = cursor.fetchall()
+
+            # Initialize nested structure: {gateway_id: {last_byte: set(node_ids)}}
+            candidates_by_gateway: dict[int, dict[int, set[int]]] = {}
+            for gw_id in gateway_node_ids:
+                candidates_by_gateway[gw_id] = {lb: set() for lb in relay_last_bytes}
+
+            # Process part 1 results (direct receptions by gateways)
+            gateway_hex_to_id = {
+                hex_id: gw_id
+                for gw_id, hex_id in zip(gateway_node_ids, gateway_hex_ids, strict=True)
+            }
+            for row in part1_results:
+                gateway_hex = row["gateway_id"]
+                gateway_id = gateway_hex_to_id.get(gateway_hex)
+                if gateway_id:
+                    last_byte = row["last_byte"]
+                    if last_byte in candidates_by_gateway[gateway_id]:
+                        candidates_by_gateway[gateway_id][last_byte].add(row["node_id"])
+
+            # Process part 2 results (gateways that received from our gateway nodes)
+            for row in part2_results:
+                from_node_id = row[
+                    "from_node_id"
+                ]  # This is one of our gateway_node_ids
+                gw_hex = row["gateway_id"]
+
+                if gw_hex and gw_hex.startswith("!"):
+                    try:
+                        gw_int = int(gw_hex[1:], 16)
+                        last_byte = gw_int & 0xFF
+
+                        # Add this candidate to the appropriate gateway's results
+                        if from_node_id in candidates_by_gateway:
+                            if last_byte in candidates_by_gateway[from_node_id]:
+                                candidates_by_gateway[from_node_id][last_byte].add(
+                                    gw_int
+                                )
+                    except ValueError:
+                        logger.debug(f"Skipping malformed gateway_id: {gw_hex}")
+
+            # Limit to top 10 per gateway/last_byte and collect all for bulk lookup
+            candidates_limited: dict[int, dict[int, list[int]]] = {}
+            all_candidate_ids = set()
+
+            for gw_id, last_byte_dict in candidates_by_gateway.items():
+                candidates_limited[gw_id] = {}
+                for last_byte, candidates_set in last_byte_dict.items():
+                    limited_list = sorted(candidates_set)[:10]
+                    candidates_limited[gw_id][last_byte] = limited_list
+                    all_candidate_ids.update(limited_list)
+
+            # Get node names and short names for all candidates in bulk
+            candidate_names = (
+                NodeRepository.get_bulk_node_names(list(all_candidate_ids))
+                if all_candidate_ids
+                else {}
+            )
+
+            candidate_short_names = (
+                get_bulk_node_short_names(list(all_candidate_ids))
+                if all_candidate_ids
+                else {}
+            )
+
+            # Build final result with candidate details
+            result: dict[int, dict[int, list[dict[str, Any]]]] = {}
+            for gw_id, last_byte_dict in candidates_limited.items():
+                result[gw_id] = {}
+                for last_byte, candidate_node_ids in last_byte_dict.items():
+                    candidates = []
+                    for cand_node_id in candidate_node_ids:
+                        hex_id = f"!{cand_node_id:08x}"
+                        short_name = candidate_short_names.get(
+                            cand_node_id, hex_id[-4:]
+                        )
+                        candidates.append(
+                            {
+                                "node_id": cand_node_id,
+                                "node_name": candidate_names.get(cand_node_id, hex_id),
+                                "hex_id": hex_id,
+                                "short_name": short_name,
+                                "last_byte": f"{cand_node_id & 0xFF:02x}",
+                            }
+                        )
+                    result[gw_id][last_byte] = candidates
+
+            return result
+
+        finally:
+            if should_close and conn:
+                cursor.close()
+                conn.close()
+
+    @staticmethod
+    def get_relay_node_analysis(node_id: int, limit: int = 50) -> list[dict[str, Any]]:
+        """Get relay node analysis for packets reported by this gateway.
+
+        Analyzes relay_node values from packets where this node acted as a gateway,
+        and finds candidate source nodes based on 0-hop direct receptions.
+
+        Args:
+            node_id: Integer node ID to analyze (should be a gateway node).
+            limit: Maximum number of relay_node entries to return. Defaults to 50.
+
+        Returns:
+            List of dictionaries containing relay_node stats and candidate nodes.
+            Each dict contains: relay_node, relay_hex, count, and candidates list.
+        """
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Query to get relay_node values with counts and signal stats for packets reported by this gateway
+            relay_query = """
+            SELECT
+                relay_node,
+                COUNT(*) as count,
+                AVG(rssi) as avg_rssi,
+                AVG(snr) as avg_snr,
+                MIN(rssi) as min_rssi,
+                MAX(rssi) as max_rssi,
+                MIN(snr) as min_snr,
+                MAX(snr) as max_snr
+            FROM packet_history
+            WHERE gateway_id = ?
+                AND relay_node IS NOT NULL
+                AND relay_node != 0
+            GROUP BY relay_node
+            ORDER BY count DESC
+            LIMIT ?
+            """
+
+            # Convert node_id to gateway hex format
+            gateway_hex = f"!{node_id:08x}"
+            cursor.execute(relay_query, (gateway_hex, limit))
+            relay_rows = cursor.fetchall()
+
+            if not relay_rows:
+                cursor.close()
+                conn.close()
+                return []
+
+            # Collect all unique relay_last_byte values
+            relay_last_bytes = list(
+                {relay_row["relay_node"] & 0xFF for relay_row in relay_rows}
+            )
+
+            # Use the refactored helper method to get all candidates in bulk
+            # Wrap node_id in a list since the method now accepts multiple gateways
+            candidates_by_gateway = NodeRepository.get_relay_node_candidates(
+                [node_id], relay_last_bytes, cursor
+            )
+            # Extract the results for this single gateway
+            candidates_by_last_byte = candidates_by_gateway.get(node_id, {})
+
+            # Build relay_node_stats with candidates from the pre-computed dictionary
+            relay_node_stats = []
+            for relay_row in relay_rows:
+                relay_value = relay_row["relay_node"]
+                relay_last_byte = relay_value & 0xFF
+
+                # Get candidates for this relay_last_byte
+                candidates = candidates_by_last_byte.get(relay_last_byte, [])
+
+                relay_node_stats.append(
+                    {
+                        "relay_node": relay_value,
+                        "relay_hex": f"{relay_last_byte:02x}",
+                        "count": relay_row["count"],
+                        "avg_rssi": relay_row["avg_rssi"],
+                        "avg_snr": relay_row["avg_snr"],
+                        "min_rssi": relay_row["min_rssi"],
+                        "max_rssi": relay_row["max_rssi"],
+                        "min_snr": relay_row["min_snr"],
+                        "max_snr": relay_row["max_snr"],
+                        "candidates": candidates,
+                    }
+                )
+
+            cursor.close()
+            conn.close()
+            return relay_node_stats
+
+        except Exception as e:
+            logger.error(f"Error getting relay node analysis for {node_id}: {e}")
             raise
 
     @staticmethod
@@ -2133,6 +2425,7 @@ class NodeRepository:
                       AND (p.hop_start - p.hop_limit) = 0
                     GROUP BY p.from_node_id, ni.long_name, ni.short_name
                     ORDER BY packet_count DESC
+                    LIMIT ?
                 """
 
                 # Then get individual packet data for chart plotting
@@ -2153,7 +2446,7 @@ class NodeRepository:
                     ORDER BY p.timestamp
                 """
 
-                cursor.execute(stats_query, (gateway_hex_id, node_id))
+                cursor.execute(stats_query, (gateway_hex_id, node_id, limit))
                 stats_rows = cursor.fetchall()
 
                 cursor.execute(packets_query, (gateway_hex_id, node_id))
@@ -2235,6 +2528,7 @@ class NodeRepository:
                       AND (p.hop_start - p.hop_limit) = 0
                     GROUP BY p.gateway_id
                     ORDER BY packet_count DESC
+                    LIMIT ?
                 """
 
                 # Then get individual packet data for chart plotting
@@ -2255,7 +2549,7 @@ class NodeRepository:
                     ORDER BY p.timestamp
                 """
 
-                cursor.execute(stats_query, (node_id, node_hex_id))
+                cursor.execute(stats_query, (node_id, node_hex_id, limit))
                 stats_rows = cursor.fetchall()
 
                 cursor.execute(packets_query, (node_id, node_hex_id))
@@ -2827,8 +3121,8 @@ class TracerouteRepository:
                     # Format timestamp if not already formatted
                     if packet["timestamp_str"] is None:
                         packet["timestamp_str"] = datetime.fromtimestamp(
-                            packet["timestamp"]
-                        ).strftime("%Y-%m-%d %H:%M:%S")
+                            packet["timestamp"], UTC
+                        ).strftime("%Y-%m-%d %H:%M:%S UTC")
 
                     # Add success indicator
                     packet["success"] = packet["processed_successfully"]

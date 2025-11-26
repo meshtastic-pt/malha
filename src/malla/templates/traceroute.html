@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the modern table
     const table = new ModernTable('tracerouteTable', {
         endpoint: '/api/traceroute/data',
-        pageSize: 25,
+        pageSize: 100,
         searchPlaceholder: 'Search traceroutes...',
         emptyMessage: 'No traceroutes found',
         deferInitialLoad: true,
@@ -205,9 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Timestamp',
                 sortable: true,
                 render: (value, row) => {
-                    return `<a href="/packet/${row.id}" class="text-decoration-none" title="View packet details">
-                                <small>${value}</small>
-                            </a>`;
+                    return renderTimestampColumn(row, 'timestamp', 'id', '/packet/{id}');
                 }
             },
             {

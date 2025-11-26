@@ -66,15 +66,15 @@
                             <div class="mb-3">
                                 <h6 class="text-muted mb-2" style="font-size: 0.85rem;">Connections</h6>
                                 <div class="legend-item mb-1" data-tooltip="Direct radio frequency communication between two nodes">
-                                    <div style="width: 18px; height: 3px; background: #007bff; margin-right: 8px; display: inline-block;"></div>
+                                    <div class="legend-line legend-rf-link"></div>
                                     <small>RF Link</small>
                                 </div>
                                 <div class="legend-item mb-1" data-tooltip="Gateway heard the packet at the end of this RF path">
-                                    <div style="width: 18px; height: 2px; background: #17a2b8; border-top: 1px dashed #17a2b8; margin-right: 8px; display: inline-block;"></div>
+                                    <div class="legend-line legend-gateway-connection"></div>
                                     <small>Gateway Connection</small>
                                 </div>
                                 <div class="legend-item mb-1" data-tooltip="Gateway received packet directly from source (no RF routing)">
-                                    <div style="width: 18px; height: 2px; background: #fd7e14; border-top: 1px dashed #fd7e14; margin-right: 8px; display: inline-block;"></div>
+                                    <div class="legend-line legend-direct-reception"></div>
                                     <small>Direct Reception (0 hops)</small>
                                 </div>
                             </div>
@@ -98,11 +98,11 @@
 .traceroute-graph-container {
     height: 700px;
     width: 100%;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--bs-border-color);
     border-radius: 0.375rem;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: var(--bs-body-bg);
 }
 
 /* Mobile responsiveness */
@@ -362,8 +362,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
-    border: 1px solid #ccc;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
@@ -373,6 +373,7 @@
     max-height: 80vh;
     overflow-y: auto;
     cursor: default;
+    color: var(--bs-body-color);
 }
 </style>
 
@@ -1062,7 +1063,7 @@ function showLinkDetails(sourceNode, targetNode, linkData) {
     modal.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h5 style="margin: 0;"><i class="bi bi-arrow-left-right"></i> RF Link Details</h5>
-            <button onclick="document.querySelector('.modal-backdrop').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+            <button onclick="document.querySelector('.modal-backdrop').remove()" class="btn-close btn-close-white" aria-label="Close"></button>
         </div>
         <div>
             <div class="row mb-3">

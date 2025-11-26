@@ -72,66 +72,64 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     ] %}
     {{ controls_section(map_controls) }}
 
-    <!-- Filters -->
-    <div class="sidebar-section">
-        <h6><i class="bi bi-funnel"></i> Filters</h6>
-        <form id="locationFilterForm">
-            <div class="mb-3">
-                <label for="maxAge" class="form-label">Max Age</label>
-                <select class="form-select form-select-sm" id="maxAge" name="maxAge">
-                    <option value="">No Limit</option>
-                    <option value="1">1 Hour</option>
-                    <option value="6">6 Hours</option>
-                    <option value="24">24 Hours</option>
-                    <option value="72">3 Days</option>
-                    <option value="168">1 Week</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="roleFilter" class="form-label">Node Role</label>
-                <select class="form-select form-select-sm" id="roleFilter" name="roleFilter">
-                    <option value="">All Roles</option>
-                    <option value="CLIENT">Client</option>
-                    <option value="ROUTER">Router</option>
-                    <option value="ROUTER_LATE">Router Late</option>
-                    <option value="REPEATER">Repeater</option>
-                    <option value="CLIENT_MUTE">Client Mute</option>
-                    <option value="ROUTER_CLIENT">Router Client</option>
-                    <option value="SENSOR">Sensor</option>
-                    <option value="UNKNOWN">Unknown/Other</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="channelFilter" class="form-label">Primary Channel</label>
-                <select class="form-select form-select-sm" id="channelFilter" name="channelFilter">
-                    <option value="">All Channels</option>
-                    <!-- Options loaded dynamically -->
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="startDateTime" class="form-label">Start Date & Time</label>
-                <input type="datetime-local" class="form-control form-control-sm" id="startDateTime"
-                    name="startDateTime">
-            </div>
-            <div class="mb-3">
-                <label for="endDateTime" class="form-label">End Date & Time</label>
-                <input type="datetime-local" class="form-control form-control-sm" id="endDateTime" name="endDateTime">
-            </div>
-            <div class="d-flex justify-content-end mb-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearDateRange">
-                    <i class="bi bi-x-circle"></i> Clear Dates
+        <!-- Filters -->
+        <div class="sidebar-section">
+            <h6><i class="bi bi-funnel"></i> Filters</h6>
+            <form id="locationFilterForm">
+                <div class="mb-3">
+                    <label for="maxAge" class="form-label">Max Age</label>
+                    <select class="form-select form-select-sm" id="maxAge" name="maxAge">
+                        <option value="">No Limit</option>
+                        <option value="1">1 Hour</option>
+                        <option value="6">6 Hours</option>
+                        <option value="24">24 Hours</option>
+                        <option value="72">3 Days</option>
+                        <option value="168">1 Week</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="roleFilter" class="form-label">Node Role</label>
+                    <select class="form-select form-select-sm" id="roleFilter" name="roleFilter">
+                        <option value="">All Roles</option>
+                        <option value="CLIENT">Client</option>
+                        <option value="ROUTER">Router</option>
+                        <option value="ROUTER_LATE">Router Late</option>
+                        <option value="REPEATER">Repeater</option>
+                        <option value="CLIENT_MUTE">Client Mute</option>
+                        <option value="ROUTER_CLIENT">Router Client</option>
+                        <option value="SENSOR">Sensor</option>
+                        <option value="UNKNOWN">Unknown/Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="channelFilter" class="form-label">Primary Channel</label>
+                    <select class="form-select form-select-sm" id="channelFilter" name="channelFilter">
+                        <option value="">All Channels</option>
+                        <!-- Options loaded dynamically -->
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="startDateTime" class="form-label">Start Date & Time</label>
+                    <input type="datetime-local" class="form-control form-control-sm" id="startDateTime" name="startDateTime">
+                </div>
+                <div class="mb-3">
+                    <label for="endDateTime" class="form-label">End Date & Time</label>
+                    <input type="datetime-local" class="form-control form-control-sm" id="endDateTime" name="endDateTime">
+                </div>
+                <div class="d-flex justify-content-end mb-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="clearDateRange">
+                        <i class="bi bi-x-circle"></i> Clear Dates
+                    </button>
+                </div>
+                <div class="mb-3">
+                    <label for="minContacts" class="form-label">Min Contacts</label>
+                    <input type="number" class="form-control form-control-sm" id="minContacts" name="minContacts" value="1" min="1">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel"></i> Apply Filters
                 </button>
-            </div>
-            <div class="mb-3">
-                <label for="minContacts" class="form-label">Min Contacts</label>
-                <input type="number" class="form-control form-control-sm" id="minContacts" name="minContacts" value="1"
-                    min="1">
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm w-100">
-                <i class="bi bi-funnel"></i> Apply Filters
-            </button>
-        </form>
-    </div>
+            </form>
+        </div>
 
     <!-- Map Stats -->
     <div class="sidebar-section">
@@ -213,21 +211,16 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         display: none !important;
     }
 
-    .map-container {
-        position: fixed;
-        top: 56px;
-        /* Height of navbar */
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        background: #f8f9fa;
-        z-index: 1;
-    }
-
-    [data-bs-theme=dark] .map-container {
-        background: var(--bs-tertiary-bg);
-    }
+.map-container {
+    position: fixed;
+    top: 56px; /* Height of navbar */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    background: #f8f9fa;
+    z-index: 1;
+}
 
     .map-main {
         flex: 1;
@@ -241,29 +234,23 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         height: 100%;
     }
 
-    .loading-overlay,
-    .error-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: rgba(248, 249, 250, 0.9);
-        z-index: 100;
-    }
+.loading-overlay, .error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(248, 249, 250, 0.9);
+    z-index: 100;
+}
 
-    [data-bs-theme=dark] .loading-overlay,
-    [data-bs-theme=dark] .error-overlay {
-        background: var(--bs-tertiary-bg);
-    }
-
-    .error-overlay {
-        color: #dc3545;
-    }
+.error-overlay {
+    color: #dc3545;
+}
 
     .node-list-container {
         max-height: 400px;
@@ -275,26 +262,24 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         overflow-y: auto;
     }
 
-    .node-list-item {
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-        padding: 0.5rem;
-        margin-bottom: 0.25rem;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        font-size: 0.875rem;
-    }
+.node-list-item {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+}
 
-    .node-list-item:hover {
-        background-color: #f8f9fa;
-        color: var(--bs-tertiary-bg);
-    }
+.node-list-item:hover {
+    background-color: #f8f9fa;
+}
 
-    .node-list-item.selected {
-        background-color: #e7f3ff;
-        border-color: var(--bs-primary);
-        color: var(--bs-tertiary-bg);
-    }
+.node-list-item.selected {
+    background-color: #e7f3ff;
+    border-color: #0d6efd;
+}
 
     .signal-indicator {
         display: inline-block;
@@ -457,38 +442,38 @@ controls_section, stats_section, legend_section, sidebar_styles %}
 <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
 <script>
-    let map;
-    let nodeMarkers = [];
-    let markerClusterGroup;
-    let tracerouteLinks = [];
-    let packetLinks = [];
-    let nodeData = [];
-    let tracerouteLinkData = [];
-    let packetLinkData = [];
-    let allNodeData = [];
-    let allTracerouteLinks = [];
-    let allPacketLinks = [];
-    let selectedNodeId = null;
-    let showTracerouteLinks = true;
-    let showPacketLinks = false;
-    let precisionCircle = null;
-    let searchResults = [];
-    let allNodes = [];
-    let linkData = [];
-    let firstDisplay = true; // prevent recenter after initial load
-    let currentHopDepth = 1; // max hop depth to display around selected node
+let map;
+let nodeMarkers = [];
+let markerClusterGroup;
+let tracerouteLinks = [];
+let packetLinks = [];
+let nodeData = [];
+let tracerouteLinkData = [];
+let packetLinkData = [];
+let allNodeData = [];
+let allTracerouteLinks = [];
+let allPacketLinks = [];
+let selectedNodeId = null;
+let showTracerouteLinks = true;
+let showPacketLinks = false;
+let precisionCircle = null;
+let searchResults = [];
+let allNodes = [];
+let linkData = [];
+let firstDisplay = true; // prevent recenter after initial load
+let currentHopDepth = 1; // max hop depth to display around selected node
 
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', function () {
-        // Wait for jQuery to be available
-        function waitForJQuery() {
-            if (typeof $ !== 'undefined') {
-                initializeInterface();
-                initMap();
-            } else {
-                setTimeout(waitForJQuery, 50);
-            }
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for jQuery to be available
+    function waitForJQuery() {
+        if (typeof $ !== 'undefined') {
+            initializeInterface();
+            initMap();
+        } else {
+            setTimeout(waitForJQuery, 50);
         }
+    }
 
         waitForJQuery();
     });
@@ -608,23 +593,23 @@ controls_section, stats_section, legend_section, sidebar_styles %}
             return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}T${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`;
         }
 
-        $('#maxAge').on('change', function () {
-            const val = this.value;
-            if (!val) {
-                // No Limit selected – clear date inputs
-                $('#startDateTime').val('');
-                $('#endDateTime').val('');
-            } else {
-                const hours = parseInt(val, 10);
-                if (!isNaN(hours)) {
-                    const end = new Date();
-                    const start = new Date(end.getTime() - hours * 3600 * 1000);
-                    $('#startDateTime').val(toLocalInputValue(start));
-                    $('#endDateTime').val(toLocalInputValue(end));
-                }
+    $('#maxAge').on('change', function() {
+        const val = this.value;
+        if (!val) {
+            // No Limit selected – clear date inputs
+            $('#startDateTime').val('');
+            $('#endDateTime').val('');
+        } else {
+            const hours = parseInt(val,10);
+            if (!isNaN(hours)) {
+                const end = new Date();
+                const start = new Date(end.getTime() - hours*3600*1000);
+                $('#startDateTime').val(toLocalInputValue(start));
+                $('#endDateTime').val(toLocalInputValue(end));
             }
-            applyClientSideFilters();
-        });
+        }
+        applyClientSideFilters();
+    });
 
         // Clear dates button
         $('#clearDateRange').on('click', function () {
@@ -661,21 +646,21 @@ controls_section, stats_section, legend_section, sidebar_styles %}
             }
         }
 
-        // Load channels on interface init
-        loadPrimaryChannels();
-    }
+    // Load channels on interface init
+    loadPrimaryChannels();
+}
 
     // Initialize the map
     function initMap() {
         // Create map centered on a default location (will be updated when data loads)
         map = L.map('map').setView([40.0, -95.0], 4);
 
-        // Add Carto Positron tiles
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
+    // Add Carto Positron tiles
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(map);
 
         // Initialize marker cluster group
         markerClusterGroup = L.markerClusterGroup({
@@ -1269,32 +1254,32 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         }
     }
 
-    function getRoleColor(role) {
-        switch (role) {
-            case 'CLIENT': return '#007bff'; // Blue
-            case 'CLIENT_MUTE': return '#6c757d'; // Gray
-            case 'ROUTER': return '#28a745'; // Green
-            case 'ROUTER_LATE': return '#28a745'; // Green (same as ROUTER)
-            case 'REPEATER': return '#ffc107'; // Yellow
-            case 'ROUTER_CLIENT': return '#17a2b8'; // Teal
-            case 'SENSOR': return '#e83e8c'; // Pink
-            default: return '#dc3545'; // Red for unknown/null roles
-        }
+function getRoleColor(role) {
+    switch (role) {
+        case 'CLIENT': return '#007bff'; // Blue
+        case 'CLIENT_MUTE': return '#6c757d'; // Gray
+        case 'ROUTER': return '#28a745'; // Green
+        case 'ROUTER_LATE': return '#28a745'; // Green (same as ROUTER)
+        case 'REPEATER': return '#ffc107'; // Yellow
+        case 'ROUTER_CLIENT': return '#17a2b8'; // Teal
+        case 'SENSOR': return '#e83e8c'; // Pink
+        default: return '#dc3545'; // Red for unknown/null roles
     }
+}
 
-    function formatRole(role) {
-        if (!role || role === 'Unknown') return '?';
-        switch (role) {
-            case 'CLIENT': return 'C';
-            case 'CLIENT_MUTE': return 'CM';
-            case 'ROUTER': return 'R';
-            case 'ROUTER_LATE': return 'RL';
-            case 'REPEATER': return 'RP';
-            case 'ROUTER_CLIENT': return 'RC';
-            case 'SENSOR': return 'S';
-            default: return '?';
-        }
+function formatRole(role) {
+    if (!role || role === 'Unknown') return '?';
+    switch (role) {
+        case 'CLIENT': return 'C';
+        case 'CLIENT_MUTE': return 'CM';
+        case 'ROUTER': return 'R';
+        case 'ROUTER_LATE': return 'RL';
+        case 'REPEATER': return 'RP';
+        case 'ROUTER_CLIENT': return 'RC';
+        case 'SENSOR': return 'S';
+        default: return '?';
     }
+}
 
     // Map control functions
     function fitMapToNodes() {
@@ -1566,20 +1551,25 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         if (link.success_rate < 50) qualityClass = 'text-danger';
         else if (link.success_rate < 80) qualityClass = 'text-warning';
 
-        return `
+    return `
         <div class="traceroute-link-info">
             <div class="fw-bold mb-2">${link.link_type === 'packet' ? 'Direct Packet Link' : 'Traceroute RF Hop'}</div>
             <div><strong>From:</strong> ${fromName}</div>
             <div><strong>To:</strong> ${toName}</div>
             <div><strong>Success Rate:</strong> <span class="${qualityClass}">${link.success_rate.toFixed(1)}%</span></div>
             <div><strong>Attempts:</strong> ${link.total_hops_seen}</div>
-            <div><strong>Last Seen:</strong> ${link.last_seen_str}</div>
+            <div><strong>Last Seen:</strong> ${formattedTime}</div>
             ${link.avg_snr ? `<div><strong>Avg SNR:</strong> ${link.avg_snr.toFixed(1)} dB</div>` : ''}
             ${link.avg_rssi ? `<div><strong>Avg RSSI:</strong> ${link.avg_rssi.toFixed(0)} dBm</div>` : ''}
-            <div class="mt-2">
+            <div class="mt-2 d-flex gap-1">
                 <button class="btn btn-sm btn-primary" onclick="showTracerouteHistory(${link.from_node_id}, ${link.to_node_id})">
                     View History
                 </button>
+                ${hasLocations ? `
+                <button class="btn btn-sm btn-success" onclick="showLineOfSight(${link.from_node_id}, ${link.to_node_id})">
+                    <i class="bi bi-bezier"></i> Line of Sight
+                </button>
+                ` : ''}
             </div>
         </div>
     `;
@@ -1719,9 +1709,9 @@ controls_section, stats_section, legend_section, sidebar_styles %}
             fitMapToNodes();
         }
 
-        // Restore original data for other operations
-        nodeData = originalNodeData;
-    }
+    // Restore original data for other operations
+    nodeData = originalNodeData;
+}
 </script>
 {% endblock %}
 

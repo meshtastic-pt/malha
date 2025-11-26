@@ -21,7 +21,7 @@
 }
 
 .node-picker-clear:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: var(--bs-secondary-bg);
     border-radius: 3px;
 }
 
@@ -34,7 +34,7 @@
     background: var(--bs-body-bg, white);
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 0.375rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    box-shadow: var(--bs-box-shadow);
     max-height: 300px;
     overflow-y: auto;
 }
@@ -90,7 +90,7 @@
 
 /* Focus styles */
 .node-picker-input:focus {
-    border-color: #86b7fe;
+    border-color: var(--bs-primary);
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(107, 142, 35, 0.25);
 }
@@ -124,7 +124,7 @@
 }
 
 .gateway-picker-clear:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: var(--bs-secondary-bg);
     border-radius: 3px;
 }
 
@@ -137,7 +137,7 @@
     background: var(--bs-body-bg, white);
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 0.375rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    box-shadow: var(--bs-box-shadow);
     max-height: 300px;
     overflow-y: auto;
 }
@@ -193,7 +193,7 @@
 
 /* Focus styles */
 .gateway-picker-input:focus {
-    border-color: #86b7fe;
+    border-color: var(--bs-primary);
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(107, 142, 35, 0.25);
 }

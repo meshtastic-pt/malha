@@ -3,7 +3,7 @@
 .modern-table-container {
     background: var(--bs-body-bg, white);
     border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    box-shadow: var(--bs-box-shadow-sm);
     overflow: hidden;
 }
 
@@ -12,7 +12,7 @@
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 0.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    box-shadow: var(--bs-box-shadow-sm);
 }
 
 .filters-header {
@@ -39,7 +39,7 @@
     background: var(--bs-body-bg, white);
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    box-shadow: var(--bs-box-shadow-sm);
     overflow: hidden;
 }
 
@@ -103,13 +103,13 @@
 .modern-table thead th.sortable.asc::after {
     content: '↑';
     opacity: 1;
-    color: rgba(255, 255, 255, 0.9);
+    color: white;
 }
 
 .modern-table thead th.sortable.desc::after {
     content: '↓';
     opacity: 1;
-    color: rgba(255, 255, 255, 0.9);
+    color: white;
 }
 
 .modern-table thead th.asc,
@@ -145,7 +145,7 @@
 }
 
 .modern-table tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--bs-table-striped-bg);
 }
 
 .modern-table tbody tr:hover {
@@ -291,7 +291,7 @@
     font-size: 0.75em;
     font-weight: 700;
     line-height: 1;
-    color: #fff;
+    color: white;
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
@@ -299,33 +299,33 @@
 }
 
 .modern-badge-primary {
-    color: #fff;
-    background-color: #007bff;
+    color: white;
+    background-color: var(--bs-primary);
 }
 
 .modern-badge-secondary {
-    color: #fff;
-    background-color: #6c757d;
+    color: white;
+    background-color: var(--bs-secondary);
 }
 
 .modern-badge-success {
-    color: #fff;
-    background-color: #198754;
+    color: white;
+    background-color: var(--bs-success);
 }
 
 .modern-badge-danger {
-    color: #fff;
-    background-color: #dc3545;
+    color: white;
+    background-color: var(--bs-danger);
 }
 
 .modern-badge-warning {
-    color: #000;
-    background-color: #ffc107;
+    color: var(--bs-dark);
+    background-color: var(--bs-warning);
 }
 
 .modern-badge-info {
-    color: #000;
-    background-color: #0dcaf0;
+    color: var(--bs-dark);
+    background-color: var(--bs-info);
 }
 
 /* Action buttons using Bootstrap */
@@ -338,14 +338,14 @@
     display: inline-block;
     font-weight: 400;
     line-height: 1.5;
-    color: #007bff;
+    color: var(--bs-primary);
     text-align: center;
     text-decoration: none;
     vertical-align: middle;
     cursor: pointer;
     user-select: none;
     background-color: transparent;
-    border: 1px solid #007bff;
+    border: 1px solid var(--bs-primary);
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
     border-radius: 0.25rem;
@@ -353,23 +353,23 @@
 }
 
 .action-btn:hover {
-    color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
+    color: white;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
     transform: translateY(-1px);
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+    box-shadow: var(--bs-box-shadow-sm);
 }
 
 .action-btn-primary {
-    color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
+    color: white;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
 }
 
 .action-btn-primary:hover {
-    color: #fff;
-    background-color: #0056b3;
-    border-color: #004085;
+    color: white;
+    background-color: color-mix(in srgb, var(--bs-primary) 85%, black);
+    border-color: color-mix(in srgb, var(--bs-primary) 75%, black);
 }
 
 /* Filter form styling */
@@ -381,7 +381,7 @@
     display: block;
     margin-bottom: 0.25rem;
     font-weight: 500;
-    color: #495057;
+    color: var(--bs-body-color);
 }
 
 .filter-actions {
@@ -408,27 +408,27 @@
 }
 
 .btn-modern-primary {
-    color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
+    color: white;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
 }
 
 .btn-modern-primary:hover {
-    color: #fff;
-    background-color: #0056b3;
-    border-color: #004085;
+    color: white;
+    background-color: color-mix(in srgb, var(--bs-primary) 85%, black);
+    border-color: color-mix(in srgb, var(--bs-primary) 75%, black);
 }
 
 .btn-modern-secondary {
-    color: #6c757d;
+    color: var(--bs-secondary);
     background-color: transparent;
-    border-color: #6c757d;
+    border-color: var(--bs-secondary);
 }
 
 .btn-modern-secondary:hover {
-    color: #fff;
-    background-color: #6c757d;
-    border-color: #6c757d;
+    color: white;
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
 }
 
 /* Responsive design */
