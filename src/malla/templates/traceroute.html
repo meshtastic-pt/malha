@@ -14,39 +14,39 @@
 <!-- Override the base template's container to make this page full-width/full-height -->
 </div> <!-- Close the base template's container -->
 
-{% call fullscreen_table_container("tracerouteTable", "Traceroute Analysis", "bi bi-map", "toggleSidebar") %}
+{% call fullscreen_table_container("tracerouteTable", "Análise de Traceroutes", "bi bi-map", "toggleSidebar") %}
     <!-- Main table content -->
     <div id="tracerouteTable" class="modern-table-container"></div>
 {% endcall %}
 
 <!-- Sidebar content (will be injected into the sidebar) -->
 <div id="sidebarContent" style="display: none;">
-    {% call filter_section("filtersForm", "Traceroute Filters") %}
+    {% call filter_section("filtersForm", "Filtros de Traceroute") %}
         <div class="row g-3">
             <div class="col-12">
-                <label for="start_time" class="form-label">Start Time</label>
+                <label for="start_time" class="form-label">Hora de Início</label>
                 <input type="datetime-local" class="form-control form-control-sm" id="start_time" name="start_time">
             </div>
             <div class="col-12">
-                <label for="end_time" class="form-label">End Time</label>
+                <label for="end_time" class="form-label">Hora do Fim</label>
                 <input type="datetime-local" class="form-control form-control-sm" id="end_time" name="end_time">
             </div>
             <div class="col-12">
                 {{ node_picker(
                     field_name="from_node",
-                    label="Source Node",
+                    label="Node de Origem",
                     selected_value="",
                     selected_display="",
-                    placeholder="All source nodes"
+                    placeholder="Todos os Nodes"
                 ) }}
             </div>
             <div class="col-12">
                 {{ node_picker(
                     field_name="to_node",
-                    label="Destination Node",
+                    label="Node de Destino",
                     selected_value="",
                     selected_display="",
-                    placeholder="All destination nodes"
+                    placeholder="Todos os Nodes"
                 ) }}
             </div>
             <div class="col-12">
@@ -55,10 +55,10 @@
                     label="Route Node",
                     selected_value="",
                     selected_display="",
-                    placeholder="All route nodes"
+                    placeholder="Todos os Nodes"
                 ) }}
                 <div class="form-text">
-                    <small class="text-muted">Filter by nodes that appear anywhere in the traceroute path</small>
+                    <small class="text-muted">Filtrar por nodes que aparecem em qualquer lugar no caminho do traceroute</small>
                 </div>
             </div>
             <div class="col-12">
@@ -67,44 +67,44 @@
                     label="Gateway",
                     selected_value="",
                     selected_display="",
-                    placeholder="All gateways"
+                    placeholder="Todos os Gateways"
                 ) }}
             </div>
             <div class="col-12">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="return_path_only" name="return_path_only" value="1">
                     <label class="form-check-label" for="return_path_only">
-                        <i class="bi bi-arrow-return-left"></i> Return path only
+                        <i class="bi bi-arrow-return-left"></i> Apenas caminho de retorno
                     </label>
                     <div class="form-text">
-                        <small class="text-muted">Show only traceroutes with return path data (completed round trip)</small>
+                        <small class="text-muted">Mostrar apenas traceroutes com dados de caminho de retorno (ida e volta concluída)</small>
                     </div>
                 </div>
             </div>
             <div class="col-12">
-                <label for="primary_channel" class="form-label">Primary Channel</label>
+                <label for="primary_channel" class="form-label">Canal Primário</label>
                 <select class="form-select form-select-sm" id="primary_channel" name="primary_channel">
-                    <option value="">All Channels</option>
+                    <option value="">Todos os Canais</option>
                     <!-- Options will be loaded dynamically -->
                 </select>
             </div>
         </div>
     {% endcall %}
 
-    {{ grouping_section("group_packets", "Group by Packet ID", "Group traceroutes with the same packet ID") }}
+    {{ grouping_section("group_packets", "Agrupar por ID do Pacote", "Agrupar traceroutes com o mesmo ID de Pacote") }}
 
     {% set table_controls = [
-        {"class": "btn-primary", "id": "applyFilters", "icon": "bi bi-search", "text": "Apply Filters", "type": "button"},
-        {"class": "btn-outline-secondary", "id": "clearFilters", "icon": "bi bi-x-circle", "text": "Clear Filters", "type": "button"},
-        {"class": "btn-outline-info", "id": "refreshTable", "icon": "bi bi-arrow-clockwise", "text": "Refresh", "type": "button"},
+        {"class": "btn-primary", "id": "applyFilters", "icon": "bi bi-search", "text": "Aplicar Filtros", "type": "button"},
+        {"class": "btn-outline-secondary", "id": "clearFilters", "icon": "bi bi-x-circle", "text": "Limpar Filtros", "type": "button"},
+        {"class": "btn-outline-info", "id": "refreshTable", "icon": "bi bi-arrow-clockwise", "text": "Atualizar", "type": "button"},
     ] %}
     {{ table_controls_section(table_controls) }}
 
     {% set stats_items = [
-        {"label": "Total Traceroutes", "id": "statsTotal", "default": "0"},
-        {"label": "Filtered", "id": "statsFiltered", "default": "0"},
-        {"label": "Grouped", "id": "statsGrouped", "default": "0"},
-        {"label": "Last Update", "id": "statsLastUpdate", "default": "--"}
+        {"label": "Total de Traceroutes", "id": "statsTotal", "default": "0"},
+        {"label": "Filtrado", "id": "statsFiltered", "default": "0"},
+        {"label": "Agrupado", "id": "statsGrouped", "default": "0"},
+        {"label": "Última Atualização", "id": "statsLastUpdate", "default": "--"}
     ] %}
     {{ table_stats_section("tableStats", stats_items) }}
 </div>

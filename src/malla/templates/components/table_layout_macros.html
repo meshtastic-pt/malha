@@ -21,7 +21,7 @@
     <!-- Sidebar -->
     <div id="tableSidebar" class="table-sidebar">
         <div class="sidebar-header">
-            <h5><i class="bi bi-funnel"></i> Filters & Controls</h5>
+            <h5><i class="bi bi-funnel"></i> Filtros & Controlos</h5>
             <button type="button" class="btn btn-sm btn-outline-secondary" id="closeSidebar">
                 <i class="bi bi-x"></i>
             </button>
@@ -63,9 +63,9 @@
 {% endmacro %}
 
 {# Grouping toggle section #}
-{% macro grouping_section(checkbox_id, label="Group by Packet ID", description="Group related packets together") %}
+{% macro grouping_section(checkbox_id, label="Agrupar por ID do Pacote", description="Agrupar pacotes relacionados") %}
 <div class="sidebar-section">
-    <h6><i class="bi bi-collection"></i> Grouping</h6>
+    <h6><i class="bi bi-collection"></i> Agrupar</h6>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" id="{{ checkbox_id }}" name="{{ checkbox_id }}" checked>
         <label class="form-check-label" for="{{ checkbox_id }}">

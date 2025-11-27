@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "macros.html" import node_picker %}
 
-{% block title %}Line of Sight Analysis - Malla{% endblock %}
+{% block title %}Análise de Linha de Visão - Malha{% endblock %}
 
 {% block extra_css %}
 <!-- Leaflet CSS -->
@@ -144,31 +144,33 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
-        <h1><i class="bi bi-bezier"></i> Line of Sight Analysis</h1>
-        <p class="text-muted">Analyze RF line-of-sight and Fresnel zone clearance between two nodes using terrain elevation data</p>
+        <h1><i class="bi bi-bezier"></i> Análise de Linha de Visão</h1>
+        <p class="text-muted">
+            Analise a linha de visão RF e a limpeza da zona de Fresnel entre dois nós utilizando dados de elevação do terreno
+        </p>
     </div>
 </div>
 
 <!-- Node Selection -->
 <div class="card mb-4">
     <div class="card-body">
-        <h5 class="card-title mb-3"><i class="bi bi-sliders"></i> Node Selection</h5>
+        <h5 class="card-title mb-3"><i class="bi bi-sliders"></i> Seleção de Nodes</h5>
         <div class="row g-3">
             <div class="col-md-5">
-                {{ node_picker('from_node', field_id='fromNode', label='From Node',
-                              placeholder='Search by name, short name, or ID...',
+                {{ node_picker('from_node', field_id='fromNode', label='Node de Origem',
+                              placeholder='Pesquisar por nome, nome curto ou ID...',
                               selected_value=from_node_id or '',
                               required=true) }}
             </div>
             <div class="col-md-5">
-                {{ node_picker('to_node', field_id='toNode', label='To Node',
-                              placeholder='Search by name, short name, or ID...',
+                {{ node_picker('to_node', field_id='toNode', label='Node de Destino',
+                              placeholder='Pesquisar por nome, nome curto ou ID...',
                               selected_value=to_node_id or '',
                               required=true) }}
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button id="analyzeBtn" class="btn btn-primary w-100" disabled>
-                    <i class="bi bi-play-fill"></i> Analyze
+                    <i class="bi bi-play-fill"></i> Analisar
                 </button>
             </div>
         </div>
@@ -184,17 +186,17 @@
 <div id="loadingState" class="card mb-4" style="display: none;">
     <div class="card-body text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status">
-            <span class="visually-hidden">Loading elevation data...</span>
+            <span class="visually-hidden">A carregar dados de elevação...</span>
         </div>
-        <h5>Fetching Terrain Elevation Data</h5>
-        <p class="text-muted mb-0">Querying DEM Net Elevation API for elevation profile...</p>
+        <h5>A Obter Dados de Elevação do Terreno</h5>
+        <p class="text-muted mb-0">A consultar a DEM Net Elevation API para o perfil de elevação...</p>
     </div>
 </div>
 
 <!-- Error State -->
 <div id="errorState" class="alert alert-danger" style="display: none;">
     <i class="bi bi-exclamation-triangle"></i>
-    <strong>Error:</strong> <span id="errorMessage"></span>
+    <strong>Erro:</strong> <span id="errorMessage"></span>
 </div>
 
 <!-- Results -->
@@ -203,16 +205,16 @@
     <div class="row mb-4">
         <div class="col-lg-6">
             <div class="card info-section">
-                <h5 class="mb-3"><i class="bi bi-map"></i> Location Map</h5>
+                <h5 class="mb-3"><i class="bi bi-map"></i> Mapa de Localização</h5>
                 <div id="line-of-sight-map"></div>
                 <p class="text-muted small mt-2 mb-0">
-                    <i class="bi bi-info-circle"></i> Hover over the elevation chart to see the corresponding location on the map
+                    <i class="bi bi-info-circle"></i> Passe o cursor sobre o gráfico de elevação para ver a localização correspondente no mapa
                 </p>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card info-section">
-                <h5 class="mb-3"><i class="bi bi-bar-chart-line"></i> Elevation Profile</h5>
+                <h5 class="mb-3"><i class="bi bi-bar-chart-line"></i> Perfil de Elevação</h5>
                 <div class="elevation-chart-container">
                     <canvas id="elevationChart"></canvas>
                 </div>
@@ -224,7 +226,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card info-section">
-                <h5 class="mb-3"><i class="bi bi-info-circle"></i> Link Information & Analysis</h5>
+                <h5 class="mb-3"><i class="bi bi-info-circle"></i> Informação da Ligação & Análise</h5>
                 <table class="table table-sm link-info-table">
                     <thead>
                         <tr id="linkInfoHeader"></tr>
@@ -234,11 +236,11 @@
 
                 <div class="row mt-4">
                     <div class="col-md-6">
-                        <h5 class="mb-3"><i class="bi bi-gear"></i> Elevation Mode</h5>
+                        <h5 class="mb-3"><i class="bi bi-gear"></i> Modo de Elevação</h5>
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="useNodeElevationToggle" checked>
                             <label class="form-check-label" for="useNodeElevationToggle">
-                                <strong>Use node altitude</strong>
+                                <strong>Usar altitude do nó</strong>
                             </label>
                         </div>
                         <p class="text-muted small mb-0">
@@ -246,10 +248,11 @@
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <h5 class="mb-3"><i class="bi bi-bezier"></i> Analysis Result</h5>
+                        <h5 class="mb-3"><i class="bi bi-bezier"></i> Resultado da Análise</h5>
                         <div id="analysisStatusBadge" class="mb-3"></div>
                     </div>
                 </div>
+
                 <div class="row mt-3">
                     <div class="col-12">
                         <div class="analysis-metrics" id="analysisMetrics"></div>
@@ -263,10 +266,10 @@
     <div class="row">
         <div class="col-12">
             <div class="attribution-box">
-                <h6><i class="bi bi-award"></i> Data Attribution</h6>
+                <h6><i class="bi bi-award"></i> Atribuição de Dados</h6>
                 <div id="dataSourceAttribution" class="mb-2"></div>
                 <hr>
-                <p class="mb-2"><strong>Data sources:</strong></p>
+                <p class="mb-2"><strong>Fontes de dados:</strong></p>
                 <ul class="mb-2 small">
                     <li><strong>DEM Net Elevation API</strong> - <a href="https://elevationapi.com" target="_blank" rel="noopener">elevationapi.com</a></li>
                     <li id="demDataSource"></li>
@@ -274,7 +277,7 @@
                         © <a href="https://www.stadiamaps.com/" target="_blank" rel="noopener">Stadia Maps</a>,
                         © <a href="https://www.stamen.com/" target="_blank" rel="noopener">Stamen Design</a>,
                         © <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a></li>
-                    <li><strong>Terrain Data</strong> - SRTM (Shuttle Radar Topography Mission)</li>
+                    <li><strong>Dados de Terreno</strong> - SRTM (Shuttle Radar Topography Mission)</li>
                 </ul>
             </div>
         </div>
@@ -724,35 +727,35 @@ function displayResults(data) {
     `;
     document.getElementById('linkInfoTable').innerHTML = `
         <tr>
-            <td><strong>Node Altitude</strong></td>
+            <td><strong>Altitude do Nó</strong></td>
             <td class="text-center">${fromAltitude.toFixed(0)} m</td>
             <td class="text-center">${toAltitude.toFixed(0)} m</td>
         </tr>
         <tr>
-            <td><strong>Terrain Elevation</strong></td>
+            <td><strong>Elevação do Terreno</strong></td>
             <td class="text-center text-muted">${fromTerrainElevation.toFixed(0)} m</td>
             <td class="text-center text-muted">${toTerrainElevation.toFixed(0)} m</td>
         </tr>
         <tr style="border-top: 2px solid var(--bs-border-color);">
-            <td><strong>Distance</strong></td>
+            <td><strong>Distância</strong></td>
             <td colspan="2" class="text-center" style="font-size: 1.2rem; font-weight: bold; color: var(--bs-primary);">
                 ${distanceKm} km
             </td>
         </tr>
         <tr>
-            <td><strong>Min Clearance</strong></td>
+            <td><strong>Margem Mínima de Desobstrução</strong></td>
             <td colspan="2" class="text-center">${losAnalysis.minClearance.toFixed(1)} m</td>
         </tr>
         <tr>
-            <td><strong>Obstacles</strong></td>
+            <td><strong>Obstruções</strong></td>
             <td colspan="2" class="text-center">${losAnalysis.obstacles.length}</td>
         </tr>
         <tr>
-            <td><strong>Terrain Rise</strong></td>
+            <td><strong>Subida do Terreno</strong></td>
             <td colspan="2" class="text-center">${elevationData.metrics.climb.toFixed(0)} m</td>
         </tr>
         <tr>
-            <td><strong>Terrain Fall</strong></td>
+            <td><strong>Descida do Terreno</strong></td>
             <td colspan="2" class="text-center">${Math.abs(elevationData.metrics.descent).toFixed(0)} m</td>
         </tr>
     `;
@@ -761,12 +764,12 @@ function displayResults(data) {
     const startElev = useNodeElevation ? (fromAltitude || fromTerrainElevation) : fromTerrainElevation;
     const endElev = useNodeElevation ? (toAltitude || toTerrainElevation) : toTerrainElevation;
     document.getElementById('elevationModeDescription').innerHTML = useNodeElevation
-        ? `Using node altitudes (${startElev.toFixed(0)}m → ${endElev.toFixed(0)}m) as elevation above sea level.`
-        : `Using terrain elevation (${startElev.toFixed(0)}m → ${endElev.toFixed(0)}m) at node locations. Use this when node altitude values are incorrect.`;
+        ? `A utilizar altitudes dos nós (${startElev.toFixed(0)}m → ${endElev.toFixed(0)}m) acima do nível do mar.`
+        : `A utilizar elevação do terreno (${startElev.toFixed(0)}m → ${endElev.toFixed(0)}m) nas localizações dos nós. Use esta opção quando as altitudes dos nós estiverem incorretas.`;
 
     const statusBadge = losAnalysis.clear
-        ? '<span class="badge bg-success status-badge"><i class="bi bi-check-circle-fill"></i> Clear Line of Sight</span>'
-        : '<span class="badge bg-warning text-dark status-badge"><i class="bi bi-exclamation-triangle-fill"></i> Potential Obstructions</span>';
+        ? '<span class="badge bg-success status-badge"><i class="bi bi-check-circle-fill"></i> Linha de Visão Desobstruída</span>'
+        : '<span class="badge bg-warning text-dark status-badge"><i class="bi bi-exclamation-triangle-fill"></i> Possíveis Obstruções</span>';
 
     document.getElementById('analysisStatusBadge').innerHTML = statusBadge;
 
@@ -777,15 +780,24 @@ function displayResults(data) {
     updateMap(fromNode, toNode, geoPoints, losAnalysis.obstacles);
 
     // Update elevation chart
-    updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltitude, fromTerrainElevation, toTerrainElevation, useNodeElevation);
+    updateElevationChart(
+        fromName,
+        toName,
+        geoPoints,
+        fromAltitude,
+        toAltitude,
+        fromTerrainElevation,
+        toTerrainElevation,
+        useNodeElevation
+    );
 
     // Update attribution
     const dataSet = elevationData.dataSet;
     document.getElementById('dataSourceAttribution').innerHTML = `
-        <p class="mb-1"><strong>Elevation Data:</strong> ${dataSet.description} (${dataSet.resolutionMeters}m resolution)</p>
-        ${dataSet.publicUrl ? `<p class="mb-0"><a href="${dataSet.publicUrl}" target="_blank" rel="noopener">More information about this dataset <i class="bi bi-box-arrow-up-right"></i></a></p>` : ''}
+        <p class="mb-1"><strong>Dados de Elevação:</strong> ${dataSet.description} (${dataSet.resolutionMeters}m de resolução)</p>
+        ${dataSet.publicUrl ? `<p class="mb-0"><a href="${dataSet.publicUrl}" target="_blank" rel="noopener">Mais informação sobre este conjunto de dados <i class="bi bi-box-arrow-up-right"></i></a></p>` : ''}
     `;
-    document.getElementById('demDataSource').innerHTML = `<strong>Elevation Data Provider</strong> - ${dataSet.description}`;
+    document.getElementById('demDataSource').innerHTML = `<strong>Fornecedor de Dados de Elevação</strong> - ${dataSet.description}`;
 }
 
 // Update map with line and obstacles
@@ -988,7 +1000,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
     });
 
     const ctx = document.getElementById('elevationChart').getContext('2d');
-    
+
     // Determine aspect ratio based on screen width
     const isMobile = window.innerWidth <= 768;
     const aspectRatio = isMobile ? 1.2 : 2;
@@ -998,7 +1010,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
         data: {
             datasets: [
                 {
-                    label: 'Terrain Elevation',
+                    label: 'Elevação do Terreno',
                     data: terrainData,
                     borderColor: 'rgb(101, 67, 33)',
                     backgroundColor: 'rgba(101, 67, 33, 0.3)',
@@ -1008,7 +1020,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
                     pointHoverRadius: 5
                 },
                 {
-                    label: 'Line of Sight',
+                    label: 'Linha de Visão',
                     data: lineOfSightData,
                     borderColor: 'rgb(13, 110, 253)',
                     backgroundColor: 'transparent',
@@ -1018,7 +1030,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
                     tension: 0
                 },
                 {
-                    label: 'Fresnel Zone (60%)',
+                    label: 'Zona de Fresnel (60%)',
                     data: fresnelData,
                     borderColor: 'rgba(255, 193, 7, 0.5)',
                     backgroundColor: 'transparent',
@@ -1040,7 +1052,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
             plugins: {
                 title: {
                     display: true,
-                    text: `Elevation Profile: ${fromName} → ${toName}`
+                    text: `Perfil de Elevação: ${fromName} → ${toName}`
                 },
                 tooltip: {
                     callbacks: {
@@ -1055,7 +1067,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
                             return label;
                         },
                         title: function(context) {
-                            return 'Distance: ' + context[0].parsed.x.toFixed(2) + ' km';
+                            return 'Distância: ' + context[0].parsed.x.toFixed(2) + ' km';
                         }
                     }
                 },
@@ -1069,7 +1081,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
                     type: 'linear',
                     title: {
                         display: true,
-                        text: 'Distance (km)'
+                        text: 'Distância (km)'
                     },
                     ticks: {
                         callback: function(value) {
@@ -1081,7 +1093,7 @@ function updateElevationChart(fromName, toName, geoPoints, fromAltitude, toAltit
                     type: 'linear',
                     title: {
                         display: true,
-                        text: 'Elevation (m)'
+                        text: 'Elevação (m)'
                     },
                     beginAtZero: false
                 }

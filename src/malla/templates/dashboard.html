@@ -112,19 +112,6 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <h6>Cobertura da Rede</h6>
-                        <div class="progress mb-2">
-                            {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
-                            {% set activity_percentage = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
-                            {% set coverage_class = 'bg-success' if activity_percentage >= 70 else 'bg-warning' if activity_percentage >= 40 else 'bg-danger' %}
-                            <div class="progress-bar {{ coverage_class }}" style="width: {{ activity_percentage }}%;">
-                                {{ activity_percentage }}%
-                            </div>
-                        </div>
-                        <small class="text-muted">{{ stats.active_nodes_24h }} of {{ stats.total_nodes }} nodes active</small>
-                    </div>
-
-                    <div class="mb-3">
                         <h6>Taxa de sucesso das SMS</h6>
                         <div class="progress mb-2">
                             {% set success_bar_class = 'bg-success' if stats.success_rate >= 95 else 'bg-warning' if stats.success_rate >= 85 else 'bg-danger' %}
@@ -370,21 +357,6 @@
                         <div class="col-6">
                             <strong>Med. SNR:</strong><br>
                             <span class="text-success">{{ stats.avg_snr|format_snr }}dB</span>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <strong>Saúde da Rede:</strong><br>
-                            {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
-                            {% set activity_percentage = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
-                            {% if activity_percentage >= 70 %}
-                                <span class="text-success">Excelente</span>
-                            {% elif activity_percentage >= 40 %}
-                                <span class="text-warning">Bom</span>
-                            {% else %}
-                                <span class="text-danger">Necessita Análise</span>
-                            {% endif %}
                         </div>
                     </div>
                 </div>

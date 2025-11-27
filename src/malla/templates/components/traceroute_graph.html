@@ -9,14 +9,14 @@
                 <div class="col-md-8">
                     <small class="text-muted">
                         <i class="bi bi-info-circle"></i>
-                        <strong>Controls:</strong>
-                        Drag nodes to rearrange • Mouse wheel to zoom • Click and drag background to pan • Hover for details
+                        <strong>Controlos:</strong>
+                        Arraste os nodes para reorganizar • Roda do rato para ampliar • Clique e arraste o fundo para deslocar • Passe o cursor para obter detalhes
                     </small>
                 </div>
                 <div class="col-md-4 text-end">
                     <div class="btn-group btn-group-sm" role="group">
                         <button type="button" class="btn btn-outline-secondary" onclick="centerCombinedGraph()">
-                            <i class="bi bi-arrows-move"></i> Center
+                            <i class="bi bi-arrows-move"></i> Centrar
                         </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="resetCombinedGraphZoom()">
                             <i class="bi bi-zoom-out"></i> Reset
@@ -29,16 +29,16 @@
                     <div id="combined-traceroute-graph" class="traceroute-graph-container">
                         <div class="text-center" id="combined-graph-loader">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading graph...</span>
+                                <span class="visually-hidden">A carregar o gráfico...</span>
                             </div>
-                            <p class="mt-2 text-muted">Building graph...</p>
+                            <p class="mt-2 text-muted">A Construir o gráfico...</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-4 col-12 mt-3 mt-md-0">
                     <div class="card h-100">
                         <div class="card-header">
-                            <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Legend & Paths</h6>
+                            <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Legenda & Caminhos</h6>
                         </div>
                         <div class="card-body p-2" style="max-height: 700px; overflow-y: auto;">
                             <!-- Nodes Section -->
@@ -64,7 +64,7 @@
 
                             <!-- Connections Section -->
                             <div class="mb-3">
-                                <h6 class="text-muted mb-2" style="font-size: 0.85rem;">Connections</h6>
+                                <h6 class="text-muted mb-2" style="font-size: 0.85rem;">Ligações</h6>
                                 <div class="legend-item mb-1" data-tooltip="Direct radio frequency communication between two nodes">
                                     <div class="legend-line legend-rf-link"></div>
                                     <small>RF Link</small>
@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="legend-item mb-1" data-tooltip="Gateway received packet directly from source (no RF routing)">
                                     <div class="legend-line legend-direct-reception"></div>
-                                    <small>Direct Reception (0 hops)</small>
+                                    <small>Receção direta (0 hops)</small>
                                 </div>
                             </div>
 

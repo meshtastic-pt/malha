@@ -102,7 +102,7 @@
                     <span class="badge bg-danger">Sucesso Parcial</span>
                 {% endif %}
             </h1>
-            <p class="text-muted">{{ packet.portnum_name or "Unknown Protocol" }} packet from {{ packet.from_node_name }} to {{ packet.to_node_name }}</p>
+            <p class="text-muted">Pacote <strong>{{ packet.portnum_name or "Unknown Protocol" }}</strong> de <strong>{{ packet.from_node_name }}</strong> para <strong>{{ packet.to_node_name }}</strong></p>
         </div>
     </div>
 
@@ -274,7 +274,7 @@
                                                     {{ node_link(candidate.node_id, candidate.node_name, candidate.short_name) }}{% if not loop.last %}, {% endif %}
                                                 {% endfor %}
                                             {% endif %}
-                                            <br><small class="text-muted">Last byte of the last hop that relayed this packet{% if packet.relay_candidates %} - Candidate source node(s) based on 0-hop direct receptions{% endif %}</small>
+                                            <br><small class="text-muted">Último byte do último salto que retransmitiu este pacote{% if packet.relay_candidates %} - Node(s) de origem candidato(s) com base em receções diretas a 0 saltos{% endif %}</small>
                                         {% else %}
                                             <span class="text-muted">None</span>
                                         {% endif %}

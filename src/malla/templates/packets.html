@@ -14,14 +14,14 @@
 <!-- Override the base template's container to make this page full-width/full-height -->
 </div> <!-- Close the base template's container -->
 
-{% call fullscreen_table_container("packetsTable", "Packets", "bi bi-envelope", "toggleSidebar") %}
+{% call fullscreen_table_container("packetsTable", "Pacotes", "bi bi-envelope", "toggleSidebar") %}
     <!-- Main table content -->
     <div id="packetsTable" class="modern-table-container"></div>
 {% endcall %}
 
 <!-- Sidebar content (will be injected into the sidebar) -->
 <div id="sidebarContent" style="display: none;">
-    {% call filter_section("filtersForm", "Packet Filters") %}
+    {% call filter_section("filtersForm", "Filtro de Pacotes") %}
         <div class="row g-3">
             <div class="col-12">
                 <label for="start_time" class="form-label">Inicio</label>
@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 key: 'from_node',
-                title: 'From',
+                title: 'De',
                 sortable: true,
                 render: (value, row) => {
                     if (row.from_node_id) {
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 key: 'to_node',
-                title: 'To',
+                title: 'Para',
                 sortable: true,
                 render: (value, row) => {
                     if (row.to_node_id) {
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 key: 'portnum_name',
-                title: 'Type',
+                title: 'Tipo',
                 sortable: true,
                 render: (value, row) => {
                     if (value) {
@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
         actions: [
             {
                 key: 'id',
-                title: 'Actions',
+                title: 'Ações',
                 sortable: false,
                 render: (value, row) => {
                     return `<a href="/packet/${value}" class="btn btn-sm btn-outline-primary" title="View packet details">

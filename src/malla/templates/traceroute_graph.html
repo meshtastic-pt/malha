@@ -11,23 +11,23 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     <div class="graph-main">
         <div id="loadingSpinner" class="loading-overlay">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">A carregar...</span>
             </div>
-            <p class="mt-2 text-muted">Building network graph...</p>
+            <p class="mt-2 text-muted">A construir o gráfico da rede...</p>
         </div>
         <div id="networkGraph" class="network-graph"></div>
         <div id="graphError" class="error-overlay" style="display: none;">
             <i class="bi bi-exclamation-triangle"></i>
-            <p class="mt-2">Error loading graph data</p>
+            <p class="mt-2">Erro ao carregar os dados do gráfico</p>
         </div>
     </div>
 
     <!-- Sidebar -->
-    {% call sidebar_container("sidebar", "Network Graph", "bi bi-diagram-3", "toggleSidebar") %}
+    {% call sidebar_container("sidebar", "Gráfico de Rede", "bi bi-diagram-3", "toggleSidebar") %}
         <!-- Selected Details -->
         <div class="sidebar-section" id="selectedDetails" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0"><i class="bi bi-info-circle"></i> <span id="selectedDetailsTitle">Selection</span></h6>
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> <span id="selectedDetailsTitle">Seleção</span></h6>
                 <button id="clearSelection" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -37,9 +37,9 @@ controls_section, stats_section, legend_section, sidebar_styles %}
 
     <!-- Hover Details -->
     <div class="sidebar-section">
-        <h6><i class="bi bi-eye"></i> Hover Details</h6>
+        <h6><i class="bi bi-eye"></i> Detalhes do cursor</h6>
         <div id="hoverDetails" class="hover-details">
-            <small class="text-muted">Hover over nodes or links for details</small>
+            <small class="text-muted">Passe o cursor sobre os Nodes ou Links para obter detalhes</small>
         </div>
     </div>
 
@@ -64,30 +64,30 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         {{ search_section("nodeSearch", "clearSearch", "searchResults") }}
 
     {% set graph_controls = [
-    {"class": "btn-outline-secondary", "onclick": "centerGraph()", "icon": "bi bi-arrows-move", "text": "Center Graph"},
+    {"class": "btn-outline-secondary", "onclick": "centerGraph()", "icon": "bi bi-arrows-move", "text": "Centrar Gráfico"},
     {"class": "btn-outline-secondary", "onclick": "resetZoom()", "icon": "bi bi-zoom-out", "text": "Reset Zoom"},
-    {"class": "btn-outline-primary", "onclick": "refreshGraph()", "icon": "bi bi-arrow-clockwise", "text": "Refresh"}
+    {"class": "btn-outline-primary", "onclick": "refreshGraph()", "icon": "bi bi-arrow-clockwise", "text": "Atualizar"}
     ] %}
     {{ controls_section(graph_controls) }}
 
     <!-- Filters -->
     <div class="sidebar-section">
-        <h6><i class="bi bi-funnel"></i> Filters</h6>
+        <h6><i class="bi bi-funnel"></i> Filtros</h6>
         <form id="filterForm">
             <div class="mb-3">
-                <label for="hours" class="form-label">Time Period</label>
+                <label for="hours" class="form-label">Período de Tempo</label>
                 <select class="form-select form-select-sm" id="hours" name="hours">
-                    <option value="1" {% if hours==1 %}selected{% endif %}>Last Hour</option>
-                    <option value="6" {% if hours==6 %}selected{% endif %}>Last 6 Hours</option>
-                    <option value="24" {% if hours==24 %}selected{% endif %}>Last 24 Hours</option>
-                    <option value="72" {% if hours==72 %}selected{% endif %}>Last 3 Days</option>
-                    <option value="168" {% if hours==168 %}selected{% endif %}>Last Week</option>
+                    <option value="1" {% if hours==1 %}selected{% endif %}>Última Hora</option>
+                    <option value="6" {% if hours==6 %}selected{% endif %}>Últimas 6 Horas</option>
+                    <option value="24" {% if hours==24 %}selected{% endif %}>Últimas 24 Horas</option>
+                    <option value="72" {% if hours==72 %}selected{% endif %}>Últimos 3 Dias</option>
+                    <option value="168" {% if hours==168 %}selected{% endif %}>Semana Passada</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label for="min_snr" class="form-label">Minimum SNR (dB)</label>
+                <label for="min_snr" class="form-label">SNR Mínimo (dB)</label>
                 <select class="form-select form-select-sm" id="min_snr" name="min_snr">
-                    <option value="-200" {% if min_snr==-200 %}selected{% endif %}>No Limit</option>
+                    <option value="-200" {% if min_snr==-200 %}selected{% endif %}>Sem Limite</option>
                     <option value="-99" {% if min_snr==-99 %}selected{% endif %}>≥ -99 dB</option>
                     <option value="-40" {% if min_snr==-40 %}selected{% endif %}>≥ -40 dB</option>
                     <option value="-30" {% if min_snr==-30 %}selected{% endif %}>≥ -30 dB</option>
@@ -101,44 +101,44 @@ controls_section, stats_section, legend_section, sidebar_styles %}
                     <input class="form-check-input" type="checkbox" id="include_indirect" name="include_indirect" {% if
                         include_indirect %}checked{% endif %}>
                     <label class="form-check-label" for="include_indirect">
-                        Multi-hop Connections
+                        Ligações Multi-Hop
                     </label>
                 </div>
             </div>
             <div class="mb-3">
-                <label for="primary_channel" class="form-label">Primary Channel</label>
+                <label for="primary_channel" class="form-label">Canal Primário</label>
                 <select class="form-select form-select-sm" id="primary_channel" name="primary_channel">
-                    <option value="">All Channels</option>
+                    <option value="">Todos os Canais</option>
                     <!-- Options will be loaded dynamically -->
                 </select>
             </div>
             <button type="submit" class="btn btn-primary btn-sm w-100">
-                <i class="bi bi-arrow-clockwise"></i> Update Graph
+                <i class="bi bi-arrow-clockwise"></i> Atualizar Gráfico
             </button>
         </form>
     </div>
 
     <!-- Graph Stats -->
     <div class="sidebar-section">
-        <h6><i class="bi bi-bar-chart"></i> Statistics</h6>
+        <h6><i class="bi bi-bar-chart"></i> Estatísticas</h6>
         <div id="graphStats" class="stats-content">
             <div><strong>Nodes:</strong> <span id="statsNodes">0</span></div>
             <div><strong>Links:</strong> <span id="statsLinks">0</span></div>
-            <div><strong>Time Period:</strong> <span id="statsTimePeriod">24h</span></div>
-            <div><strong>Last Update:</strong> <span id="statsLastUpdate">--</span></div>
+            <div><strong>Período de Tempo:</strong> <span id="statsTimePeriod">24h</span></div>
+            <div><strong>Última Atualização:</strong> <span id="statsLastUpdate">--</span></div>
         </div>
     </div>
 
     {% set legend_items = [
-    {"type": "icon", "class": "bi bi-circle-fill text-primary", "text": "Active nodes"},
+    {"type": "icon", "class": "bi bi-circle-fill text-primary", "text": "Nodes Ativos"},
     {"type": "line", "class": "direct", "text": "Direct RF links"},
     {"type": "line", "class": "indirect", "text": "Multi-hop paths"}
     ] %}
     {% call legend_section(legend_items) %}
     <div class="legend-item mt-2">
-        <small class="text-muted">Node size = traffic volume<br>
-            Link thickness = signal strength<br>
-            Colors = SNR quality</small>
+        <small class="text-muted">Tamanho do Node = volume de tráfego<br>
+            Espessura do Link = intensidade do sinal<br>
+            Cores = Qualidade do SNR</small>
     </div>
     {% endcall %}
     {% endcall %}
