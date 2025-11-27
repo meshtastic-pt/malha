@@ -3,7 +3,7 @@ version: '3.8'
 services:
   malla-web:
     # Use pre-built image by default, override with 'build: .' for development
-    image: ${MALLA_IMAGE:-ghcr.io/zenitram/malla:latest}
+    image: ${MALLA_IMAGE:-docker.io/library/malhapt:latest}
     # Uncomment the following line for local development:
     # build: .
 
@@ -32,7 +32,7 @@ services:
 
   malla-capture:
     # Use pre-built image by default, override with 'build: .' for development
-    image: ${MALLA_IMAGE:-ghcr.io/zenitram/malla:latest}
+    image: ${MALLA_IMAGE:-docker.io/library/malhapt:latest}
     # Uncomment the following line for local development:
     # build: .
     command: ["/app/.venv/bin/malla-capture"]
