@@ -21,7 +21,7 @@
     <!-- Sidebar -->
     <div id="tableSidebar" class="table-sidebar">
         <div class="sidebar-header">
-            <h5><i class="bi bi-funnel"></i> Filters & Controls</h5>
+            <h5><i class="bi bi-funnel"></i> Filtros & Controlos</h5>
             <button type="button" class="btn btn-sm btn-outline-secondary" id="closeSidebar">
                 <i class="bi bi-x"></i>
             </button>
@@ -63,9 +63,9 @@
 {% endmacro %}
 
 {# Grouping toggle section #}
-{% macro grouping_section(checkbox_id, label="Group by Packet ID", description="Group related packets together") %}
+{% macro grouping_section(checkbox_id, label="Agrupar por ID do Pacote", description="Agrupar pacotes relacionados") %}
 <div class="sidebar-section">
-    <h6><i class="bi bi-collection"></i> Grouping</h6>
+    <h6><i class="bi bi-collection"></i> Agrupar</h6>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" id="{{ checkbox_id }}" name="{{ checkbox_id }}" checked>
         <label class="form-check-label" for="{{ checkbox_id }}">
@@ -103,7 +103,7 @@
     right: 0;
     bottom: 0;
     display: flex;
-    background: #f8f9fa;
+    background: var(--bs-body-bg);
     z-index: 1;
 }
 
@@ -120,10 +120,11 @@
 }
 
 .table-header {
-    background: white;
-    border-bottom: 1px solid #dee2e6;
+    background: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
     padding: 1rem 1.5rem;
     flex-shrink: 0;
+    color: var(--bs-body-color);
 }
 
 [data-bs-theme=dark] .table-header {
@@ -135,7 +136,7 @@
     flex: 1;
     overflow: hidden;
     padding: 0;
-    background: white;
+    background: var(--bs-body-bg);
 }
 
 [data-bs-theme=dark] .table-content {
@@ -144,14 +145,15 @@
 
 .table-sidebar {
     width: 400px;
-    background: white;
-    border-left: 1px solid #dee2e6;
+    background: var(--bs-body-bg);
+    border-left: 1px solid var(--bs-border-color);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     transition: margin-right 0.3s ease;
     z-index: 1000;
     order: 2;
+    color: var(--bs-body-color);
 }
 
 .table-sidebar.collapsed {
@@ -163,19 +165,21 @@
     right: 10px;
     top: 70px;
     z-index: 1001;
-    background: white;
-    border: 1px solid #dee2e6;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: var(--bs-body-color);
 }
 
 .sidebar-header {
     padding: 1rem;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--bs-border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #f8f9fa;
+    background: var(--bs-tertiary-bg);
     flex-shrink: 0;
+    color: var(--bs-body-color);
 }
 
 [data-bs-theme=dark] .sidebar-header {
@@ -194,12 +198,12 @@
 
 .sidebar-section {
     padding: 1rem;
-    border-bottom: 1px solid #f1f3f4;
+    border-bottom: 1px solid var(--bs-border-color);
 }
 
 .sidebar-section h6 {
     margin-bottom: 0.75rem;
-    color: #495057;
+    color: var(--bs-body-color);
 }
 
 [data-bs-theme=dark] .sidebar-section h6 {
@@ -228,8 +232,8 @@
 
 .table-content .modern-table-pagination {
     flex-shrink: 0;
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
+    background: var(--bs-tertiary-bg);
+    border-top: 1px solid var(--bs-border-color);
     padding: 0.75rem 1rem;
 }
 

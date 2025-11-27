@@ -11,11 +11,9 @@ from flask import Blueprint, render_template, request
 from ..database.connection import get_db_connection
 
 # Import from the new modular architecture
-from ..database.repositories import LocationRepository
+from ..database.repositories import LocationRepository, NodeRepository
 from ..models.traceroute import TraceroutePacket
-from ..utils.node_utils import (
-    get_bulk_node_names,
-)
+from ..utils.node_utils import convert_node_id, get_bulk_node_names
 from ..utils.traceroute_graph import build_combined_traceroute_graph
 
 logger = logging.getLogger(__name__)
@@ -55,9 +53,9 @@ def get_packet_details(packet_id: int) -> dict[str, Any] | None:
         packet = dict(packet_row)
 
         # Add derived fields
-        packet["timestamp_str"] = datetime.fromtimestamp(packet["timestamp"]).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        packet["timestamp_str"] = datetime.fromtimestamp(
+            packet["timestamp"], UTC
+        ).strftime("%Y-%m-%d %H:%M:%S UTC")
         packet["hop_count"] = (
             (packet["hop_start"] - packet["hop_limit"])
             if packet["hop_start"] is not None and packet["hop_limit"] is not None
@@ -86,6 +84,31 @@ def get_packet_details(packet_id: int) -> dict[str, Any] | None:
         packet["from_node_name"] = node_names.get(packet["from_node_id"], "Unknown")
         packet["to_node_name"] = node_names.get(packet["to_node_id"], "Unknown")
 
+        # Collect all relay candidate requests for batching
+        # Format: list of (gateway_node_id, relay_last_byte, target_dict, is_main_packet)
+        relay_requests = []
+
+        # Add main packet relay request
+        packet_relay_node = packet.get("relay_node")
+        if packet_relay_node and packet_relay_node != 0:
+            packet["relay_hex"] = f"{packet_relay_node & 0xFF:02x}"
+            if packet.get("gateway_id") and packet["gateway_id"].startswith("!"):
+                try:
+                    gateway_node_id = convert_node_id(packet["gateway_id"])
+                    relay_requests.append(
+                        (gateway_node_id, packet_relay_node & 0xFF, packet, True)
+                    )
+                except ValueError as e:
+                    logger.warning(
+                        f"Failed to convert gateway_id for packet: {packet.get('gateway_id')}: {e}"
+                    )
+                    packet["relay_candidates"] = []
+            else:
+                packet["relay_candidates"] = []
+        else:
+            packet["relay_hex"] = None
+            packet["relay_candidates"] = []
+
         # Find all receptions of the same packet using mesh_packet_id (preferred) or fallback to time-based
         receptions = []
 
@@ -96,7 +119,7 @@ def get_packet_details(packet_id: int) -> dict[str, Any] | None:
                 SELECT
                     id, timestamp, gateway_id, channel_id, rssi, snr, hop_limit, hop_start,
                     payload_length, processed_successfully,
-                    raw_payload, from_node_id, to_node_id, portnum, portnum_name
+                    raw_payload, from_node_id, to_node_id, portnum, portnum_name, relay_node
                 FROM packet_history
                 WHERE mesh_packet_id = ?
                 AND id != ?
@@ -116,7 +139,7 @@ def get_packet_details(packet_id: int) -> dict[str, Any] | None:
                 SELECT
                     id, timestamp, gateway_id, channel_id, rssi, snr, hop_limit, hop_start,
                     payload_length, processed_successfully,
-                    raw_payload, from_node_id, to_node_id, portnum, portnum_name
+                    raw_payload, from_node_id, to_node_id, portnum, portnum_name, relay_node
                 FROM packet_history
                 WHERE from_node_id = ?
                 AND timestamp BETWEEN ? AND ?
@@ -140,8 +163,8 @@ def get_packet_details(packet_id: int) -> dict[str, Any] | None:
         for row in cursor.fetchall():
             reception = dict(row)
             reception["timestamp_str"] = datetime.fromtimestamp(
-                reception["timestamp"]
-            ).strftime("%Y-%m-%d %H:%M:%S")
+                reception["timestamp"], UTC
+            ).strftime("%Y-%m-%d %H:%M:%S UTC")
             reception["hop_count"] = (
                 (reception["hop_start"] - reception["hop_limit"])
                 if reception["hop_start"] is not None
@@ -154,6 +177,52 @@ def get_packet_details(packet_id: int) -> dict[str, Any] | None:
             # Collect gateway IDs for name resolution
             if reception["gateway_id"] and reception["gateway_id"].startswith("!"):
                 gateway_ids.add(reception["gateway_id"])
+
+            # Add reception relay request to batch
+            relay_node = reception.get("relay_node")
+            if relay_node and relay_node != 0:
+                reception["relay_hex"] = f"{relay_node & 0xFF:02x}"
+                if reception.get("gateway_id") and reception["gateway_id"].startswith(
+                    "!"
+                ):
+                    try:
+                        gateway_node_id = convert_node_id(reception["gateway_id"])
+                        relay_requests.append(
+                            (gateway_node_id, relay_node & 0xFF, reception, False)
+                        )
+                    except ValueError as e:
+                        logger.warning(
+                            f"Failed to convert gateway_id for reception: {reception.get('gateway_id')}: {e}"
+                        )
+                        reception["relay_candidates"] = []
+                else:
+                    reception["relay_candidates"] = []
+            else:
+                reception["relay_hex"] = None
+                reception["relay_candidates"] = []
+
+        # Execute batched relay candidate query
+        if relay_requests:
+            # Extract unique gateways and last_bytes
+            gateway_ids_list = list({req[0] for req in relay_requests})
+            last_bytes_list = list({req[1] for req in relay_requests})
+
+            try:
+                # Single batched query for ALL gateways and last_bytes
+                all_candidates = NodeRepository.get_relay_node_candidates(
+                    gateway_ids_list, last_bytes_list
+                )
+
+                # Distribute results to packet and receptions
+                for gateway_id, last_byte, target, _ in relay_requests:
+                    target["relay_candidates"] = all_candidates.get(gateway_id, {}).get(
+                        last_byte, []
+                    )
+            except Exception as e:
+                logger.exception(f"Failed to get batched relay candidates: {e}")
+                # Set empty candidates for all requests on error
+                for _, _, target, _ in relay_requests:
+                    target["relay_candidates"] = []
 
         # Get recent packets from the same node for context
         cursor.execute(
@@ -181,8 +250,8 @@ def get_packet_details(packet_id: int) -> dict[str, Any] | None:
         for row in cursor.fetchall():
             ctx_packet = dict(row)
             ctx_packet["timestamp_str"] = datetime.fromtimestamp(
-                ctx_packet["timestamp"]
-            ).strftime("%Y-%m-%d %H:%M:%S")
+                ctx_packet["timestamp"], UTC
+            ).strftime("%Y-%m-%d %H:%M:%S UTC")
             ctx_packet["hop_count"] = (
                 (ctx_packet["hop_start"] - ctx_packet["hop_limit"])
                 if ctx_packet["hop_start"] is not None

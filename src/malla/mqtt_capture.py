@@ -6,6 +6,12 @@ This script connects to a Meshtastic MQTT broker and captures all mesh packets
 to a SQLite database for analysis and monitoring. It processes protobuf messages
 and extracts node information, telemetry, position data, and text messages.
 
+Features:
+- Automatic packet capture and storage
+- Node information caching
+- Packet decryption support for multiple channels
+- Automatic data cleanup based on retention settings
+
 Usage:
     python mqtt_to_sqlite.py
 
@@ -14,6 +20,14 @@ Configuration:
     via ``$MALLA_CONFIG_FILE``).  Keys can also be overridden with
     ``MALLA_*``-prefixed environment variables (e.g. ``MALLA_MQTT_PORT``) but
     the old unprefixed environment variables are no longer supported.
+
+Data Cleanup:
+    The tool supports automatic cleanup of old data based on the
+    ``data_retention_hours`` configuration parameter. When set to a positive
+    value, the tool will automatically delete packet_history records older than
+    the specified number of hours, and node_info records for nodes that haven't
+    been seen recently and have no packets in the packet_history table.
+    The cleanup runs every hour. Set to 0 (default) to disable cleanup.
 """
 
 import base64
@@ -59,8 +73,12 @@ MQTT_TOPIC_SUFFIX: str = _cfg.mqtt_topic_suffix
 # Database file path
 DATABASE_FILE: str = _cfg.database_file
 
-# Decryption key for secondary channels (optional)
-DEFAULT_CHANNEL_KEY: str = _cfg.default_channel_key
+# Decryption keys for secondary channels (optional)
+# Supports multiple comma-separated keys
+DECRYPTION_KEYS: list[str] = _cfg.get_decryption_keys()
+
+# Data retention settings
+DATA_RETENTION_HOURS: int = _cfg.data_retention_hours
 
 # Logging configuration – falls back to INFO if an invalid level was supplied
 LOG_LEVEL = _cfg.log_level.upper()
@@ -74,6 +92,8 @@ db_lock = threading.Lock()  # Thread lock for database access
 node_cache: dict[
     int, dict[str, Any]
 ] = {}  # In-memory cache: {node_id_numeric: {'hex_id': '!abc123', 'long_name': 'Name', 'short_name': 'Short', 'last_updated': timestamp}}
+cleanup_thread: threading.Thread | None = None  # Background thread for data cleanup
+stop_cleanup = threading.Event()  # Event to signal cleanup thread to stop
 
 
 # --- Decryption Functions ---
@@ -153,15 +173,17 @@ def decrypt_packet(
 
 
 def try_decrypt_mesh_packet(
-    mesh_packet: Any, channel_name: str = "", key_base64: str = DEFAULT_CHANNEL_KEY
+    mesh_packet: Any, channel_name: str = "", keys_base64: list[str] | None = None
 ) -> bool:
     """
     Try to decrypt an encrypted MeshPacket and update it with decoded content.
 
+    Attempts decryption with each key in the provided list until successful.
+
     Args:
         mesh_packet: The MeshPacket protobuf object
         channel_name: Channel name for key derivation (empty for primary channel)
-        key_base64: Base64-encoded encryption key
+        keys_base64: List of base64-encoded encryption keys to try (uses DECRYPTION_KEYS if None)
 
     Returns:
         bool: True if decryption was successful and packet was updated
@@ -188,34 +210,61 @@ def try_decrypt_mesh_packet(
             f"Attempting to decrypt packet {packet_id} from {sender_id}, encrypted payload: {len(encrypted_payload)} bytes"
         )
 
-        # Derive the decryption key
-        key = derive_key_from_channel_name(channel_name, key_base64)
+        # Use provided keys or fall back to global DECRYPTION_KEYS
+        keys_to_try = keys_base64 if keys_base64 is not None else DECRYPTION_KEYS
 
-        # Decrypt the payload
-        decrypted_payload = decrypt_packet(encrypted_payload, packet_id, sender_id, key)
-
-        if not decrypted_payload:
-            logging.debug("Decryption returned empty payload")
+        if not keys_to_try:
+            logging.debug("No decryption keys configured")
             return False
 
-        # Try to parse the decrypted payload as a Data protobuf
-        try:
-            decoded_data = mesh_pb2.Data()
-            decoded_data.ParseFromString(decrypted_payload)
+        # Try each key until one works
+        for key_index, key_base64 in enumerate(keys_to_try):
+            logging.debug(f"Trying decryption key {key_index + 1}/{len(keys_to_try)}")
 
-            # Update the mesh packet with decoded data
-            mesh_packet.decoded.CopyFrom(decoded_data)
+            # Derive the decryption key
+            key = derive_key_from_channel_name(channel_name, key_base64)
 
-            logging.info(
-                f"✅ Successfully decrypted packet {packet_id} from {sender_id}: {portnums_pb2.PortNum.Name(decoded_data.portnum)}"
+            # Decrypt the payload
+            decrypted_payload = decrypt_packet(
+                encrypted_payload, packet_id, sender_id, key
             )
-            return True
 
-        except Exception as parse_error:
-            logging.debug(
-                f"Failed to parse decrypted payload as Data protobuf: {parse_error}"
-            )
-            return False
+            if not decrypted_payload:
+                logging.debug(
+                    f"Decryption with key {key_index + 1} returned empty payload"
+                )
+                continue
+
+            # Try to parse the decrypted payload as a Data protobuf
+            try:
+                decoded_data = mesh_pb2.Data()
+                decoded_data.ParseFromString(decrypted_payload)
+
+                # Validate that we got a valid portnum (not UNKNOWN_APP)
+                if decoded_data.portnum == portnums_pb2.PortNum.UNKNOWN_APP:
+                    logging.debug(
+                        f"Key {key_index + 1} produced UNKNOWN_APP portnum, trying next key"
+                    )
+                    continue
+
+                # Update the mesh packet with decoded data
+                mesh_packet.decoded.CopyFrom(decoded_data)
+
+                logging.info(
+                    f"✅ Successfully decrypted packet {packet_id} from {sender_id} with key {key_index + 1}/{len(keys_to_try)}: {portnums_pb2.PortNum.Name(decoded_data.portnum)}"
+                )
+                return True
+
+            except Exception as parse_error:
+                logging.debug(
+                    f"Failed to parse decrypted payload with key {key_index + 1} as Data protobuf: {parse_error}"
+                )
+                continue
+
+        logging.debug(
+            f"Failed to decrypt packet with any of the {len(keys_to_try)} provided keys"
+        )
+        return False
 
     except Exception as e:
         logging.warning(f"Error in try_decrypt_mesh_packet: {e}")
@@ -319,16 +368,39 @@ def init_database() -> None:
         )
     """)
 
-    # Index for efficient queries
+    # Composite indexes for /api/nodes aggregation queries (96% faster than single-column indexes)
+    # These covering indexes allow SQLite to perform aggregations using only the index
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_packet_timestamp ON packet_history(timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_packet_history_stats ON packet_history(timestamp, from_node_id)"
     )
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_packet_from_node ON packet_history(from_node_id)"
+        "CREATE INDEX IF NOT EXISTS idx_packet_history_gateway_stats ON packet_history(timestamp, gateway_id)"
     )
+
+    # Additional proven performance indexes (20-40% improvements, cache-aware benchmarked)
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_packet_history_portnum_time ON packet_history(timestamp, portnum_name)"
+    )
+    cursor.execute(
+        """CREATE INDEX IF NOT EXISTS idx_packet_history_direct_hops
+           ON packet_history(timestamp, from_node_id, gateway_id, hop_start, hop_limit)
+           WHERE hop_start = hop_limit"""
+    )
+    cursor.execute(
+        """CREATE INDEX IF NOT EXISTS idx_packet_history_relay_time
+           ON packet_history(timestamp, relay_node)
+           WHERE relay_node IS NOT NULL AND relay_node != 0"""
+    )
+
+    # Keep mesh_packet_id index (used for packet lookups)
     cursor.execute(
         "CREATE INDEX IF NOT EXISTS idx_packet_mesh_id ON packet_history(mesh_packet_id)"
     )
+
+    # Drop old redundant indexes (composite indexes above can serve the same queries via leftmost prefix)
+    cursor.execute("DROP INDEX IF EXISTS idx_packet_timestamp")
+    cursor.execute("DROP INDEX IF EXISTS idx_packet_from_node")
+
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_node_hex_id ON node_info(hex_id)")
 
     # Ensure primary_channel column exists for legacy databases
@@ -783,6 +855,80 @@ def get_packet_history(
         return rows
 
 
+def cleanup_old_data() -> None:
+    """Clean up old data from the database based on retention settings."""
+    if DATA_RETENTION_HOURS <= 0:
+        logging.debug("Data cleanup disabled (retention hours set to 0)")
+        return
+
+    logging.info(f"Data cleanup started for retention hours: {DATA_RETENTION_HOURS}")
+    current_time = time.time()
+    cutoff_time = current_time - (DATA_RETENTION_HOURS * 3600)
+
+    packets_deleted = 0
+    nodes_deleted = 0
+
+    with db_lock:
+        conn = sqlite3.connect(DATABASE_FILE, timeout=30.0)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        try:
+            # Delete old packet history records
+            cursor.execute(
+                "DELETE FROM packet_history WHERE timestamp < ?", (cutoff_time,)
+            )
+            packets_deleted = cursor.rowcount
+
+            # Delete node_info records for nodes that haven't been seen recently
+            # and have no packets in the packet_history table
+            cursor.execute(
+                """
+                DELETE FROM node_info
+                WHERE last_updated < ?
+                AND node_id NOT IN (
+                    SELECT DISTINCT from_node_id FROM packet_history WHERE from_node_id IS NOT NULL
+                    UNION
+                    SELECT DISTINCT to_node_id FROM packet_history WHERE to_node_id IS NOT NULL
+                )
+                """,
+                (cutoff_time,),
+            )
+            nodes_deleted = cursor.rowcount
+
+            conn.commit()
+
+            if packets_deleted > 0 or nodes_deleted > 0:
+                logging.info(
+                    f"🧹 Cleaned up {packets_deleted} old packets and {nodes_deleted} unused nodes "
+                    f"older than {DATA_RETENTION_HOURS} hours"
+                )
+            else:
+                logging.debug(
+                    f"No data to clean up (retention: {DATA_RETENTION_HOURS} hours)"
+                )
+
+        except Exception as e:
+            logging.error(f"Error during data cleanup: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
+
+
+def cleanup_worker() -> None:
+    """Worker function that runs cleanup periodically in a background thread."""
+    logging.info("Cleanup worker thread started")
+
+    # Run cleanup immediately on startup
+    cleanup_old_data()
+
+    # Then run cleanup every hour
+    while not stop_cleanup.wait(3600):  # Wait for 1 hour or until stop signal
+        cleanup_old_data()
+
+    logging.info("Cleanup worker thread stopped")
+
+
 def get_node_statistics() -> dict[str, Any]:
     """Get statistics about known nodes."""
     with db_lock:
@@ -936,20 +1082,19 @@ def on_message(client: mqtt.Client, userdata: Any, msg: mqtt.MQTTMessage) -> Non
             except Exception:
                 pass
 
-            # Try decryption with primary channel key (most common case)
+            # Try decryption with primary channel keys (most common case)
             decryption_successful = try_decrypt_mesh_packet(
-                mesh_packet, channel_name="", key_base64=DEFAULT_CHANNEL_KEY
+                mesh_packet, channel_name=""
             )
 
-            # If primary channel decryption failed and we have a channel name, try with channel-specific key
+            # If primary channel decryption failed and we have a channel name, try with channel-specific keys
             if not decryption_successful and channel_name:
                 logging.debug(
-                    f"Primary key failed, trying channel-specific key for: {channel_name}"
+                    f"Primary channel decryption failed, trying channel-specific keys for: {channel_name}"
                 )
                 decryption_successful = try_decrypt_mesh_packet(
                     mesh_packet,
                     channel_name=channel_name,
-                    key_base64=DEFAULT_CHANNEL_KEY,
                 )
 
             if decryption_successful:
@@ -1273,6 +1418,13 @@ def main() -> None:
         f"Database stats: {stats['total_nodes']} nodes, {stats['total_packets']} packets, {stats['active_nodes_24h']} active nodes (24h)"
     )
 
+    # Start the cleanup thread
+    global cleanup_thread
+    stop_cleanup.clear()
+    cleanup_thread = threading.Thread(target=cleanup_worker, daemon=True)
+    cleanup_thread.start()
+    logging.info("Data cleanup thread started.")
+
     try:
         # Keep the main thread alive
         while True:
@@ -1284,6 +1436,16 @@ def main() -> None:
     except KeyboardInterrupt:
         logging.info("Script interrupted by user. Shutting down...")
     finally:
+        # Signal cleanup thread to stop
+        stop_cleanup.set()
+
+        # Wait for cleanup thread to finish (with timeout)
+        if cleanup_thread and cleanup_thread.is_alive():
+            logging.info("Waiting for cleanup thread to finish...")
+            cleanup_thread.join(timeout=5)
+            if cleanup_thread.is_alive():
+                logging.warning("Cleanup thread did not finish gracefully")
+
         logging.info("Stopping MQTT client loop...")
         mqtt_client.loop_stop()
         logging.info("Disconnecting from MQTT broker...")

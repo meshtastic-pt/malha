@@ -608,6 +608,9 @@ def api_locations():
     API endpoint for node location data with network topology.
     Returns up to 14 days of data for client-side filtering.
     """
+    import time
+
+    start_time_perf = time.time()
     logger.info("API locations endpoint accessed")
     try:
         # Build filters from request parameters
@@ -633,17 +636,47 @@ def api_locations():
         if request.args.get("search"):
             filters["search"] = request.args.get("search")
 
-        # Get enhanced location data with network topology
-        locations = LocationService.get_node_locations(filters)
-
         # ------------------------------------------------------------------
-        # Link data
-        #   • traceroute_links  – extracted from traceroute packets
-        #   • packet_links      – direct (0-hop) packet receptions
+        # OPTIMIZATION: Call expensive operations ONCE and pass results down
         # ------------------------------------------------------------------
 
-        traceroute_links = LocationService.get_traceroute_links(filters)
+        # 1. Get network topology data (used by both get_node_locations and get_traceroute_links)
+        from ..services.traceroute_service import TracerouteService
+
+        hours = 24  # Default to 24 hours for network analysis
+        time_diff = filters["end_time"] - filters["start_time"]
+        hours = max(1, min(168, int(time_diff / 3600)))  # Between 1 and 168 hours
+
+        network_filters = {}
+        if filters.get("start_time"):
+            network_filters["start_time"] = filters["start_time"]
+        if filters.get("end_time"):
+            network_filters["end_time"] = filters["end_time"]
+        if filters.get("gateway_id"):
+            network_filters["gateway_id"] = filters["gateway_id"]
+
+        network_data = TracerouteService.get_network_graph_data(
+            hours=hours,
+            include_indirect=False,
+            filters=network_filters,
+            limit_packets=2000,
+        )
+
+        # 2. Get packet links (used by get_node_locations and returned in response)
         packet_links = LocationService.get_packet_links(filters)
+
+        # 3. Get enhanced location data, passing pre-computed data
+        locations = LocationService.get_node_locations(
+            filters, network_data=network_data, packet_links=packet_links
+        )
+
+        # 4. Get traceroute links, passing pre-computed network data
+        traceroute_links = LocationService.get_traceroute_links(
+            filters, network_data=network_data
+        )
+
+        duration = time.time() - start_time_perf
+        logger.info(f"/api/locations completed in {duration:.3f}s")
 
         return safe_jsonify(
             {
@@ -769,6 +802,36 @@ def api_node_direct_receptions(node_id):
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         logger.error(f"Error in API direct receptions: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@api_bp.route("/node/<node_id>/relay-node-analysis")
+def api_node_relay_node_analysis(node_id):
+    """API endpoint for relay node analysis.
+
+    Returns relay_node statistics for packets reported by this gateway,
+    including candidate source nodes based on 0-hop direct receptions.
+    """
+    logger.info(f"API relay node analysis endpoint accessed for node {node_id}")
+    try:
+        limit = request.args.get("limit", 50, type=int)
+
+        # Convert node_id using helper to support hex strings or int
+        node_id_int = convert_node_id(node_id)
+
+        data = NodeRepository.get_relay_node_analysis(node_id_int, limit=limit)
+
+        return jsonify(
+            {
+                "relay_node_stats": data,
+                "total_count": len(data),
+                "total_packets": sum(stat["count"] for stat in data),
+            }
+        )
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.exception(f"Error in API relay node analysis: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -1158,7 +1221,7 @@ def api_packets_data():
     try:
         # Get parameters
         page = request.args.get("page", type=int, default=1)
-        limit = request.args.get("limit", type=int, default=25)
+        limit = request.args.get("limit", type=int, default=100)
         search = request.args.get("search", default="")
         sort_by = request.args.get("sort_by", default="timestamp")
         sort_order = request.args.get("sort_order", default="desc")
@@ -1370,16 +1433,6 @@ def api_packets_data():
                         1 if gateway_id and gateway_id != "Unknown" else 0
                     )
 
-            # Handle size display and sorting
-            size_display = packet.get("payload_length", 0)
-            size_sort_value = size_display
-
-            if group_packets and packet.get("avg_payload_length"):
-                size_display = f"{packet['avg_payload_length']:.1f} B avg"
-                size_sort_value = packet["avg_payload_length"]
-            elif size_display:
-                size_display = f"{size_display} B"
-
             # Handle RSSI/SNR/Hops for grouped packets
             rssi_display = packet.get("rssi")
             snr_display = packet.get("snr")
@@ -1396,7 +1449,12 @@ def api_packets_data():
             # Prepare response data
             response_data = {
                 "id": packet["id"],
-                "timestamp": packet["timestamp_str"],
+                "timestamp": packet[
+                    "timestamp"
+                ],  # Send raw Unix timestamp for client-side formatting
+                "timestamp_str": packet[
+                    "timestamp_str"
+                ],  # Keep formatted string as fallback
                 "from_node": from_node_name,
                 "from_node_id": packet.get("from_node_id"),
                 "from_node_short": from_node_short,
@@ -1409,8 +1467,9 @@ def api_packets_data():
                 "rssi": rssi_display,
                 "snr": snr_display,
                 "hops": hops_display,
-                "size": size_display,
-                "size_sort_value": size_sort_value,
+                "relay_node": packet.get("relay_node_grouped")
+                if group_packets
+                else packet.get("relay_node"),
                 "mesh_packet_id": packet.get("mesh_packet_id"),
                 "is_grouped": group_packets,
                 "channel": packet.get("channel_id") or "Unknown",
@@ -1421,6 +1480,7 @@ def api_packets_data():
             if group_packets:
                 response_data["gateway_list"] = packet.get("gateway_list", "")
                 response_data["gateway_count"] = packet.get("gateway_count", 0)
+                response_data["relay_node_grouped"] = packet.get("relay_node_grouped")
             else:
                 # For individual packets, add gateway node info for frontend links
                 gateway_id = packet.get("gateway_id")
@@ -1455,7 +1515,7 @@ def api_nodes_data():
     try:
         # Get parameters
         page = request.args.get("page", type=int, default=1)
-        limit = request.args.get("limit", type=int, default=25)
+        limit = request.args.get("limit", type=int, default=100)
         search = request.args.get("search", default="")
         sort_by = request.args.get("sort_by", default="last_packet_time")
         sort_order = request.args.get("sort_order", default="desc")
@@ -1539,7 +1599,7 @@ def api_traceroute_data():
     try:
         # Get parameters
         page = request.args.get("page", type=int, default=1)
-        limit = request.args.get("limit", type=int, default=25)
+        limit = request.args.get("limit", type=int, default=100)
         search = request.args.get("search", default="")
         sort_by = request.args.get("sort_by", default="timestamp")
         sort_order = request.args.get("sort_order", default="desc")
@@ -1778,7 +1838,12 @@ def api_traceroute_data():
             # Prepare response data
             response_data = {
                 "id": tr["id"],
-                "timestamp": tr.get("timestamp_str", ""),
+                "timestamp": tr.get(
+                    "timestamp"
+                ),  # Send raw Unix timestamp for client-side formatting
+                "timestamp_str": tr.get(
+                    "timestamp_str", ""
+                ),  # Keep formatted string as fallback
                 "from_node": from_node_name,
                 "from_node_id": tr.get("from_node_id"),
                 "from_node_short": from_node_short,

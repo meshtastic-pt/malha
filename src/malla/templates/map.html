@@ -33,14 +33,14 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     </div>
 
     <!-- Sidebar -->
-    {% call sidebar_container("sidebar", "Network Map", "bi bi-map", "toggleSidebar") %}
+    {% call sidebar_container("sidebar", "Mapa da Rede", "bi bi-map", "toggleSidebar") %}
     {{ selected_details_section("clearSelection") }}
 
     <!-- Node Search and List Combined -->
     <div class="sidebar-section">
-        <h6><i class="bi bi-search"></i> Search & Filter Nodes</h6>
+        <h6><i class="bi bi-search"></i> Pesquisar & Filtrar Nodes</h6>
         <div class="input-group input-group-sm mb-2">
-            <input type="text" class="form-control" id="nodeSearch" placeholder="Search by node name or ID...">
+            <input type="text" class="form-control" id="nodeSearch" placeholder="Pesquisar por nome ou ID do Node...">
             <button class="btn btn-outline-secondary" type="button" id="clearSearch">
                 <i class="bi bi-x"></i>
             </button>
@@ -51,96 +51,96 @@ controls_section, stats_section, legend_section, sidebar_styles %}
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <small class="text-muted">Nodes (<span id="nodeCount">0</span>)</small>
                 <small class="text-muted" id="searchResultsCount" style="display: none;">
-                    <span id="searchCount">0</span> results
+                    <span id="searchCount">0</span> resultados
                 </small>
             </div>
             <div id="nodeList" class="node-list">
                 <div class="text-center text-muted py-4">
                     <div class="spinner-border spinner-border-sm" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                        <span class="visually-hidden">A carregar...</span>
                     </div>
-                    <p class="mt-2 small">Loading nodes...</p>
+                    <p class="mt-2 small">A carregar nodes...</p>
                 </div>
             </div>
         </div>
     </div>
 
     {% set map_controls = [
-    {"class": "btn-outline-secondary", "onclick": "fitMapToNodes()", "icon": "bi bi-arrows-move", "text": "Fit All
-    Nodes"},
-    {"class": "btn-outline-primary", "onclick": "refreshMap()", "icon": "bi bi-arrow-clockwise", "text": "Refresh"}
+        {"class": "btn-outline-secondary", "onclick": "fitMapToNodes()", "icon": "bi bi-arrows-move", "text": "Ajustar todos os Nodes"},
+        {"class": "btn-outline-primary", "onclick": "refreshMap()", "icon": "bi bi-arrow-clockwise", "text": "Atualizar"}
     ] %}
     {{ controls_section(map_controls) }}
 
     <!-- Filters -->
     <div class="sidebar-section">
-        <h6><i class="bi bi-funnel"></i> Filters</h6>
+        <h6><i class="bi bi-funnel"></i> Filtros</h6>
         <form id="locationFilterForm">
             <div class="mb-3">
                 <label for="maxAge" class="form-label">Max Age</label>
                 <select class="form-select form-select-sm" id="maxAge" name="maxAge">
-                    <option value="">No Limit</option>
-                    <option value="1">1 Hour</option>
-                    <option value="6">6 Hours</option>
-                    <option value="24">24 Hours</option>
-                    <option value="72">3 Days</option>
-                    <option value="168">1 Week</option>
+                    <option value="">Sem limites</option>
+                    <option value="1">1 Hora</option>
+                    <option value="6">6 Horas</option>
+                    <option value="24" selected>24 Horas</option>
+                    <option value="72">3 Dias</option>
+                    <option value="168">1 Semana</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label for="roleFilter" class="form-label">Node Role</label>
+                <label for="roleFilter" class="form-label">Role do Node</label>
                 <select class="form-select form-select-sm" id="roleFilter" name="roleFilter">
-                    <option value="">All Roles</option>
+                    <option value="">Todas as Roles</option>
                     <option value="CLIENT">Client</option>
                     <option value="ROUTER">Router</option>
                     <option value="ROUTER_LATE">Router Late</option>
                     <option value="REPEATER">Repeater</option>
                     <option value="CLIENT_MUTE">Client Mute</option>
+                    <option value="CLIENT_BASE">Client Base</option>
                     <option value="ROUTER_CLIENT">Router Client</option>
                     <option value="SENSOR">Sensor</option>
                     <option value="UNKNOWN">Unknown/Other</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label for="channelFilter" class="form-label">Primary Channel</label>
+                <label for="channelFilter" class="form-label">Canal Primário</label>
                 <select class="form-select form-select-sm" id="channelFilter" name="channelFilter">
-                    <option value="">All Channels</option>
+                    <option value="">Todos os Canais</option>
                     <!-- Options loaded dynamically -->
                 </select>
             </div>
             <div class="mb-3">
-                <label for="startDateTime" class="form-label">Start Date & Time</label>
+                <label for="startDateTime" class="form-label">Data e Hora de Início</label>
                 <input type="datetime-local" class="form-control form-control-sm" id="startDateTime"
                     name="startDateTime">
             </div>
             <div class="mb-3">
-                <label for="endDateTime" class="form-label">End Date & Time</label>
+                <label for="endDateTime" class="form-label">Data e Hora de Fim</label>
                 <input type="datetime-local" class="form-control form-control-sm" id="endDateTime" name="endDateTime">
             </div>
             <div class="d-flex justify-content-end mb-2">
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="clearDateRange">
-                    <i class="bi bi-x-circle"></i> Clear Dates
+                    <i class="bi bi-x-circle"></i> Limpar Datas
                 </button>
             </div>
             <div class="mb-3">
-                <label for="minContacts" class="form-label">Min Contacts</label>
+                <label for="minContacts" class="form-label">Min Contactos</label>
                 <input type="number" class="form-control form-control-sm" id="minContacts" name="minContacts" value="1"
                     min="1">
             </div>
             <button type="submit" class="btn btn-primary btn-sm w-100">
-                <i class="bi bi-funnel"></i> Apply Filters
+                <i class="bi bi-funnel"></i> Aplicar Filtros
             </button>
         </form>
     </div>
 
     <!-- Map Stats -->
     <div class="sidebar-section">
-        <h6><i class="bi bi-bar-chart"></i> Statistics</h6>
+        <h6><i class="bi bi-bar-chart"></i> Estatísticas</h6>
         <div id="mapStats" class="stats-content">
             <div><strong>Nodes:</strong> <span id="statsNodes">0</span></div>
-            <div><strong>With Location:</strong> <span id="statsWithLocation">0</span></div>
+            <div><strong>Com Localização:</strong> <span id="statsWithLocation">0</span></div>
             <div><strong>RF Links:</strong> <span id="statsLinks">0</span></div>
-            <div><strong>Last Update:</strong> <span id="statsLastUpdate">--</span></div>
+            <div><strong>Última Atualização:</strong> <span id="statsLastUpdate">--</span></div>
         </div>
     </div>
 
@@ -159,15 +159,15 @@ controls_section, stats_section, legend_section, sidebar_styles %}
 
     <!-- Hop depth selector (shown only when a node is selected) -->
     <div class="sidebar-section" id="hopDepthSection" style="display: none;">
-        <h6><i class="bi bi-stack"></i> Hop Depth</h6>
-        <div class="small text-muted mb-2">Choose how many RF hops from the selected node remain visible.</div>
+        <h6><i class="bi bi-stack"></i> Profundidade de Hops</h6>
+        <div class="small text-muted mb-2">Escolha quantos saltos de RF do Node selecionado permanecem visíveis.</div>
         <select class="form-select form-select-sm" id="hopDepthSelect">
             <option value="1" selected>1 hop</option>
             <option value="2">2 hops</option>
             <option value="3">3 hops</option>
             <option value="4">4 hops</option>
             <option value="5">5 hops</option>
-            <option value="999">All</option>
+            <option value="999">Todos</option>
         </select>
     </div>
 
@@ -191,17 +191,17 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     {"type": "span", "class": "signal-indicator bg-success", "content": "", "text": "Excellent coverage"},
     {"type": "span", "class": "signal-indicator bg-warning", "content": "", "text": "Good coverage"},
     {"type": "span", "class": "signal-indicator bg-danger", "content": "", "text": "Limited coverage"},
-    {"type": "span", "class": "legend-line", "style": "border-top: 4px solid var(--bs-primary);;", "content": "",
-    "text": "Traceroute link"},
-    {"type": "span", "class": "legend-line", "style": "border-top: 4px dashed var(--bs-primary);;", "content": "",
-    "text": "Packet link"}
+    {"type": "span", "class": "legend-line", "style": "border-top: 4px solid #0d6efd;", "content": "", "text":
+    "Traceroute link"},
+    {"type": "span", "class": "legend-line", "style": "border-top: 4px dashed #0d6efd;", "content": "", "text": "Packet
+    link"}
     ] %}
     {% call legend_section(map_legend_items) %}
     <div class="legend-item mt-2">
-        <small class="text-muted">Node colors indicate role types<br>
-            Click nodes for details<br>
-            RF links show radio connections<br>
-            Clusters group nearby nodes</small>
+        <small class="text-muted">As cores dos nodes indicam os tipos de role<br>
+            Clique nos Nodes para obter detalhes<br>
+            Os links RF mostram as ligações de rádio<br>
+            Os clusters agrupam os Nodes próximos</small>
     </div>
     {% endcall %}
     {% endcall %}
@@ -221,12 +221,8 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         right: 0;
         bottom: 0;
         display: flex;
-        background: #f8f9fa;
+        background: var(--bs-body-bg);
         z-index: 1;
-    }
-
-    [data-bs-theme=dark] .map-container {
-        background: var(--bs-tertiary-bg);
     }
 
     .map-main {
@@ -252,17 +248,13 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background: rgba(248, 249, 250, 0.9);
+        background: rgba(var(--bs-body-bg-rgb), 0.9);
         z-index: 100;
-    }
-
-    [data-bs-theme=dark] .loading-overlay,
-    [data-bs-theme=dark] .error-overlay {
-        background: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
     }
 
     .error-overlay {
-        color: #dc3545;
+        color: var(--bs-danger);
     }
 
     .node-list-container {
@@ -276,24 +268,23 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     }
 
     .node-list-item {
-        border: 1px solid #dee2e6;
+        border: 1px solid var(--bs-border-color);
         border-radius: 0.375rem;
         padding: 0.5rem;
         margin-bottom: 0.25rem;
         cursor: pointer;
         transition: background-color 0.2s;
         font-size: 0.875rem;
+        color: var(--bs-body-color);
     }
 
     .node-list-item:hover {
-        background-color: #f8f9fa;
-        color: var(--bs-tertiary-bg);
+        background-color: var(--bs-tertiary-bg);
     }
 
     .node-list-item.selected {
-        background-color: #e7f3ff;
+        background-color: rgba(var(--bs-primary-rgb), 0.2);
         border-color: var(--bs-primary);
-        color: var(--bs-tertiary-bg);
     }
 
     .signal-indicator {
@@ -340,8 +331,7 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     }
 
     .traceroute-link-info .fw-bold {
-        color: var(--bs-primary);
-        ;
+        color: #0d6efd;
         border-bottom: 1px solid #dee2e6;
         padding-bottom: 0.25rem;
         margin-bottom: 0.5rem;
@@ -478,6 +468,23 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     let firstDisplay = true; // prevent recenter after initial load
     let currentHopDepth = 1; // max hop depth to display around selected node
 
+    // Update map theme based on current theme setting
+    function updateMapTheme() {
+        if (!map || !lightTileLayer || !darkTileLayer) return;
+
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        const newTileLayer = isDark ? darkTileLayer : lightTileLayer;
+
+        // Remove current tile layer if it exists
+        if (currentTileLayer) {
+            map.removeLayer(currentTileLayer);
+        }
+
+        // Add new tile layer
+        newTileLayer.addTo(map);
+        currentTileLayer = newTileLayer;
+    }
+
     // Initialize the page
     document.addEventListener('DOMContentLoaded', function () {
         // Wait for jQuery to be available
@@ -485,6 +492,11 @@ controls_section, stats_section, legend_section, sidebar_styles %}
             if (typeof $ !== 'undefined') {
                 initializeInterface();
                 initMap();
+
+                // Listen for theme changes
+                window.addEventListener('themeChanged', function (event) {
+                    updateMapTheme();
+                });
             } else {
                 setTimeout(waitForJQuery, 50);
             }
@@ -617,10 +629,11 @@ controls_section, stats_section, legend_section, sidebar_styles %}
             } else {
                 const hours = parseInt(val, 10);
                 if (!isNaN(hours)) {
-                    const end = new Date();
-                    const start = new Date(end.getTime() - hours * 3600 * 1000);
+                    const now = new Date();
+                    const start = new Date(now.getTime() - hours * 3600 * 1000);
                     $('#startDateTime').val(toLocalInputValue(start));
-                    $('#endDateTime').val(toLocalInputValue(end));
+                    // Don't set end date - leave it empty to show all data up to present
+                    $('#endDateTime').val('');
                 }
             }
             applyClientSideFilters();
@@ -663,19 +676,41 @@ controls_section, stats_section, legend_section, sidebar_styles %}
 
         // Load channels on interface init
         loadPrimaryChannels();
+
+        // Trigger change events for all form fields to initialize them based on default values
+        const formFields = document.querySelectorAll('#locationFilterForm select, #locationFilterForm input');
+        formFields.forEach(field => {
+            if (field.value) {
+                // Manually trigger the change event handler
+                const event = new Event('change', { bubbles: true });
+                field.dispatchEvent(event);
+            }
+        });
     }
+
+    // Map tile layers for different themes
+    let lightTileLayer, darkTileLayer, currentTileLayer;
 
     // Initialize the map
     function initMap() {
         // Create map centered on a default location (will be updated when data loads)
         map = L.map('map').setView([40.0, -95.0], 4);
 
-        // Add Carto Positron tiles
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        // Create light and dark tile layers
+        lightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 20
-        }).addTo(map);
+        });
+
+        darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+
+        // Add appropriate tile layer based on current theme
+        updateMapTheme();
 
         // Initialize marker cluster group
         markerClusterGroup = L.markerClusterGroup({
@@ -1270,15 +1305,19 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     }
 
     function getRoleColor(role) {
+        // Get CSS custom property values from the document
+        const computedStyle = getComputedStyle(document.documentElement);
+
         switch (role) {
-            case 'CLIENT': return '#007bff'; // Blue
-            case 'CLIENT_MUTE': return '#6c757d'; // Gray
-            case 'ROUTER': return '#28a745'; // Green
-            case 'ROUTER_LATE': return '#28a745'; // Green (same as ROUTER)
-            case 'REPEATER': return '#ffc107'; // Yellow
-            case 'ROUTER_CLIENT': return '#17a2b8'; // Teal
-            case 'SENSOR': return '#e83e8c'; // Pink
-            default: return '#dc3545'; // Red for unknown/null roles
+            case 'CLIENT': return computedStyle.getPropertyValue('--bs-primary').trim(); // Blue
+            case 'CLIENT_MUTE': return computedStyle.getPropertyValue('--bs-secondary').trim(); // Gray
+            case 'CLIENT_BASE': return computedStyle.getPropertyValue('--bs-secondary').trim(); // Gray
+            case 'ROUTER': return computedStyle.getPropertyValue('--bs-success').trim(); // Green
+            case 'ROUTER_LATE': return computedStyle.getPropertyValue('--bs-success').trim(); // Green (same as ROUTER)
+            case 'REPEATER': return computedStyle.getPropertyValue('--bs-warning').trim(); // Yellow
+            case 'ROUTER_CLIENT': return computedStyle.getPropertyValue('--bs-info').trim(); // Teal
+            case 'SENSOR': return computedStyle.getPropertyValue('--bs-sensor').trim(); // Pink
+            default: return computedStyle.getPropertyValue('--bs-danger').trim(); // Red for unknown/null roles
         }
     }
 
@@ -1287,6 +1326,7 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         switch (role) {
             case 'CLIENT': return 'C';
             case 'CLIENT_MUTE': return 'CM';
+            case 'CLIENT_BASE': return 'CB';
             case 'ROUTER': return 'R';
             case 'ROUTER_LATE': return 'RL';
             case 'REPEATER': return 'RP';
@@ -1566,6 +1606,16 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         if (link.success_rate < 50) qualityClass = 'text-danger';
         else if (link.success_rate < 80) qualityClass = 'text-warning';
 
+        // Format timestamp using timezone preference
+        const formattedTime = (typeof formatTimestamp === 'function' && link.last_seen)
+            ? formatTimestamp(link.last_seen)
+            : (link.last_seen_str || 'Unknown');
+
+        // Check if both nodes have locations for line-of-sight analysis
+        const hasLocations = fromNode && toNode &&
+            fromNode.latitude && fromNode.longitude &&
+            toNode.latitude && toNode.longitude;
+
         return `
         <div class="traceroute-link-info">
             <div class="fw-bold mb-2">${link.link_type === 'packet' ? 'Direct Packet Link' : 'Traceroute RF Hop'}</div>
@@ -1573,13 +1623,18 @@ controls_section, stats_section, legend_section, sidebar_styles %}
             <div><strong>To:</strong> ${toName}</div>
             <div><strong>Success Rate:</strong> <span class="${qualityClass}">${link.success_rate.toFixed(1)}%</span></div>
             <div><strong>Attempts:</strong> ${link.total_hops_seen}</div>
-            <div><strong>Last Seen:</strong> ${link.last_seen_str}</div>
+            <div><strong>Last Seen:</strong> ${formattedTime}</div>
             ${link.avg_snr ? `<div><strong>Avg SNR:</strong> ${link.avg_snr.toFixed(1)} dB</div>` : ''}
             ${link.avg_rssi ? `<div><strong>Avg RSSI:</strong> ${link.avg_rssi.toFixed(0)} dBm</div>` : ''}
-            <div class="mt-2">
+            <div class="mt-2 d-flex gap-1">
                 <button class="btn btn-sm btn-primary" onclick="showTracerouteHistory(${link.from_node_id}, ${link.to_node_id})">
                     View History
                 </button>
+                ${hasLocations ? `
+                <button class="btn btn-sm btn-success" onclick="showLineOfSight(${link.from_node_id}, ${link.to_node_id})">
+                    <i class="bi bi-bezier"></i> Line of Sight
+                </button>
+                ` : ''}
             </div>
         </div>
     `;
@@ -1722,6 +1777,14 @@ controls_section, stats_section, legend_section, sidebar_styles %}
         // Restore original data for other operations
         nodeData = originalNodeData;
     }
+
+    // ==================== Line of Sight Analysis ====================
+
+    // Show line of sight analysis for a link between two nodes (redirects to new page)
+    function showLineOfSight(fromNodeId, toNodeId) {
+        window.open(`/line-of-sight?from=${fromNodeId}&to=${toNodeId}`, '_blank');
+    }
+
 </script>
 {% endblock %}
 

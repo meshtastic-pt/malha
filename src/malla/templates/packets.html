@@ -14,14 +14,14 @@
 <!-- Override the base template's container to make this page full-width/full-height -->
 </div> <!-- Close the base template's container -->
 
-{% call fullscreen_table_container("packetsTable", "Packets", "bi bi-envelope", "toggleSidebar") %}
+{% call fullscreen_table_container("packetsTable", "Pacotes", "bi bi-envelope", "toggleSidebar") %}
     <!-- Main table content -->
     <div id="packetsTable" class="modern-table-container"></div>
 {% endcall %}
 
 <!-- Sidebar content (will be injected into the sidebar) -->
 <div id="sidebarContent" style="display: none;">
-    {% call filter_section("filtersForm", "Packet Filters") %}
+    {% call filter_section("filtersForm", "Filtro de Pacotes") %}
         <div class="row g-3">
             <div class="col-12">
                 <label for="start_time" class="form-label">Inicio</label>
@@ -259,14 +259,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Timestamp',
                 sortable: true,
                 render: (value, row) => {
-                    return `<a href="/packet/${row.id}" class="text-decoration-none" title="Ver detalhes de pacotes">
-                                <small>${value}</small>
-                            </a>`;
+                    return renderTimestampColumn(row, 'timestamp', 'id', '/packet/{id}');
                 }
             },
             {
                 key: 'from_node',
-                title: 'From',
+                title: 'De',
                 sortable: true,
                 render: (value, row) => {
                     if (row.from_node_id) {
@@ -283,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 key: 'to_node',
-                title: 'To',
+                title: 'Para',
                 sortable: true,
                 render: (value, row) => {
                     if (row.to_node_id) {
@@ -300,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 key: 'portnum_name',
-                title: 'Type',
+                title: 'Tipo',
                 sortable: true,
                 render: (value, row) => {
                     if (value) {
@@ -459,24 +457,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             {
-                key: 'size',
-                title: 'Tamanho',
+                key: 'relay_node',
+                title: 'Relay Node',
                 sortable: true,
                 render: (value, row) => {
-                    if (row.is_grouped) {
-                        return value ? `<small class="text-info">${value}</small>` : `<span class="text-muted">N/A</span>`;
-                    } else {
-                        return value ? `<small>${value}</small>` : `<span class="text-muted">N/A</span>`;
+                    // For grouped packets, value is already a formatted string (e.g., "0a, 3f*2")
+                    if (row.is_grouped && typeof value === 'string' && value) {
+                        return `<code>${value}</code>`;
                     }
+                    // For individual packets, value is an integer
+                    if (value !== null && value !== undefined && value !== 0 && typeof value === 'number') {
+                        // Extract last byte
+                        const relayHex = (value & 0xFF).toString(16).padStart(2, '0');
+                        return `<code>${relayHex}</code>`;
+                    }
+                    return `<span class="text-muted">-</span>`;
                 }
-            }
-        ],
+            },
+          ],
 
         // Final columns that are always at the end
         actions: [
             {
                 key: 'id',
-                title: 'Actions',
+                title: 'Ações',
                 sortable: false,
                 render: (value, row) => {
                     return `<a href="/packet/${value}" class="btn btn-sm btn-outline-primary" title="View packet details">
@@ -517,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to determine which default columns to exclude for specific packet types
     function getExcludedDefaultColumns(portnum) {
         const exclusions = {
-            'TEXT_MESSAGE_APP': ['size']  // Hide size column for text messages
+            // No column exclusions currently needed
         };
         return exclusions[portnum] || [];
     }
@@ -529,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
         endpoint: '/api/packets/data',
         enableSearch: false,
         enablePagination: true,
-        pageSize: 25,
+        pageSize: 100,
         deferInitialLoad: true,  // Defer loading until after URL parameters are applied
         columns: getDynamicColumns()
     });

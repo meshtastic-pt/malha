@@ -24,10 +24,6 @@
         font-size: 0.75rem;
         font-weight: bold;
     }
-    .signal-excellent { background-color: #d4edda; color: #155724; }
-    .signal-good { background-color: #fff3cd; color: #856404; }
-    .signal-fair { background-color: #f8d7da; color: #721c24; }
-    .signal-poor { background-color: #f5c6cb; color: #721c24; }
     .protocol-badge {
         font-size: 0.75rem;
         padding: 4px 8px;
@@ -178,7 +174,7 @@
                             <table class="table table-sm">
                                 <tr>
                                     <th>Visto em:</th>
-                                    <td>{{ node.last_seen }}</td>
+                                    <td class="timestamp-display" data-timestamp="{{ node.last_seen_timestamp }}">{{ node.last_seen }}</td>
                                 </tr>
                                 <tr>
                                     <th>SNR Médio:</th>
@@ -262,7 +258,7 @@
                             <table class="table table-sm">
                                 <tr>
                                     <th>Localização atualizada em:</th>
-                                    <td>{{ location.timestamp }}</td>
+                                    <td class="timestamp-display" data-timestamp="{{ location.timestamp_unix }}">{{ location.timestamp }}</td>
                                 </tr>
                                 <tr>
                                     <th>Recebido em:</th>
@@ -307,9 +303,9 @@
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i>
                                     O mapa mostra as coordenadas históricas do GPS reportadas por este node.
-                                    Locais recentes são mostrados a <span style="color: #28a745;">verde</span>,
-                                    locais antigos são mostrados a <span style="color: #dc3545;">vermelho</span>.
-                                    Clicar markers para os detalhes.
+                                    Locais recentes são mostrados a <span class="text-success">verde</span>,
+                                    locais antigos são mostrados a <span class="text-danger">vermelho</span>.
+                                    Clique nos markers para ver detalhes.
                                 </small>
                             </div>
                             <div class="col-md-4 text-end">
@@ -324,6 +320,9 @@
 
             <!-- Direct Receptions Graph (Gateway only) -->
             {% include "components/direct_receptions.html" %}
+
+            <!-- Relay Node Analysis (Gateway only) -->
+            {% include "components/relay_node_analysis.html" %}
 
             <!-- Protocol Breakdown -->
             {% if protocols %}
@@ -725,6 +724,9 @@
 <!-- Direct Receptions Chart Component -->
 <script src="{{ url_for('static', filename='js/direct_receptions.js') }}"></script>
 
+<!-- Relay Node Analysis Component -->
+<script src="{{ url_for('static', filename='js/relay_node_analysis.js') }}"></script>
+
 <!-- Location data for JavaScript -->
 {% if location %}
 <script id="location-data" type="application/json">
@@ -775,8 +777,16 @@ function loadCurrentLocationMap() {
     ], 15);
 
     // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // Add theme-appropriate tile layer
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    const tileUrl = isDark
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+    L.tileLayer(tileUrl, {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
     }).addTo(currentMap);
 
     // Add marker for current location
@@ -831,8 +841,16 @@ async function loadLocationHistoryMap() {
         ], 13);
 
         // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // Add theme-appropriate tile layer
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        const tileUrl = isDark
+            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+        L.tileLayer(tileUrl, {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
         }).addTo(map);
 
         // Calculate age-based colors and add markers
@@ -874,13 +892,17 @@ async function loadLocationHistoryMap() {
             }).addTo(map);
 
             // Create popup content
+            // Format timestamp using timezone preference
+            const formattedTime = typeof formatTimestamp === 'function'
+                ? formatTimestamp(location.timestamp)
+                : location.timestamp_str;
+
             const popupContent = `
                 <div>
                     <strong>Location #${data.location_history.length - index}</strong><br>
-                    <small class="text-muted">${location.timestamp_str}</small><br>
+                    <small class="text-muted">${formattedTime}</small><br>
                     <strong>Coordinates:</strong> ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}<br>
                     ${location.altitude ? `<strong>Altitude:</strong> ${location.altitude}m<br>` : ''}
-                    <small><strong>Recorded:</strong> ${location.timestamp_str}</small>
                 </div>
             `;
             marker.bindPopup(popupContent);
@@ -939,6 +961,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (nodeId && window.DirectReceptionsChart) {
         directReceptionsChart = new DirectReceptionsChart(nodeId);
         directReceptionsChart.initialize();
+    }
+
+    // Format all timestamps based on current timezone preference
+    // This ensures timestamps on the detail page respect the timezone setting
+    if (typeof updateAllTimestamps === 'function') {
+        updateAllTimestamps();
     }
 });
 </script>

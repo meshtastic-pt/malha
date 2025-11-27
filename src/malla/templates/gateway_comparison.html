@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Gateway Comparison - Malla{% endblock %}
+{% block title %}Comparação de Gateways - Malla{% endblock %}
 
 {% block extra_css %}
 <style>
     .gateway-selector {
-        background: #f8f9fa;
+        background: var(--bs-tertiary-bg);
         border-radius: 0.375rem;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -21,8 +21,8 @@
     }
 
     .stats-card {
-        background: #fff;
-        border: 1px solid #dee2e6;
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
         border-radius: 0.375rem;
         padding: 1.5rem;
         margin-bottom: 1rem;
@@ -33,7 +33,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 0.5rem 0;
-        border-bottom: 1px solid #f1f3f4;
+        border-bottom: 1px solid var(--bs-border-color);
     }
 
     .stat-row:last-child {
@@ -85,8 +85,11 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1><i class="bi bi-router"></i> Gateway Comparison</h1>
-        <p class="text-muted">Compare signal quality between two gateways by analyzing their common received packets. Only packets with the same hop limit are compared to exclude retransmissions.</p>
+        <h1><i class="bi bi-router"></i> Comparação de Gateways</h1>
+        <p class="text-muted">
+            Compare a qualidade de sinal entre dois gateways analisando os pacotes recebidos em comum.
+            Apenas são comparados pacotes com o mesmo limite de hops para excluir retransmissões.
+        </p>
     </div>
 </div>
 
@@ -97,7 +100,7 @@
             <div class="col-md-5">
                 <label for="gateway1" class="form-label">Gateway 1</label>
                 <select class="form-select" id="gateway1" name="gateway1" required>
-                    <option value="">Select first gateway...</option>
+                    <option value="">Selecione o primeiro gateway...</option>
                     {% for gateway in available_gateways %}
                     <option value="{{ gateway.id }}" {% if gateway.id == gateway1_id %}selected{% endif %}>
                         {{ gateway.display_name }}
@@ -115,7 +118,7 @@
             <div class="col-md-5">
                 <label for="gateway2" class="form-label">Gateway 2</label>
                 <select class="form-select" id="gateway2" name="gateway2" required>
-                    <option value="">Select second gateway...</option>
+                    <option value="">Selecione o segundo gateway...</option>
                     {% for gateway in available_gateways %}
                     <option value="{{ gateway.id }}" {% if gateway.id == gateway2_id %}selected{% endif %}>
                         {{ gateway.display_name }}
@@ -128,29 +131,29 @@
         <!-- Optional Filters -->
         <div class="row mt-3">
             <div class="col-md-3">
-                <label for="start_time" class="form-label">Start Time</label>
+                <label for="start_time" class="form-label">Hora de Início</label>
                 <input type="datetime-local" class="form-control" id="start_time" name="start_time"
                        value="{{ filters.start_time if filters.start_time }}">
             </div>
             <div class="col-md-3">
-                <label for="end_time" class="form-label">End Time</label>
+                <label for="end_time" class="form-label">Hora de Fim</label>
                 <input type="datetime-local" class="form-control" id="end_time" name="end_time"
                        value="{{ filters.end_time if filters.end_time }}">
             </div>
             <div class="col-md-3">
-                <label for="from_node" class="form-label">From Node</label>
+                <label for="from_node" class="form-label">Do Node</label>
                 <select class="form-select" id="from_node" name="from_node">
-                    <option value="">All Nodes</option>
+                    <option value="">Todos os Nodes</option>
                     {% for node in available_nodes %}
                     <option value="{{ node.id }}" {{ 'selected' if filters.from_node == node.id|string }}>
-                        {{ node.name }} ({{ node.packet_count }} packets)
+                        {{ node.name }} ({{ node.packet_count }} pacotes)
                     </option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-3 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-search"></i> Compare Gateways
+                    <i class="bi bi-search"></i> Comparar Gateways
                 </button>
             </div>
         </div>
@@ -167,9 +170,9 @@
 <!-- Comparison Results -->
 <div class="row">
     <div class="col-12">
-        <h2>Comparison Results</h2>
+        <h2>Resultados da Comparação</h2>
         <p>
-            Comparing <span class="gateway-badge gateway1-badge">{{ comparison_data.gateway1_name }}</span>
+            A comparar <span class="gateway-badge gateway1-badge">{{ comparison_data.gateway1_name }}</span>
             vs <span class="gateway-badge gateway2-badge">{{ comparison_data.gateway2_name }}</span>
         </p>
     </div>
@@ -179,16 +182,16 @@
 <div class="row">
     <div class="col-md-6">
         <div class="stats-card">
-            <h5><i class="bi bi-bar-chart"></i> Signal Statistics</h5>
+            <h5><i class="bi bi-bar-chart"></i> Estatísticas de Sinal</h5>
 
             <div class="stat-row">
-                <span class="stat-label">Common Packets</span>
+                <span class="stat-label">Pacotes Comuns</span>
                 <span class="stat-value">{{ comparison_data.statistics.total_common_packets }}</span>
             </div>
 
             {% if comparison_data.statistics.get('rssi_diff_avg') is not none %}
             <div class="stat-row">
-                <span class="stat-label">Avg RSSI Difference</span>
+                <span class="stat-label">Diferença Média de RSSI</span>
                 <span class="stat-value {% if comparison_data.statistics.rssi_diff_avg > 0 %}positive-diff{% elif comparison_data.statistics.rssi_diff_avg < 0 %}negative-diff{% else %}neutral-diff{% endif %}">
                     {{ "%.1f"|format(comparison_data.statistics.rssi_diff_avg) }} dBm
                 </span>
@@ -197,7 +200,7 @@
 
             {% if comparison_data.statistics.get('snr_diff_avg') is not none %}
             <div class="stat-row">
-                <span class="stat-label">Avg SNR Difference</span>
+                <span class="stat-label">Diferença Média de SNR</span>
                 <span class="stat-value {% if comparison_data.statistics.snr_diff_avg > 0 %}positive-diff{% elif comparison_data.statistics.snr_diff_avg < 0 %}negative-diff{% else %}neutral-diff{% endif %}">
                     {{ "%.1f"|format(comparison_data.statistics.snr_diff_avg) }} dB
                 </span>
@@ -208,32 +211,32 @@
 
     <div class="col-md-6">
         <div class="stats-card">
-            <h5><i class="bi bi-router"></i> Gateway Performance</h5>
+            <h5><i class="bi bi-router"></i> Desempenho dos Gateways</h5>
 
             {% if comparison_data.statistics.get('gateway1_rssi_avg') is not none %}
             <div class="stat-row">
-                <span class="stat-label">{{ comparison_data.gateway1_name }} Avg RSSI</span>
+                <span class="stat-label">RSSI Médio de {{ comparison_data.gateway1_name }}</span>
                 <span class="stat-value">{{ "%.1f"|format(comparison_data.statistics.gateway1_rssi_avg) }} dBm</span>
             </div>
             {% endif %}
 
             {% if comparison_data.statistics.get('gateway2_rssi_avg') is not none %}
             <div class="stat-row">
-                <span class="stat-label">{{ comparison_data.gateway2_name }} Avg RSSI</span>
+                <span class="stat-label">RSSI Médio de {{ comparison_data.gateway2_name }}</span>
                 <span class="stat-value">{{ "%.1f"|format(comparison_data.statistics.gateway2_rssi_avg) }} dBm</span>
             </div>
             {% endif %}
 
             {% if comparison_data.statistics.get('gateway1_snr_avg') is not none %}
             <div class="stat-row">
-                <span class="stat-label">{{ comparison_data.gateway1_name }} Avg SNR</span>
+                <span class="stat-label">SNR Médio de {{ comparison_data.gateway1_name }}</span>
                 <span class="stat-value">{{ "%.1f"|format(comparison_data.statistics.gateway1_snr_avg) }} dB</span>
             </div>
             {% endif %}
 
             {% if comparison_data.statistics.get('gateway2_snr_avg') is not none %}
             <div class="stat-row">
-                <span class="stat-label">{{ comparison_data.gateway2_name }} Avg SNR</span>
+                <span class="stat-label">SNR Médio de {{ comparison_data.gateway2_name }}</span>
                 <span class="stat-value">{{ "%.1f"|format(comparison_data.statistics.gateway2_snr_avg) }} dB</span>
             </div>
             {% endif %}
@@ -246,7 +249,7 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5><i class="bi bi-graph-up"></i> RSSI Comparison</h5>
+                <h5><i class="bi bi-graph-up"></i> Comparação de RSSI</h5>
             </div>
             <div class="card-body">
                 <div id="rssiScatterChart" class="chart-container"></div>
@@ -257,7 +260,7 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5><i class="bi bi-graph-up"></i> SNR Comparison</h5>
+                <h5><i class="bi bi-graph-up"></i> Comparação de SNR</h5>
             </div>
             <div class="card-body">
                 <div id="snrScatterChart" class="chart-container"></div>
@@ -270,7 +273,7 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5><i class="bi bi-bar-chart"></i> RSSI Difference Distribution</h5>
+                <h5><i class="bi bi-bar-chart"></i> Distribuição da Diferença de RSSI</h5>
             </div>
             <div class="card-body">
                 <div id="rssiDiffHistogram" class="chart-container"></div>
@@ -281,7 +284,7 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5><i class="bi bi-bar-chart"></i> SNR Difference Distribution</h5>
+                <h5><i class="bi bi-bar-chart"></i> Distribuição da Diferença de SNR</h5>
             </div>
             <div class="card-body">
                 <div id="snrDiffHistogram" class="chart-container"></div>
@@ -295,7 +298,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5><i class="bi bi-clock"></i> RSSI Over Time</h5>
+                <h5><i class="bi bi-clock"></i> RSSI ao Longo do Tempo</h5>
             </div>
             <div class="card-body">
                 <div id="rssiTimelineChart" class="chart-container"></div>
@@ -308,7 +311,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5><i class="bi bi-clock"></i> SNR Over Time</h5>
+                <h5><i class="bi bi-clock"></i> SNR ao Longo do Tempo</h5>
             </div>
             <div class="card-body">
                 <div id="snrTimelineChart" class="chart-container"></div>
@@ -323,23 +326,23 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5><i class="bi bi-table"></i> Common Packets ({{ comparison_data.statistics.total_common_packets }} total)</h5>
+                <h5><i class="bi bi-table"></i> Pacotes Comuns ({{ comparison_data.statistics.total_common_packets }} no total)</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover" id="commonPacketsTable">
                         <thead>
                             <tr>
-                                <th>Time</th>
-                                <th>From Node</th>
-                                <th>Port</th>
-                                <th>Hop Limit</th>
-                                <th>{{ comparison_data.gateway1_name }} RSSI</th>
-                                <th>{{ comparison_data.gateway2_name }} RSSI</th>
-                                <th>RSSI Diff</th>
-                                <th>{{ comparison_data.gateway1_name }} SNR</th>
-                                <th>{{ comparison_data.gateway2_name }} SNR</th>
-                                <th>SNR Diff</th>
+                                <th>Hora</th>
+                                <th>Node de Origem</th>
+                                <th>Porta</th>
+                                <th>Limite de Hops</th>
+                                <th>RSSI de {{ comparison_data.gateway1_name }}</th>
+                                <th>RSSI de {{ comparison_data.gateway2_name }}</th>
+                                <th>Dif. RSSI</th>
+                                <th>SNR de {{ comparison_data.gateway1_name }}</th>
+                                <th>SNR de {{ comparison_data.gateway2_name }}</th>
+                                <th>Dif. SNR</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -347,7 +350,7 @@
                             <tr>
                                 <td>{{ packet.timestamp_str }}</td>
                                 <td>{{ packet.from_node_name or packet.from_node_id }}</td>
-                                <td>{{ packet.portnum_name or 'Unknown' }}</td>
+                                <td>{{ packet.portnum_name or 'Desconhecido' }}</td>
                                 <td>{{ packet.hop_limit }}</td>
                                 <td>{{ packet.gateway1_rssi }} dBm</td>
                                 <td>{{ packet.gateway2_rssi }} dBm</td>
@@ -364,8 +367,9 @@
                         </tbody>
                     </table>
                 </div>
+
                 {% if comparison_data.common_packets|length > 100 %}
-                <p class="text-muted mt-2">Showing first 100 packets. Total: {{ comparison_data.statistics.total_common_packets }}</p>
+                <p class="text-muted mt-2">A mostrar os primeiros 100 pacotes. Total: {{ comparison_data.statistics.total_common_packets }}</p>
                 {% endif %}
             </div>
         </div>
@@ -380,12 +384,12 @@
 
 {% elif gateway1_id and gateway2_id %}
 <div class="alert alert-info">
-    <i class="bi bi-info-circle"></i> Please select two different gateways to compare.
+    <i class="bi bi-info-circle"></i> Por favor selecione dois gateways diferentes para comparar.
 </div>
 
 {% else %}
 <div class="alert alert-info">
-    <i class="bi bi-info-circle"></i> Select two gateways above to start the comparison.
+    <i class="bi bi-info-circle"></i> Selecione dois gateways acima para iniciar a comparação.
 </div>
 {% endif %}
 
