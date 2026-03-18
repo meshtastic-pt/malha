@@ -300,6 +300,8 @@ The following keys are recognised:
 | `mqtt_topic_suffix` | str | `"/+/+/+/#"`                           | MQTT topic suffix pattern.                     | `MALLA_MQTT_TOPIC_SUFFIX` |
 | `default_channel_key` | str | `"1PG7OiApB1nwvP+rz05pAQ=="`         | Default channel key(s) for decryption (base64). Supports comma-separated list of keys - each will be tried in order until successful. | `MALLA_DEFAULT_CHANNEL_KEY` |
 | `data_retention_hours` | int | `0`                                     | Number of hours after which to delete old data (0 = never delete). Automatically cleans up packet_history and node_info records older than specified hours. | `MALLA_DATA_RETENTION_HOURS` |
+| `gunicorn_workers` | int | `null` | Number of Gunicorn worker processes. `null` means auto-detect based on CPU cores. | `MALLA_GUNICORN_WORKERS` |
+| `gunicorn_threads` | int | `1` | Number of threads per Gunicorn worker. Increase this for better concurrency, especially on I/O bound tasks. | `MALLA_GUNICORN_THREADS` |
 
 Environment variables **always override** values coming from YAML file.
 
@@ -324,6 +326,34 @@ export MALLA_DATA_RETENTION_HOURS=168
 ```
 
 Set to `0` (default) to disable cleanup completely.
+
+## Embedding the Map
+
+The map view can be embedded in other websites or used in a narrower width by collapsing the sidebar by default. This is particularly useful when you want to showcase your mesh network on your website or integrate it into other pages.
+
+### URL Parameter
+
+Add `?sidebar-collapsed=true` or `?sidebar-collapsed=1` to the map URL to collapse the sidebar by default:
+
+```
+https://your-malla-instance.com/map?sidebar-collapsed=true
+```
+
+The sidebar can still be expanded by users clicking the toggle button, giving them access to filters, statistics, and controls when needed.
+
+### Embedding Example
+
+```html
+<iframe 
+    src="https://your-malla-instance.com/map?sidebar-collapsed=true" 
+    width="100%" 
+    height="600" 
+    frameborder="0"
+    style="border: 0;">
+</iframe>
+```
+
+This approach maximizes the visible map area while keeping full functionality accessible through the expandable sidebar.
 
 ## Contributing
 
