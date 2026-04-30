@@ -194,7 +194,7 @@ class TestTables:
         expect(to_node_input).to_be_visible()
 
         # Check that it has the node picker functionality
-        expect(to_node_input).to_have_attribute("placeholder", "All destination nodes")
+        expect(to_node_input).to_have_attribute("placeholder", "Todos destinos")
 
     def test_packets_packet_types_complete(self, page: Page, test_server_url: str):
         """Test that all packet types are available in the dropdown."""
@@ -209,12 +209,12 @@ class TestTables:
 
         # Check that all expected packet types are present
         expected_types = [
-            "All Types",
+            "Todos Tipos",
             "Admin",
             "ATAK Plugin",
             "Neighbor Info",
             "Node Info",
-            "Position",
+            "Posição",
             "Range Test",
             "Routing",
             "Store and Forward",
@@ -394,7 +394,7 @@ class TestTables:
 
         # Check that key hardware models are present
         expected_models = [
-            "All Hardware",
+            "Todo o Hardware",
             "T-Beam",
             "Heltec V3",
             "RAK4631",
@@ -422,7 +422,7 @@ class TestTables:
 
         # Check that all expected roles are present
         expected_roles = [
-            "All Roles",
+            "Todas as Roles",
             "Client",
             "Client Mute",
             "Lost And Found",
@@ -633,7 +633,7 @@ class TestTables:
         hw_select = page.locator("#hw_model")
         hw_select.select_option(
             index=1
-        )  # Select first hardware model (not "All Hardware")
+        )  # Select first hardware model (not "Todo o Hardware")
 
         # Apply filters
         apply_button = page.locator("#applyFilters")
@@ -645,8 +645,8 @@ class TestTables:
         # Get filtered row count (should be less than initial)
         filtered_rows = page.locator(".modern-table tbody tr").count()
 
-        # Now clear the filter by selecting "All Hardware"
-        hw_select.select_option(value="")  # Select "All Hardware" option
+        # Now clear the filter by selecting "Todo o Hardware"
+        hw_select.select_option(value="")  # Select "Todo o Hardware" option
 
         # Apply filters again
         apply_button.click()

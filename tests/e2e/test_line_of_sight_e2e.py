@@ -34,7 +34,7 @@ class TestLineOfSightE2E:
         page.wait_for_load_state("networkidle")
 
         # Verify page elements are present
-        expect(page.locator("h1")).to_contain_text("Line of Sight Analysis")
+        expect(page.locator("h1")).to_contain_text("Análise de Linha de Visão")
         expect(page.locator("#fromNode")).to_be_visible()
         expect(page.locator("#toNode")).to_be_visible()
         expect(page.locator("#analyzeBtn")).to_be_visible()
@@ -82,7 +82,7 @@ class TestLineOfSightE2E:
         page.wait_for_timeout(3000)
 
         # Page should load without errors
-        expect(page.locator("h1")).to_contain_text("Line of Sight Analysis")
+        expect(page.locator("h1")).to_contain_text("Análise de Linha de Visão")
 
         # Even if nodes don't exist, page should handle gracefully
         # (no JavaScript errors should occur)
@@ -198,7 +198,7 @@ class TestLineOfSightE2E:
         page.wait_for_load_state("networkidle")
 
         # Verify it's the line-of-sight page
-        expect(page.locator("h1")).to_contain_text("Line of Sight Analysis")
+        expect(page.locator("h1")).to_contain_text("Análise de Linha de Visão")
 
     def test_line_of_sight_distance_hint(self, page: Page, test_server_url):
         """Test that distance hint element exists and works with JavaScript selection."""

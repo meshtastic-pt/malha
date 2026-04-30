@@ -44,7 +44,7 @@ class TestPacketsFilters:
         portnum_select = page.locator("#portnum")
         expect(portnum_select).to_be_visible()
 
-        # Should have the default "All Types" option plus loaded types
+        # Should have the default "Todos Tipos" option plus loaded types
         options = portnum_select.locator("option")
         option_count = options.count()
         assert option_count > 1, (
@@ -56,7 +56,7 @@ class TestPacketsFilters:
         print(f"Available packet type options: {all_options_text}")
 
         # Should have at least these common types
-        expected_types = ["All Types", "Text Messages", "Position", "Node Info"]
+        expected_types = ["Todos Tipos", "Text Messages", "Posição", "Node Info"]
         for expected_type in expected_types:
             assert any(expected_type in option for option in all_options_text), (
                 f"Expected to find '{expected_type}' in options: {all_options_text}"
@@ -158,9 +158,9 @@ class TestPacketsFilters:
         ]
         print(f"Updated headers after TEXT_MESSAGE_APP: {updated_header_texts}")
 
-        # Should have "Message" column for text messages
-        assert "Message" in updated_header_texts, (
-            f"Expected 'Message' column for TEXT_MESSAGE_APP, got: {updated_header_texts}"
+        # Should have "SMS" column for text messages
+        assert "SMS" in updated_header_texts, (
+            f"Expected 'SMS' column for TEXT_MESSAGE_APP, got: {updated_header_texts}"
         )
 
         # Should have "Channel" column (always visible)
@@ -171,7 +171,7 @@ class TestPacketsFilters:
             f"Expected 'Channel' column, got: {updated_header_texts}"
         )
 
-        # Switch back to "All Types" and verify columns change back
+        # Switch back to "Todos Tipos" and verify columns change back
         portnum_select.select_option("")  # All Types
 
         # Wait for columns to update
@@ -185,9 +185,9 @@ class TestPacketsFilters:
         ]
         print(f"Final headers after clearing filter: {final_header_texts}")
 
-        # Should NOT have "Message" column when not filtering by text messages
-        assert "Message" not in final_header_texts, (
-            f"Expected 'Message' column to be hidden when not filtering text messages, got: {final_header_texts}"
+        # Should NOT have "SMS" column when not filtering by text messages
+        assert "SMS" not in final_header_texts, (
+            f"Expected 'SMS' column to be hidden when not filtering text messages, got: {final_header_texts}"
         )
 
         print("✅ Packet type column switching test passed")
@@ -216,10 +216,10 @@ class TestPacketsFilters:
         header_texts = [headers.nth(i).inner_text() for i in range(header_count)]
         print(f"Headers after URL parameter restoration: {header_texts}")
 
-        # Should have "Message" column for text messages
-        message_column_found = any("Message" in header for header in header_texts)
+        # Should have "SMS" column for text messages
+        message_column_found = any("SMS" in header for header in header_texts)
         assert message_column_found, (
-            f"ISSUE FOUND: Expected 'Message' column when loading with portnum={test_portnum} URL parameter, "
+            f"ISSUE FOUND: Expected 'SMS' column when loading with portnum={test_portnum} URL parameter, "
             f"but got headers: {header_texts}. This indicates columns are not being updated when URL parameters are restored."
         )
 
@@ -276,8 +276,8 @@ class TestPacketsFilters:
                 )  # Type column (0-indexed: timestamp=0, from=1, to=2, type=3)
                 type_text = type_cell.inner_text()
                 print(f"Row {i} type: {type_text}")
-                # Position packets should show "Position" badge
-                assert "Position" in type_text, (
+                # Position packets should show "Posição" badge
+                assert "Posição" in type_text, (
                     f"Frontend row {i} should show Position type, got: {type_text}"
                 )
 
@@ -667,7 +667,7 @@ class TestPacketsFilters:
         for i in range(option_count):
             value = options.nth(i).get_attribute("value") or ""
             text = options.nth(i).inner_text()
-            if value:  # Skip the "All Types" option
+            if value:  # Skip the "Todos Tipos" option
                 option_values.append((value, text))
 
         print(f"Loaded {len(option_values)} packet types:")
@@ -791,10 +791,10 @@ class TestPacketsFilters:
         header_texts = [headers.nth(i).inner_text() for i in range(header_count)]
         print(f"Headers after dropdown change: {header_texts}")
 
-        # Should have "Message" column for text messages
-        message_column_found = any("Message" in header for header in header_texts)
+        # Should have "SMS" column for text messages
+        message_column_found = any("SMS" in header for header in header_texts)
         assert message_column_found, (
-            f"Expected 'Message' column after changing to TEXT_MESSAGE_APP, got: {header_texts}"
+            f"Expected 'SMS' column after changing to TEXT_MESSAGE_APP, got: {header_texts}"
         )
 
         # CRITICAL TEST: Check that the data was actually filtered automatically

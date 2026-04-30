@@ -352,7 +352,7 @@ class TestGraphInteractivity:
         print(f"State after dragging: {dragged_state}")
 
         # Click the center graph button
-        page.click("button:has-text('Center Graph')")
+        page.click("button:has-text('Centrar Gráfico')")
 
         # Wait for the centering animation to complete
         page.wait_for_timeout(1000)
@@ -528,7 +528,7 @@ class TestGraphAdvancedFeatures:
         assert graph_svg.is_visible(), "Graph SVG should be visible"
 
         # Test that the center graph button works
-        center_button = page.locator("button:has-text('Center Graph')")
+        center_button = page.locator("button:has-text('Centrar Gráfico')")
         if center_button.is_visible():
             # Get initial transform
             initial_transform = page.evaluate("""
@@ -633,7 +633,7 @@ class TestGraphAdvancedFeatures:
 
         # Test that drag still works after centering by using the center graph button
         # This is a more reliable test than trying to drag at specific coordinates
-        page.click("button:has-text('Center Graph')")
+        page.click("button:has-text('Centrar Gráfico')")
         page.wait_for_timeout(1000)
 
         # Get state after using center button
@@ -862,7 +862,7 @@ class TestGraphResolutions:
             """)
 
             # Click center graph button
-            page.click("button:has-text('Center Graph')")
+            page.click("button:has-text('Centrar Gráfico')")
             page.wait_for_timeout(1000)
 
             # Get state after centering

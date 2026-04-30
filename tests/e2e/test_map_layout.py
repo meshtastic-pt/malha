@@ -19,7 +19,7 @@ class TestMapLayout:
         page.goto(f"{test_server_url}/map")
 
         # Wait for the page to load - check for sidebar header specifically
-        expect(page.locator("#sidebar h5")).to_contain_text("Network Map")
+        expect(page.locator("#sidebar h5")).to_contain_text("Mapa da Rede")
 
         # Check that the map container is present
         expect(page.locator("#map")).to_be_visible()
@@ -219,7 +219,7 @@ class TestMapLayout:
         page.wait_for_selector("#mapLoading", state="hidden", timeout=DEFAULT_TIMEOUT)
 
         # Test fit all nodes button
-        fit_button = page.locator("button:has-text('Fit All Nodes')")
+        fit_button = page.locator("button:has-text('Ajustar todos os Nodes')")
         expect(fit_button).to_be_visible()
         fit_button.click()
 

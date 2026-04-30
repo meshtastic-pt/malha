@@ -51,11 +51,11 @@ class TestLineOfSight:
         page.wait_for_load_state("networkidle")
 
         # Verify we're on the line-of-sight page
-        expect(page.locator("h1")).to_contain_text("Line of Sight Analysis")
+        expect(page.locator("h1")).to_contain_text("Análise de Linha de Visão")
 
         # Verify the route accepts parameters
         page.goto(f"{test_server_url}/line-of-sight?from=123&to=456")
         page.wait_for_load_state("networkidle")
 
         # Should still load without error
-        expect(page.locator("h1")).to_contain_text("Line of Sight Analysis")
+        expect(page.locator("h1")).to_contain_text("Análise de Linha de Visão")
