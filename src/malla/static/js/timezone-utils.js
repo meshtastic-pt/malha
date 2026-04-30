@@ -161,23 +161,24 @@ function escapeHtml(str) {
  * @param {string} timestampField - Field name containing the timestamp (default: 'timestamp')
  * @param {string} idField - Field name for the row ID (default: 'id')
  * @param {string} linkPath - Path template for link (default: '/packet/{id}')
- * @returns {string} HTML for timestamp cell
+ * @returns {Node} link for timestamp cell
  */
 function renderTimestampColumn(row, timestampField = 'timestamp', idField = 'id', linkPath = '/packet/{id}') {
     const timestamp = row[timestampField];
     const formattedTime = formatTimestamp(timestamp);
     const id = row[idField];
 
-    // Escape HTML to prevent XSS
-    const escapedId = escapeHtml(id);
-    const escapedFormattedTime = escapeHtml(formattedTime);
-    const escapedTimestamp = escapeHtml(timestamp);
+    const href = safePath(linkPath.replace('{id}', encodeURIComponent(String(id))));
+    const small = el('small', {
+        className: 'timestamp-display',
+        dataset: { timestamp: timestamp }
+    }, formattedTime);
 
-    const link = linkPath.replace('{id}', escapedId);
-
-    return `<a href="${link}" class="text-decoration-none" title="View details">
-                <small class="timestamp-display" data-timestamp="${escapedTimestamp}">${escapedFormattedTime}</small>
-            </a>`;
+    return el('a', {
+        href,
+        className: 'text-decoration-none',
+        title: 'View details'
+    }, small);
 }
 
 /**
@@ -209,6 +210,12 @@ function updateAllTimestamps() {
  * Listen for timezone changes and update timestamps
  */
 window.addEventListener('timezoneChanged', function(event) {
+    // Pages that manage their own timestamps (e.g. Chat) can set
+    // event.detail.skipReload = true to prevent the full page reload.
+    if (event.detail && event.detail.skipReload) {
+        updateAllTimestamps();
+        return;
+    }
     // Reload the page when timezone changes.
     // Rationale: Reloading ensures all server-rendered timestamps and dynamic content
     // are consistently updated, avoiding the need to track and update every timestamp
