@@ -51,6 +51,18 @@ class AppConfig:
     # Number of hours after which to delete old data (0 = never delete)
     data_retention_hours: int = 0
 
+    # Reverse proxy settings
+    # Comma-separated IPs of trusted reverse proxies. When set, ProxyFix trusts
+    # one trusted proto hop, and Gunicorn is configured to accept forwarded
+    # headers only from these exact proxy IPs.
+    # Corresponding env var: MALLA_TRUSTED_PROXY_IPS
+    trusted_proxy_ips: str | None = None
+
+    # Header carrying the original client IP from a trusted reverse proxy.
+    # Common values are X-Forwarded-For, X-Real-IP, or CF-Connecting-IP.
+    # Corresponding env var: MALLA_TRUSTED_PROXY_CLIENT_IP_HEADER
+    trusted_proxy_client_ip_header: str = "X-Forwarded-For"
+
     # OpenTelemetry settings
     otlp_endpoint: str | None = None
 
@@ -90,12 +102,13 @@ _ENV_PREFIX = "MALLA_"  # Prefix for environment variable overrides
 
 
 def _resolve_type(t: Any) -> Any:  # noqa: ANN001
-    """Resolve **t** which may be a string forward-reference into a real type."""
+    """Resolve **t** which may be a string forward-reference or Optional into a real type."""
 
     if isinstance(t, str):
-        # Basic builtin types are fine to eval() in this restricted context.
+        # Strip Optional[X] / X | None suffix to get the base type
+        base = t.replace(" | None", "").strip()
         builtins_map = {"bool": bool, "int": int, "float": float, "str": str}
-        return builtins_map.get(t, str)
+        return builtins_map.get(base, str)
     return t
 
 

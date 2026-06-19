@@ -50,6 +50,17 @@ debug: false
 #   Multiple keys: "1PG7OiApB1nwvP+rz05pAQ==,AQ4GCAwQFBgcICQoLDA0ODw=,another+base64+key=="
 # default_channel_key: "1PG7OiApB1nwvP+rz05pAQ=="
 
+# Reverse proxy settings
+# Comma-separated IPs of trusted reverse proxies.
+# When set, Malla trusts the configured client IP header from those exact proxy
+# peers. Recommended for Anubis: X-Real-IP
+# trusted_proxy_client_ip_header: "X-Real-IP"
+# ProxyFix is still used for X-Forwarded-Proto when enabled. When running via
+# Gunicorn, these same IPs are passed to forwarded_allow_ips so only those
+# proxy peers can forward headers.
+# Corresponding env var: MALLA_TRUSTED_PROXY_IPS
+# trusted_proxy_ips: "10.89.0.90"
+
 # Number of hours after which to delete old data (0 = never delete)
 # data_retention_hours: 0
 
