@@ -18,6 +18,123 @@
         color: #6c757d;
         font-size: 0.875rem;
     }
+    .detail-hero {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.85rem;
+        background: linear-gradient(135deg, color-mix(in srgb, var(--bs-primary) 12%, transparent), var(--bs-tertiary-bg));
+        padding: 1.1rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--bs-box-shadow-sm);
+    }
+    .detail-breadcrumb {
+        margin-bottom: 0.85rem;
+        font-size: 0.9rem;
+    }
+    .detail-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+    }
+    .detail-title-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.8rem;
+        height: 2.8rem;
+        border-radius: 0.75rem;
+        color: var(--bs-primary);
+        background: color-mix(in srgb, var(--bs-primary) 15%, transparent);
+        flex: 0 0 auto;
+    }
+    .detail-title {
+        font-size: clamp(1.8rem, 3vw, 2.55rem);
+        font-weight: 800;
+        line-height: 1.05;
+        margin: 0;
+        letter-spacing: 0;
+    }
+    .detail-subtitle {
+        color: var(--bs-secondary-color);
+        margin: 0.85rem 0 0;
+        font-size: 1rem;
+    }
+    .detail-meta-grid {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    .detail-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--bs-body-bg) 72%, transparent);
+        color: var(--bs-body-color);
+        padding: 0.4rem 0.65rem;
+        font-size: 0.9rem;
+        line-height: 1.1;
+    }
+    .detail-meta-item i {
+        color: var(--bs-primary);
+    }
+    .detail-meta-label {
+        color: var(--bs-secondary-color);
+        font-weight: 700;
+    }
+    .detail-meta-value {
+        font-family: var(--bs-font-monospace);
+        font-weight: 700;
+    }
+    .detail-status-badge {
+        border-radius: 0.65rem;
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+    .detail-metric-card {
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        border-radius: 0.75rem;
+    }
+    .detail-metric-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: var(--metric-color, var(--bs-primary));
+    }
+    .detail-metric-card .card-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    .detail-metric-value {
+        color: var(--metric-color, var(--bs-primary));
+        font-size: clamp(1.65rem, 2.5vw, 2.15rem);
+        font-weight: 800;
+        line-height: 1;
+    }
+    .detail-metric-label {
+        color: var(--bs-secondary-color);
+        font-size: 0.86rem;
+        margin-top: 0.35rem;
+    }
+    .detail-metric-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.3rem;
+        height: 2.3rem;
+        border-radius: 0.65rem;
+        color: var(--metric-color, var(--bs-primary));
+        background: color-mix(in srgb, var(--metric-color, var(--bs-primary)) 13%, transparent);
+        flex: 0 0 auto;
+    }
     .signal-indicator {
         padding: 2px 8px;
         border-radius: 12px;
@@ -50,26 +167,43 @@
 {% block content %}
 <div class="container mt-4">
     <!-- Header -->
-    <div class="row mb-4">
+    <div class="detail-hero">
         <div class="col">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+            <nav aria-label="breadcrumb" class="detail-breadcrumb">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="/">Home</a></li>
                     <li class="breadcrumb-item"><a href="/nodes">Nodes</a></li>
                     <li class="breadcrumb-item active">{{ node.node_name }}</li>
                 </ol>
             </nav>
-            <h1>
-                <i class="bi bi-router"></i> {{ node.node_name }}
+            <h1 class="detail-title-row">
+                <i class="bi bi-router detail-title-icon"></i> <span class="detail-title">{{ node.node_name }}</span>
                 {% if node.last_seen_relative == "Agora" or "minute" in node.last_seen_relative %}
-                    <span class="badge bg-success">Online</span>
+                    <span class="badge bg-success detail-status-badge">Online</span>
                 {% elif "hour" in node.last_seen_relative %}
-                    <span class="badge bg-warning">Recente</span>
+                    <span class="badge bg-warning text-dark detail-status-badge">Recente</span>
                 {% else %}
-                    <span class="badge bg-secondary">Offline</span>
+                    <span class="badge bg-secondary detail-status-badge">Offline</span>
                 {% endif %}
             </h1>
-            <p class="text-muted">
+            <div class="detail-meta-grid" aria-label="Detalhes do node">
+                <span class="detail-meta-item">
+                    <i class="bi bi-hash"></i>
+                    <span class="detail-meta-label">Hex</span>
+                    <span class="detail-meta-value">{{ node.hex_id }}</span>
+                </span>
+                <span class="detail-meta-item">
+                    <i class="bi bi-123"></i>
+                    <span class="detail-meta-label">ID</span>
+                    <span class="detail-meta-value">{{ node.node_id }}</span>
+                </span>
+                <span class="detail-meta-item">
+                    <i class="bi bi-clock-history"></i>
+                    <span class="detail-meta-label">Última atividade</span>
+                    <span>{{ node.last_seen_relative }}</span>
+                </span>
+            </div>
+            <p class="detail-subtitle d-none">
                 Node ID: {{ node.hex_id }} ({{ node.node_id }})
                 • Last seen: {{ node.last_seen_relative }}
             </p>
@@ -77,40 +211,52 @@
     </div>
 
     <!-- Overview Cards -->
-    <div class="row mb-4">
+    <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card card-metric">
+            <div class="card detail-metric-card" style="--metric-color: #3ec57e;">
                 <div class="card-body">
-                    <div class="metric-value">{{ node.total_packets }}</div>
-                    <div class="metric-label">Total Pacotes</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-metric">
-                <div class="card-body">
-                    <div class="metric-value">{{ node.unique_destinations or 0 }}</div>
-                    <div class="metric-label">Destinos</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-metric">
-                <div class="card-body">
-                    <div class="metric-value">
-                        {% if node.avg_rssi %}{{ node.avg_rssi|format_rssi }}{% else %}?{% endif %}
+                    <div>
+                        <div class="detail-metric-value">{{ node.total_packets }}</div>
+                        <div class="detail-metric-label">Total de pacotes</div>
                     </div>
-                    <div class="metric-label">Med. RSSI (dBm)</div>
+                    <span class="detail-metric-icon"><i class="bi bi-envelope-paper"></i></span>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-metric">
+            <div class="card detail-metric-card" style="--metric-color: #13b7d8;">
                 <div class="card-body">
-                    <div class="metric-value">
+                    <div>
+                        <div class="detail-metric-value">{{ node.unique_destinations or 0 }}</div>
+                        <div class="detail-metric-label">Destinos</div>
+                    </div>
+                    <span class="detail-metric-icon"><i class="bi bi-arrow-left-right"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card detail-metric-card" style="--metric-color: #2fbf71;">
+                <div class="card-body">
+                    <div>
+                        <div class="detail-metric-value">
+                            {% if node.avg_rssi %}{{ node.avg_rssi|format_rssi }}{% else %}?{% endif %}
+                        </div>
+                        <div class="detail-metric-label">Média RSSI (dBm)</div>
+                    </div>
+                    <span class="detail-metric-icon"><i class="bi bi-reception-4"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card detail-metric-card" style="--metric-color: #d9a514;">
+                <div class="card-body">
+                    <div>
+                        <div class="detail-metric-value">
                         {% if node.avg_hops %}{{ node.avg_hops }}{% else %}?{% endif %}
+                        </div>
+                        <div class="detail-metric-label">Média de hops</div>
                     </div>
-                    <div class="metric-label">Méd. Hops</div>
+                    <span class="detail-metric-icon"><i class="bi bi-router"></i></span>
                 </div>
             </div>
         </div>

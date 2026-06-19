@@ -74,10 +74,87 @@
 
         .footer {
             margin-top: 3rem;
-            padding: 2rem 0;
-            border-top: 1px solid #dee2e6;
-            color: #6c757d;
-            text-align: center;
+            padding: 1.25rem 0;
+            border-top: 1px solid var(--bs-border-color);
+            color: var(--bs-secondary-color);
+            background: color-mix(in srgb, var(--bs-tertiary-bg) 72%, transparent);
+        }
+
+        .footer-shell {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            min-width: 14rem;
+        }
+
+        .footer-brand-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.65rem;
+            color: var(--bs-primary);
+            background: color-mix(in srgb, var(--bs-primary) 14%, transparent);
+            flex: 0 0 auto;
+        }
+
+        .footer-brand-title {
+            color: var(--bs-body-color);
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .footer-brand-subtitle {
+            font-size: 0.78rem;
+            color: var(--bs-secondary-color);
+        }
+
+        .footer-links,
+        .footer-notes {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: 1px solid var(--bs-border-color);
+            border-radius: 999px;
+            background: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            padding: 0.35rem 0.65rem;
+            font-size: 0.82rem;
+            text-decoration: none;
+            line-height: 1.1;
+        }
+
+        .footer-pill:hover {
+            color: var(--bs-primary);
+            border-color: color-mix(in srgb, var(--bs-primary) 45%, var(--bs-border-color));
+            text-decoration: none;
+        }
+
+        .footer-pill-muted {
+            color: var(--bs-secondary-color);
+        }
+
+        @media (max-width: 767.98px) {
+            .footer-shell {
+                align-items: flex-start;
+                flex-direction: column;
+            }
         }
 
         /* Node tooltip styles */
@@ -257,23 +334,31 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4 d-flex align-items-center">
-                    <small>
-                        Powered by <a href="https://github.com/zenitraM/malla" target="_blank">Malla</a> 🙏
-                    </small>
+            <div class="footer-shell">
+                <div class="footer-brand">
+                    <span class="footer-brand-icon"><i class="bi bi-router"></i></span>
+                    <div>
+                        <div class="footer-brand-title">{{ APP_NAME }}</div>
+                        <div class="footer-brand-subtitle">Meshtastic.PT network observability</div>
+                    </div>
                 </div>
 
-                <div class="col-md-4 text-center">
-                    <small>
-                        <a href="https://meshtastic.pt/privacy" target="_blank" rel="noopener noreferrer" class="text-muted">Política de Privacidade</a>
-                    </small>
+                <div class="footer-links">
+                    <a class="footer-pill" href="https://github.com/zenitraM/malla" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-github"></i>
+                        Powered by Malla
+                    </a>
+                    <a class="footer-pill" href="https://meshtastic.pt/privacy" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-shield-check"></i>
+                        Política de Privacidade
+                    </a>
                 </div>
 
-                <div class="col-md-4 text-md-end text-start">
-                    <small class="text-muted">
-                        Dados com mais de 15 dias são removidos automaticamente.
-                    </small>
+                <div class="footer-notes">
+                    <span class="footer-pill footer-pill-muted">
+                        <i class="bi bi-database-dash"></i>
+                        Dados com mais de 15 dias são removidos automaticamente
+                    </span>
                 </div>
             </div>
         </div>

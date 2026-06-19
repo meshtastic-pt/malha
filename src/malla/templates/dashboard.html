@@ -75,11 +75,11 @@
 
     .overview-value {
         color: var(--metric-color, var(--bs-primary));
-        font-size: clamp(1.65rem, 2.2vw, 2.15rem);
+        font-size: clamp(1.5rem, 1.85vw, 1.95rem);
         font-weight: 800;
         line-height: 1;
         letter-spacing: 0;
-        overflow-wrap: anywhere;
+        white-space: nowrap;
     }
 
     .overview-label {
@@ -743,8 +743,8 @@
         </div>
     </div>
 
-    <div class="row my-4">
-        <div class="alert alert-info border-0 shadow-sm" role="alert">
+    <div class="row">
+        <div class="alert alert-info shadow-sm m-2" role="alert">
             <h5 class="alert-heading mb-2">
                 <i class="bi bi-info-circle me-1"></i>
                 Nota sobre os dados apresentados

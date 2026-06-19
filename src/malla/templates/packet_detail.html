@@ -18,6 +18,94 @@
         color: #6c757d;
         font-size: 0.875rem;
     }
+    .detail-hero {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.85rem;
+        background: linear-gradient(135deg, color-mix(in srgb, var(--bs-primary) 12%, transparent), var(--bs-tertiary-bg));
+        padding: 1.1rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--bs-box-shadow-sm);
+    }
+    .detail-breadcrumb {
+        margin-bottom: 0.85rem;
+        font-size: 0.9rem;
+    }
+    .detail-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+    }
+    .detail-title-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.8rem;
+        height: 2.8rem;
+        border-radius: 0.75rem;
+        color: var(--bs-primary);
+        background: color-mix(in srgb, var(--bs-primary) 15%, transparent);
+        flex: 0 0 auto;
+    }
+    .detail-title {
+        font-size: clamp(1.8rem, 3vw, 2.55rem);
+        font-weight: 800;
+        line-height: 1.05;
+        margin: 0;
+        letter-spacing: 0;
+    }
+    .detail-subtitle {
+        color: var(--bs-secondary-color);
+        margin: 0.85rem 0 0;
+        font-size: 1rem;
+    }
+    .detail-status-badge {
+        border-radius: 0.65rem;
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+    .detail-metric-card {
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        border-radius: 0.75rem;
+    }
+    .detail-metric-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: var(--metric-color, var(--bs-primary));
+    }
+    .detail-metric-card .card-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    .detail-metric-value {
+        color: var(--metric-color, var(--bs-primary));
+        font-size: clamp(1.65rem, 2.5vw, 2.15rem);
+        font-weight: 800;
+        line-height: 1;
+    }
+    .detail-metric-label {
+        color: var(--bs-secondary-color);
+        font-size: 0.86rem;
+        margin-top: 0.35rem;
+    }
+    .detail-metric-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.3rem;
+        height: 2.3rem;
+        border-radius: 0.65rem;
+        color: var(--metric-color, var(--bs-primary));
+        background: color-mix(in srgb, var(--metric-color, var(--bs-primary)) 13%, transparent);
+        flex: 0 0 auto;
+    }
     .signal-indicator {
         padding: 2px 8px;
         border-radius: 12px;
@@ -85,64 +173,76 @@
 
 {% block content %}
 <!-- Header -->
-<div class="row mb-4">
+<div class="detail-hero">
         <div class="col">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+            <nav aria-label="breadcrumb" class="detail-breadcrumb">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="/">Home</a></li>
                     <li class="breadcrumb-item"><a href="/packets">Packets</a></li>
                     <li class="breadcrumb-item active">Pacote #{{ packet.id }}</li>
                 </ol>
             </nav>
-            <h1>
-                <i class="bi bi-envelope"></i> Pacote #{{ packet.id }}
+            <h1 class="detail-title-row">
+                <i class="bi bi-envelope detail-title-icon"></i> <span class="detail-title">Pacote #{{ packet.id }}</span>
                 {% if packet.success %}
-                    <span class="badge bg-success">Successo</span>
+                    <span class="badge bg-success detail-status-badge">Sucesso</span>
                 {% else %}
-                    <span class="badge bg-danger">Sucesso Parcial</span>
+                    <span class="badge bg-danger detail-status-badge">Sucesso parcial</span>
                 {% endif %}
             </h1>
-            <p class="text-muted">Pacote <strong>{{ packet.portnum_name or "Unknown Protocol" }}</strong> de <strong>{{ packet.from_node_name }}</strong> para <strong>{{ packet.to_node_name }}</strong></p>
+            <p class="detail-subtitle">Pacote <strong>{{ packet.portnum_name or "Unknown Protocol" }}</strong> de <strong>{{ packet.from_node_name }}</strong> para <strong>{{ packet.to_node_name }}</strong></p>
         </div>
     </div>
 
     <!-- Overview Cards -->
-    <div class="row mb-4">
+    <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card card-metric">
+            <div class="card detail-metric-card" style="--metric-color: #3ec57e;">
                 <div class="card-body">
-                    <div class="metric-value">{{ reception_count }}</div>
-                    <div class="metric-label">Total Recepções</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-metric">
-                <div class="card-body">
-                    <div class="metric-value">{{ gateway_count }}</div>
-                    <div class="metric-label">Gateways Únicos</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-metric">
-                <div class="card-body">
-                    <div class="metric-value">
-                        {% if packet.hop_count is not none %}
-                            {{ packet.hop_count }}
-                        {% else %}
-                            ?
-                        {% endif %}
+                    <div>
+                        <div class="detail-metric-value">{{ reception_count }}</div>
+                        <div class="detail-metric-label">Total de receções</div>
                     </div>
-                    <div class="metric-label">Contagem de Hops</div>
+                    <span class="detail-metric-icon"><i class="bi bi-broadcast-pin"></i></span>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-metric">
+            <div class="card detail-metric-card" style="--metric-color: #13b7d8;">
                 <div class="card-body">
-                    <div class="metric-value">{{ packet.payload_length or 0 }}</div>
-                    <div class="metric-label">Conteúdo Bytes</div>
+                    <div>
+                        <div class="detail-metric-value">{{ gateway_count }}</div>
+                        <div class="detail-metric-label">Gateways únicos</div>
+                    </div>
+                    <span class="detail-metric-icon"><i class="bi bi-router-fill"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card detail-metric-card" style="--metric-color: #d9a514;">
+                <div class="card-body">
+                    <div>
+                        <div class="detail-metric-value">
+                            {% if packet.hop_count is not none %}
+                                {{ packet.hop_count }}
+                            {% else %}
+                                ?
+                            {% endif %}
+                        </div>
+                        <div class="detail-metric-label">Contagem de hops</div>
+                    </div>
+                    <span class="detail-metric-icon"><i class="bi bi-diagram-3"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card detail-metric-card" style="--metric-color: #7c6df0;">
+                <div class="card-body">
+                    <div>
+                        <div class="detail-metric-value">{{ packet.payload_length or 0 }}</div>
+                        <div class="detail-metric-label">Bytes de conteúdo</div>
+                    </div>
+                    <span class="detail-metric-icon"><i class="bi bi-file-binary"></i></span>
                 </div>
             </div>
         </div>
