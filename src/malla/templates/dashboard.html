@@ -156,6 +156,85 @@
         white-space: nowrap;
     }
 
+    .top-nodes-table {
+        margin: 0;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .top-nodes-table thead th {
+        color: #fff;
+        background: var(--bs-primary);
+        border: 0;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 0.55rem 0.75rem;
+    }
+
+    .top-nodes-table thead th:first-child {
+        border-radius: 0.45rem 0 0 0;
+    }
+
+    .top-nodes-table thead th:last-child {
+        border-radius: 0 0.45rem 0 0;
+    }
+
+    .top-nodes-table tbody tr {
+        background: transparent;
+        transition: background-color 0.15s ease;
+    }
+
+    .top-nodes-table tbody tr:hover {
+        background: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+    }
+
+    .top-nodes-table tbody td {
+        border-bottom: 1px solid var(--bs-border-color);
+        padding: 0.5rem 0.75rem;
+        vertical-align: middle;
+    }
+
+    .top-node-name {
+        font-weight: 700;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .metric-tile {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.7rem;
+        padding: 0.85rem;
+        background: color-mix(in srgb, var(--chart-accent, var(--bs-primary)) 7%, transparent);
+        min-height: 5.2rem;
+    }
+
+    .metric-tile-wide {
+        grid-column: 1 / -1;
+    }
+
+    .metric-tile-label {
+        color: var(--bs-secondary-color);
+        font-size: 0.78rem;
+        font-weight: 700;
+        margin-bottom: 0.35rem;
+    }
+
+    .metric-tile-value {
+        color: var(--metric-color, var(--chart-accent, var(--bs-primary)));
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.1;
+        overflow-wrap: anywhere;
+    }
+
     [data-bs-theme=dark] .overview-card {
         background: #252b30;
     }
@@ -550,12 +629,12 @@
                         </div>
                     </div>
                     <div class="table-responsive" style="display: none;" id="topNodesTableContainer">
-                        <table class="table table-sm" id="topNodesTable">
+                        <table class="table top-nodes-table" id="topNodesTable">
                             <thead>
                                 <tr>
                                     <th>Node</th>
-                                    <th>Mensagens</th>
-                                    <th>Sinal</th>
+                                    <th class="text-end">Mensagens</th>
+                                    <th class="text-end">Sinal</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -583,25 +662,22 @@
                     <span class="analytics-card-chip">Rede</span>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <strong>Total de Nodes:</strong><br>
-                            <span class="text-primary">{{ stats.total_nodes }}</span>
+                    <div class="metric-grid">
+                        <div class="metric-tile" style="--metric-color: #3ec57e;">
+                            <div class="metric-tile-label">Nodes conhecidos</div>
+                            <div class="metric-tile-value">{{ stats.total_nodes }}</div>
                         </div>
-                        <div class="col-6">
-                            <strong>Atividade (24h):</strong><br>
-                            <span class="text-success">{{ stats.active_nodes_24h }}</span>
+                        <div class="metric-tile" style="--metric-color: #2fbf71;">
+                            <div class="metric-tile-label">Ativos em 24h</div>
+                            <div class="metric-tile-value">{{ stats.active_nodes_24h }}</div>
                         </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-6">
-                            <strong>Gateways:</strong><br>
-                            <span class="text-warning">{{ gateway_count }}</span>
+                        <div class="metric-tile" style="--metric-color: #d9a514;">
+                            <div class="metric-tile-label">Gateways</div>
+                            <div class="metric-tile-value">{{ gateway_count }}</div>
                         </div>
-                        <div class="col-6">
-                            <strong>Protocolos:</strong><br>
-                            <span class="text-info">{{ stats.packet_types|length }}</span>
+                        <div class="metric-tile" style="--metric-color: #13b7d8;">
+                            <div class="metric-tile-label">Protocolos</div>
+                            <div class="metric-tile-value">{{ stats.packet_types|length }}</div>
                         </div>
                     </div>
                 </div>
@@ -621,22 +697,18 @@
                     <span class="analytics-card-chip">Tráfego</span>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <strong>Total de SMS:</strong><br>
-                            <span class="text-primary">{{ "{:,}".format(stats.total_packets) }}</span>
+                    <div class="metric-grid">
+                        <div class="metric-tile" style="--metric-color: #3ec57e;">
+                            <div class="metric-tile-label">Total de SMS</div>
+                            <div class="metric-tile-value">{{ "{:,}".format(stats.total_packets).replace(",", " ") }}</div>
                         </div>
-                        <div class="col-6">
-                            <strong>Recentes (1h):</strong><br>
-                            <span class="text-success">{{ stats.recent_packets }}</span>
+                        <div class="metric-tile" style="--metric-color: #2fbf71;">
+                            <div class="metric-tile-label">Recentes (1h)</div>
+                            <div class="metric-tile-value">{{ stats.recent_packets }}</div>
                         </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <strong>Taxa de sucesso:</strong><br>
-                            {% set success_class = 'text-success' if stats.success_rate >= 95 else 'text-warning' if stats.success_rate >= 85 else 'text-danger' %}
-                            <span class="{{ success_class }}">{{ stats.success_rate }}%</span>
+                        <div class="metric-tile metric-tile-wide" style="--metric-color: {{ success_color }};">
+                            <div class="metric-tile-label">Taxa de sucesso</div>
+                            <div class="metric-tile-value">{{ stats.success_rate }}%</div>
                         </div>
                     </div>
                 </div>
@@ -656,14 +728,14 @@
                     <span class="analytics-card-chip">RF</span>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <strong>Med. RSSI:</strong><br>
-                            <span class="text-primary">{{ stats.avg_rssi|format_rssi }}dBm</span>
+                    <div class="metric-grid">
+                        <div class="metric-tile" style="--metric-color: #13b7d8;">
+                            <div class="metric-tile-label">Média RSSI</div>
+                            <div class="metric-tile-value">{{ stats.avg_rssi|format_rssi }} dBm</div>
                         </div>
-                        <div class="col-6">
-                            <strong>Med. SNR:</strong><br>
-                            <span class="text-success">{{ stats.avg_snr|format_snr }}dB</span>
+                        <div class="metric-tile" style="--metric-color: #2fbf71;">
+                            <div class="metric-tile-label">Média SNR</div>
+                            <div class="metric-tile-value">{{ stats.avg_snr|format_snr }} dB</div>
                         </div>
                     </div>
                 </div>
@@ -1092,37 +1164,36 @@ function populateTopNodesTable(topNodes) {
 
     tbody.replaceChildren();
 
-    topNodes.slice(0, 10).forEach(node => {
+    topNodes.slice(0, 10).forEach((node) => {
         const nodeName = node.display_name || `!${node.node_id.toString(16).padStart(8, '0')}`;
-        const row = document.createElement('tr');
 
-        let signalClass = 'text-muted';
+        let signalBadgeClass = 'bg-secondary';
         let signalText = 'N/A';
         if (node.avg_rssi && node.avg_rssi !== 0) {
             if (node.avg_rssi > -70) {
-                signalClass = 'text-success';
+                signalBadgeClass = 'bg-success';
                 signalText = 'Excelente';
             } else if (node.avg_rssi > -80) {
-                signalClass = 'text-warning';
+                signalBadgeClass = 'bg-warning text-dark';
                 signalText = 'Bom';
             } else if (node.avg_rssi > -90) {
-                signalClass = 'text-info';
+                signalBadgeClass = 'bg-info text-dark';
                 signalText = 'OK';
             } else {
-                signalClass = 'text-danger';
+                signalBadgeClass = 'bg-danger';
                 signalText = 'Fraco';
             }
         }
 
-        row.append(
+        const row = el('tr', null,
             el('td', null,
                 el('a', {
                     href: safePath(`/node/${encodeURIComponent(String(node.node_id))}`),
-                    className: 'text-decoration-none'
+                    className: 'top-node-name text-decoration-none d-block'
                 }, nodeName)
             ),
-            el('td', null, badge(String(node.packet_count || 0), 'bg-primary')),
-            el('td', null, el('span', { className: signalClass }, signalText))
+            el('td', { className: 'text-end' }, badge(String(node.packet_count || 0), 'bg-primary')),
+            el('td', { className: 'text-end' }, badge(signalText, signalBadgeClass))
         );
 
         tbody.appendChild(row);
