@@ -105,8 +105,63 @@
         background: var(--metric-color, var(--bs-primary));
     }
 
+    .analytics-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1rem;
+        background: linear-gradient(90deg, color-mix(in srgb, var(--chart-accent, var(--bs-primary)) 12%, transparent), transparent);
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .analytics-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+    }
+
+    .analytics-card-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.6rem;
+        color: var(--chart-accent, var(--bs-primary));
+        background: color-mix(in srgb, var(--chart-accent, var(--bs-primary)) 14%, transparent);
+        flex: 0 0 auto;
+    }
+
+    .analytics-card-title h5 {
+        font-size: 0.98rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .analytics-card-title small {
+        color: var(--bs-secondary-color);
+        font-size: 0.78rem;
+    }
+
+    .analytics-card-chip {
+        border: 1px solid color-mix(in srgb, var(--chart-accent, var(--bs-primary)) 28%, var(--bs-border-color));
+        background: color-mix(in srgb, var(--chart-accent, var(--bs-primary)) 8%, transparent);
+        color: var(--bs-body-color);
+        border-radius: 999px;
+        padding: 0.2rem 0.55rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
     [data-bs-theme=dark] .overview-card {
         background: #252b30;
+    }
+
+    [data-bs-theme=dark] .analytics-card-header {
+        background: linear-gradient(90deg, color-mix(in srgb, var(--chart-accent, var(--bs-primary)) 16%, transparent), transparent);
     }
 
     @media (max-width: 767.98px) {
@@ -116,6 +171,12 @@
 
         .overview-card .card-body {
             min-height: 9rem;
+        }
+
+        .analytics-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 0.65rem;
         }
     }
 </style>
@@ -258,8 +319,15 @@
         <!-- Network Activity Chart -->
         <div class="col-md-8 mb-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-graph-up-arrow"></i> Tendência Atividade na Rede (7 Dias)</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #3ec57e;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                        <div>
+                            <h5 class="mb-0">Tendência de atividade</h5>
+                            <small>Últimos 7 dias</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Rede</span>
                 </div>
                 <div class="card-body">
                     <div id="timeSeriesChartLoading" class="text-center py-4">
@@ -276,8 +344,15 @@
         <!-- Network Health Status -->
         <div class="col-md-4 mb-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-activity"></i> Saúde da Rede</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #2fbf71;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-activity"></i></span>
+                        <div>
+                            <h5 class="mb-0">Saúde da rede</h5>
+                            <small>Processamento e cobertura</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Estado</span>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -326,8 +401,15 @@
         <!-- Active Nodes Distribution -->
         <div class="col-md-4 mb-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-people"></i> Distribuição de Nodes</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #3ec57e;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-people"></i></span>
+                        <div>
+                            <h5 class="mb-0">Distribuição de nodes</h5>
+                            <small>Ativos vs inativos</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Nodes</span>
                 </div>
                 <div class="card-body">
                     <div id="nodeActivityChartLoading" class="text-center py-4">
@@ -343,8 +425,15 @@
         <!-- Active Gateways Distribution -->
         <div class="col-md-4 mb-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-router-fill"></i> Distribuição de Gateways</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #d9a514;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-router-fill"></i></span>
+                        <div>
+                            <h5 class="mb-0">Distribuição de gateways</h5>
+                            <small>Receção por gateway</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Gateways</span>
                 </div>
                 <div class="card-body">
                     <div id="gatewayActivityChartLoading" class="text-center py-4">
@@ -360,8 +449,15 @@
         <!-- Signal Quality Distribution -->
         <div class="col-md-4 mb-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-reception-4"></i> Distribuição Qualidade de Sinal</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #13b7d8;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-reception-4"></i></span>
+                        <div>
+                            <h5 class="mb-0">Qualidade de sinal</h5>
+                            <small>RSSI e SNR observados</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">RF</span>
                 </div>
                 <div class="card-body">
                     <div id="signalDistributionChartLoading" class="text-center py-4">
@@ -380,8 +476,15 @@
         <!-- Hop Count Distribution -->
         <div class="col-md-6 mb-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-router"></i> Padrões de Routing das Mensagens</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #7c6df0;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-router"></i></span>
+                        <div>
+                            <h5 class="mb-0">Routing de mensagens</h5>
+                            <small>Distribuição por hops</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Hops</span>
                 </div>
                 <div class="card-body">
                     <div id="hopDistributionChartLoading" class="text-center py-4">
@@ -397,8 +500,15 @@
         <!-- Protocol Usage -->
         <div class="col-md-6 mb-4">
             <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-pie-chart"></i> Protocolos Usados (24h)</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #13b7d8;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-pie-chart"></i></span>
+                        <div>
+                            <h5 class="mb-0">Protocolos usados</h5>
+                            <small>Últimas 24 horas</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Pacotes</span>
                 </div>
                 <div class="card-body">
                     {% if stats.packet_types %}
@@ -423,8 +533,15 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-trophy"></i> Nodes Mais Ativos</h5>
+                <div class="card-header analytics-card-header" style="--chart-accent: #d9a514;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-trophy"></i></span>
+                        <div>
+                            <h5 class="mb-0">Nodes mais ativos</h5>
+                            <small>Maior volume de mensagens</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Top</span>
                 </div>
                 <div class="card-body">
                     <div id="topNodesLoading" class="text-center py-4">
@@ -455,8 +572,15 @@
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Informação da Rede</h6>
+                <div class="card-header analytics-card-header" style="--chart-accent: #3ec57e;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-info-circle"></i></span>
+                        <div>
+                            <h5 class="mb-0">Informação da rede</h5>
+                            <small>Inventário e fontes</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Rede</span>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -486,8 +610,15 @@
 
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0"><i class="bi bi-activity"></i>Atividade:</h6>
+                <div class="card-header analytics-card-header" style="--chart-accent: #2fbf71;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-activity"></i></span>
+                        <div>
+                            <h5 class="mb-0">Atividade</h5>
+                            <small>Mensagens e processamento</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">Tráfego</span>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -514,8 +645,15 @@
 
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title mb-0"><i class="bi bi-reception-4"></i> Qualidade do Sinal</h6>
+                <div class="card-header analytics-card-header" style="--chart-accent: #13b7d8;">
+                    <div class="analytics-card-title">
+                        <span class="analytics-card-icon"><i class="bi bi-reception-4"></i></span>
+                        <div>
+                            <h5 class="mb-0">Qualidade do sinal</h5>
+                            <small>Médias de RSSI e SNR</small>
+                        </div>
+                    </div>
+                    <span class="analytics-card-chip">RF</span>
                 </div>
                 <div class="card-body">
                     <div class="row">
