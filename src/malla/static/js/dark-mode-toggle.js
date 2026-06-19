@@ -67,6 +67,15 @@ class DarkModeToggle {
         }));
     }
 
+    dispatchThemeChanged(preference) {
+        window.dispatchEvent(new CustomEvent('themeChanged', {
+            detail: {
+                preference,
+                effective: this.getEffectiveTheme()
+            }
+        }));
+    }
+
     /**
      * Apply theme to the document
      * @param {string} theme - 'light', 'dark', or 'auto'
@@ -107,6 +116,7 @@ class DarkModeToggle {
             if (this.getThemePreference() === 'auto') {
                 this.applyTheme('auto');
                 this.updateToggleButton();
+                this.dispatchThemeChanged('auto');
             }
         });
     }

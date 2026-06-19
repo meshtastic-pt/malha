@@ -464,49 +464,6 @@
         window.reinitializeTooltips = reinitializeTooltips;
     </script>
 
-    <!-- Theme switching functionality -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const themeToggle = document.getElementById('theme-toggle');
-            const htmlElement = document.documentElement;
-
-            // Check for saved theme preference or respect OS preference
-            const savedTheme = localStorage.getItem('theme');
-            const osPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            // Set initial theme
-            if (savedTheme) {
-                htmlElement.setAttribute('data-bs-theme', savedTheme);
-                updateToggleIcon(savedTheme);
-            } else if (osPrefersDark) {
-                htmlElement.setAttribute('data-bs-theme', 'dark');
-                updateToggleIcon('dark');
-            }
-
-            // Theme toggle functionality
-            themeToggle.addEventListener('click', function () {
-                const currentTheme = htmlElement.getAttribute('data-bs-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-                htmlElement.setAttribute('data-bs-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateToggleIcon(newTheme);
-            });
-
-            // Update toggle button icon based on theme
-            function updateToggleIcon(theme) {
-                const icon = themeToggle.querySelector('i');
-                if (theme === 'dark') {
-                    icon.classList.remove('bi-moon-fill');
-                    icon.classList.add('bi-sun-fill');
-                } else {
-                    icon.classList.remove('bi-sun-fill');
-                    icon.classList.add('bi-moon-fill');
-                }
-            }
-        });
-    </script>
-
     {% block extra_js %}{% endblock %}
 </body>
 
