@@ -241,6 +241,80 @@
         overflow-wrap: anywhere;
     }
 
+    .health-stack {
+        display: grid;
+        gap: 0.95rem;
+    }
+
+    .health-row {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.75rem;
+        padding: 0.85rem;
+        background: color-mix(in srgb, var(--chart-accent, var(--bs-primary)) 6%, transparent);
+    }
+
+    .health-row-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .health-row-title {
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .health-row-value {
+        color: var(--chart-accent, var(--bs-primary));
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .health-progress {
+        height: 0.55rem;
+        background: color-mix(in srgb, var(--bs-secondary-color) 18%, transparent);
+        margin-bottom: 0.5rem;
+    }
+
+    .health-progress .progress-bar {
+        background: var(--chart-accent, var(--bs-primary));
+    }
+
+    .health-note {
+        color: var(--bs-secondary-color);
+        font-size: 0.82rem;
+        margin: 0;
+    }
+
+    .health-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .health-summary-item {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.75rem;
+        padding: 0.85rem;
+        text-align: center;
+        background: var(--bs-body-bg);
+    }
+
+    .health-summary-value {
+        color: var(--bs-primary);
+        font-size: 1.2rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .health-summary-label {
+        color: var(--bs-secondary-color);
+        font-size: 0.78rem;
+        margin-top: 0.35rem;
+    }
+
     [data-bs-theme=dark] .overview-card {
         background: #252b30;
     }
@@ -440,40 +514,39 @@
                     <span class="analytics-card-chip">Estado</span>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <h6>Taxa de sucesso das SMS</h6>
-                        <div class="progress mb-2">
-                            {% set success_bar_class = 'bg-success' if stats.success_rate >= 95 else 'bg-warning' if stats.success_rate >= 85 else 'bg-danger' %}
-                            <div class="progress-bar {{ success_bar_class }}" style="width: {{ stats.success_rate }}%;">
-                                {{ stats.success_rate }}%
+                    <div class="health-stack">
+                        <div class="health-row">
+                            <div class="health-row-header">
+                                <div class="health-row-title">Taxa de sucesso das SMS</div>
+                                <div class="health-row-value">{{ stats.success_rate }}%</div>
                             </div>
+                            <div class="progress health-progress" role="progressbar" aria-label="Taxa de sucesso" aria-valuenow="{{ stats.success_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" style="width: {{ stats.success_rate }}%;"></div>
+                            </div>
+                            <p class="health-note">Pacotes processados sem erro.</p>
                         </div>
-                        <small class="text-muted">Fiabilidade de pacotes processados</small>
-                    </div>
 
-                    <div class="mb-3">
-                        <h6>Diversidade de Gateways</h6>
-                        <div class="progress mb-2">
+                        <div class="health-row">
                             {% set gateway_diversity = (gateway_count / 10 * 100)|int if gateway_count <= 10 else 100 %}
-                            <div class="progress-bar bg-primary" style="width: {{ gateway_diversity }}%;">
-                                {{ gateway_count }} sources
+                            <div class="health-row-header">
+                                <div class="health-row-title">Diversidade de gateways</div>
+                                <div class="health-row-value">{{ gateway_count }}</div>
                             </div>
-                        </div>
-                        <small class="text-muted">Multiplas entradas de dados melhoram a fiabilidade</small>
-                    </div>
-
-                    <hr>
-
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="border-end">
-                                <div class="fw-bold text-primary">{{ stats.recent_packets }}</div>
-                                <small class="text-muted">Atividades Recentes</small>
+                            <div class="progress health-progress" role="progressbar" aria-label="Diversidade de gateways" aria-valuenow="{{ gateway_diversity }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" style="width: {{ gateway_diversity }}%;"></div>
                             </div>
+                            <p class="health-note">Mais fontes melhoram a cobertura e validação dos dados.</p>
                         </div>
-                        <div class="col-6">
-                            <div class="fw-bold text-success">{{ stats.packet_types|length }}</div>
-                            <small class="text-muted">Tipos de Protocolos</small>
+
+                        <div class="health-summary">
+                            <div class="health-summary-item">
+                                <div class="health-summary-value">{{ stats.recent_packets }}</div>
+                                <div class="health-summary-label">Recentes (1h)</div>
+                            </div>
+                            <div class="health-summary-item">
+                                <div class="health-summary-value">{{ stats.packet_types|length }}</div>
+                                <div class="health-summary-label">Protocolos</div>
+                            </div>
                         </div>
                     </div>
                 </div>
