@@ -363,6 +363,34 @@
             </div>
         </div>
     </div>
+
+    <div class="row my-4">
+        <div class="alert alert-info border-0 shadow-sm" role="alert">
+            <h5 class="alert-heading mb-2">
+                <i class="bi bi-info-circle me-1"></i>
+                Nota sobre os dados apresentados
+            </h5>
+
+            <p class="mb-2">
+                Esta instância está a consumir dados do tópico MQTT <code>raw/</code>.
+                Isto significa que os pacotes são recebidos antes de qualquer filtragem feita por outros sistemas ou dashboards.
+            </p>
+
+            <p class="mb-2">
+                Por esse motivo, os valores apresentados podem incluir tráfego duplicado,
+                pacotes incompletos, mensagens de teste, dados de canais secundários ou informação
+                que normalmente seria filtrada mais tarde no pipeline.
+            </p>
+
+            <p class="mb-0">
+                Esta opção é intencional: permite observar a rede de forma mais transparente
+                e ajuda a diagnosticar problemas de cobertura, gateways, propagação e encaminhamento.
+                Os dados devem ser interpretados como uma visão técnica da receção bruta da rede,
+                não como uma listagem final ou curada.
+            </p>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
