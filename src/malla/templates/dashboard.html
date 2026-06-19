@@ -2,6 +2,125 @@
 
 {% block title %}Meshtastic.PT Metrics - {{ APP_NAME }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .network-overview {
+        margin-bottom: 1.75rem;
+    }
+
+    .overview-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 0.85rem;
+    }
+
+    .overview-eyebrow {
+        color: var(--bs-primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .overview-subtitle {
+        color: var(--bs-secondary-color);
+        margin: 0;
+        max-width: 58rem;
+    }
+
+    .overview-card {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+        border-radius: 0.75rem;
+    }
+
+    .overview-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: var(--metric-color, var(--bs-primary));
+    }
+
+    .overview-card .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        min-height: 10.25rem;
+        padding: 1rem;
+    }
+
+    .overview-card-main {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .overview-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.35rem;
+        height: 2.35rem;
+        border-radius: 0.65rem;
+        color: var(--metric-color, var(--bs-primary));
+        background: color-mix(in srgb, var(--metric-color, var(--bs-primary)) 14%, transparent);
+        flex: 0 0 auto;
+    }
+
+    .overview-value {
+        color: var(--metric-color, var(--bs-primary));
+        font-size: clamp(1.65rem, 2.2vw, 2.15rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .overview-label {
+        color: var(--bs-body-color);
+        font-weight: 700;
+        line-height: 1.2;
+        margin-top: 0.25rem;
+    }
+
+    .overview-note {
+        color: var(--bs-secondary-color);
+        font-size: 0.82rem;
+        line-height: 1.35;
+        margin: 0;
+    }
+
+    .overview-progress {
+        height: 0.35rem;
+        background: color-mix(in srgb, var(--bs-secondary-color) 18%, transparent);
+    }
+
+    .overview-progress .progress-bar {
+        background: var(--metric-color, var(--bs-primary));
+    }
+
+    [data-bs-theme=dark] .overview-card {
+        background: #252b30;
+    }
+
+    @media (max-width: 767.98px) {
+        .overview-header {
+            display: block;
+        }
+
+        .overview-card .card-body {
+            min-height: 9rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     {# Optional Markdown content defined in config.yaml #}
@@ -17,72 +136,122 @@
     </div>
     {% endif %}
 
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="h2">Meshtastic.PT</h1>
+    <!-- Network Overview -->
+    {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
+    {% set coverage_pct = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
+    {% set total_packets_display = "{:,}".format(stats.total_packets).replace(",", " ") %}
+    {% set success_color = '#2fbf71' if stats.success_rate >= 95 else '#d9a514' if stats.success_rate >= 85 else '#dc3545' %}
+    <section class="network-overview">
+        <div class="overview-header">
+            <div>
+                <div class="overview-eyebrow">Resumo da rede</div>
+                <h2 class="h4 mb-1">Estado geral da malha</h2>
+                <p class="overview-subtitle">Leitura rápida dos nodes, gateways e tráfego observado nas últimas 24 horas.</p>
+            </div>
         </div>
-    </div>
 
-    <!-- Network Overview Cards - Redesigned for Heterogeneous Networks -->
-    <div class="row mb-4">
-        <div class="col-md-2">
-            <div class="card h-100">
-                <div class="card-body card-metric">
-                    <div class="metric-value">{{ stats.total_nodes }}</div>
-                    <div class="metric-label">Total de Nodes</div>
-                    <small class="text-muted">nodes conhecidos</small>
+        <div class="row g-3">
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card overview-card" style="--metric-color: #3ec57e;">
+                    <div class="card-body">
+                        <div class="overview-card-main">
+                            <div>
+                                <div class="overview-value">{{ stats.total_nodes }}</div>
+                                <div class="overview-label">Nodes conhecidos</div>
+                            </div>
+                            <div class="overview-icon"><i class="bi bi-diagram-3"></i></div>
+                        </div>
+                        <p class="overview-note">Total de identificadores vistos pela instância.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card overview-card" style="--metric-color: #2fbf71;">
+                    <div class="card-body">
+                        <div class="overview-card-main">
+                            <div>
+                                <div class="overview-value">{{ stats.active_nodes_24h }}</div>
+                                <div class="overview-label">Nodes ativos</div>
+                            </div>
+                            <div class="overview-icon"><i class="bi bi-activity"></i></div>
+                        </div>
+                        <div>
+                            <p class="overview-note mb-2">Atividade nas últimas 24 horas.</p>
+                            <div class="progress overview-progress" role="progressbar" aria-label="Cobertura da rede" aria-valuenow="{{ coverage_pct }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" style="width: {{ coverage_pct }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card overview-card" style="--metric-color: #d9a514;">
+                    <div class="card-body">
+                        <div class="overview-card-main">
+                            <div>
+                                <div class="overview-value">{{ gateway_count }}</div>
+                                <div class="overview-label">Gateways</div>
+                            </div>
+                            <div class="overview-icon"><i class="bi bi-broadcast-pin"></i></div>
+                        </div>
+                        <p class="overview-note">Fontes distintas de receção MQTT.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card overview-card" style="--metric-color: #13b7d8;">
+                    <div class="card-body">
+                        <div class="overview-card-main">
+                            <div>
+                                <div class="overview-value">{{ stats.packet_types|length }}</div>
+                                <div class="overview-label">Tipos de pacotes</div>
+                            </div>
+                            <div class="overview-icon"><i class="bi bi-box"></i></div>
+                        </div>
+                        <p class="overview-note">Protocolos Meshtastic observados.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card overview-card" style="--metric-color: #3ec57e;">
+                    <div class="card-body">
+                        <div class="overview-card-main">
+                            <div>
+                                <div class="overview-value">{{ total_packets_display }}</div>
+                                <div class="overview-label">Mensagens</div>
+                            </div>
+                            <div class="overview-icon"><i class="bi bi-envelope-paper"></i></div>
+                        </div>
+                        <p class="overview-note">Volume total de tráfego processado.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card overview-card" style="--metric-color: {{ success_color }};">
+                    <div class="card-body">
+                        <div class="overview-card-main">
+                            <div>
+                                <div class="overview-value">{{ stats.success_rate }}%</div>
+                                <div class="overview-label">Processadas</div>
+                            </div>
+                            <div class="overview-icon"><i class="bi bi-check2-circle"></i></div>
+                        </div>
+                        <div>
+                            <p class="overview-note mb-2">Taxa de pacotes tratados com sucesso.</p>
+                            <div class="progress overview-progress" role="progressbar" aria-label="Taxa de sucesso" aria-valuenow="{{ stats.success_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" style="width: {{ stats.success_rate }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="card h-100">
-                <div class="card-body card-metric">
-                    <div class="metric-value text-success">{{ stats.active_nodes_24h }}</div>
-                    <div class="metric-label">Atividades dos Nodes (24h)</div>
-                    {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
-                    {% set coverage_pct = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
-                    <small class="text-muted">{{ coverage_pct }}% cobertura da rede</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card h-100">
-                <div class="card-body card-metric">
-                    <div class="metric-value text-warning">{{ gateway_count }}</div>
-                    <div class="metric-label">Diversidade de Gateways</div>
-                    <small class="text-muted">fiabilidade dos dados</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card h-100">
-                <div class="card-body card-metric">
-                    <div class="metric-value text-info">{{ stats.packet_types|length }}</div>
-                    <div class="metric-label">Diversidade de Protocolos</div>
-                    <small class="text-muted">tipos de sms usados</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card h-100">
-                <div class="card-body card-metric">
-                    <div class="metric-value">{{ "{:,}".format(stats.total_packets) }}</div>
-                    <div class="metric-label">Total de Mensages</div>
-                    <small class="text-muted">atividade da Rede</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="card h-100">
-                <div class="card-body card-metric">
-                    {% set success_class = 'text-success' if stats.success_rate >= 95 else 'text-warning' if stats.success_rate >= 85 else 'text-danger' %}
-                    <div class="metric-value {{ success_class }}">{{ stats.success_rate }}%</div>
-                    <div class="metric-label">Processadas com sucesso</div>
-                    <small class="text-muted">Fiabilidade da SMS</small>
-                </div>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <!-- Network Health and Activity Row -->
     <div class="row mb-4">
