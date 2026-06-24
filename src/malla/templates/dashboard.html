@@ -358,7 +358,6 @@
 
     <!-- Network Overview -->
     {% set total_nodes_safe = stats.total_nodes if stats.total_nodes > 0 else 1 %}
-    {% set coverage_pct = (stats.active_nodes_24h / total_nodes_safe * 100)|int %}
     {% set total_packets_display = "{:,}".format(stats.total_packets).replace(",", " ") %}
     {% set success_color = '#2fbf71' if stats.success_rate >= 95 else '#d9a514' if stats.success_rate >= 85 else '#dc3545' %}
     <section class="network-overview">
@@ -398,9 +397,6 @@
                         </div>
                         <div>
                             <p class="overview-note mb-2">Atividade nas últimas 24 horas.</p>
-                            <div class="progress overview-progress" role="progressbar" aria-label="Cobertura da rede" aria-valuenow="{{ coverage_pct }}" aria-valuemin="0" aria-valuemax="100">
-                                <div class="progress-bar" style="width: {{ coverage_pct }}%;"></div>
-                            </div>
                         </div>
                     </div>
                 </div>
