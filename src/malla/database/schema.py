@@ -83,6 +83,15 @@ INDEX_SPECS: tuple[tuple[str, str, str], ...] = (
         "CREATE INDEX IF NOT EXISTS idx_packet_history_position_lookup_time ON packet_history(portnum, timestamp DESC, from_node_id) WHERE portnum = 3 AND raw_payload IS NOT NULL AND from_node_id IS NOT NULL",
     ),
     (
+        # Node telemetry-history charts: fetch one node's telemetry packets in a
+        # time window. Without this, the query falls back to the (from_node_id,
+        # timestamp) index and scans ALL of the node's packets to filter out the
+        # telemetry ones — slow for nodes where telemetry is a small share.
+        "idx_packet_history_telemetry_lookup",
+        "packet_history",
+        "CREATE INDEX IF NOT EXISTS idx_packet_history_telemetry_lookup ON packet_history(from_node_id, timestamp) WHERE portnum = 67 AND raw_payload IS NOT NULL AND from_node_id IS NOT NULL",
+    ),
+    (
         "idx_packet_mesh_id",
         "packet_history",
         "CREATE INDEX IF NOT EXISTS idx_packet_mesh_id ON packet_history(mesh_packet_id)",
