@@ -43,6 +43,7 @@ Check out some instances with running data from community MQTT servers:
 ![traceroutes](.screenshots/traceroutes.jpg)
 ![map](.screenshots/map.jpg)
 ![traceroute_graph](.screenshots/traceroute_graph.jpg)
+![traceroute_graph_packet](.screenshots/traceroute_graph_packet.gif)
 ![hop_analysis](.screenshots/hop_analysis.jpg)
 ![gateway_compare](.screenshots/gateway_compare.jpg)
 ![longest_links](.screenshots/longest_links.jpg)
