@@ -688,12 +688,12 @@
 
     function setStatus(type) {
         if (type === 'live') {
-            statusEl.textContent = paused ? 'Paused' : 'Live';
+            statusEl.textContent = paused ? 'Em pausa' : 'Em direto';
             statusEl.className = 'badge ' + (paused ? 'bg-warning text-dark' : 'bg-success');
         } else if (type === 'error') {
-            statusEl.textContent = 'Error'; statusEl.className = 'badge bg-danger';
+            statusEl.textContent = 'Erro'; statusEl.className = 'badge bg-danger';
         } else {
-            statusEl.textContent = 'Connecting…'; statusEl.className = 'badge bg-secondary';
+            statusEl.textContent = 'A ligar…'; statusEl.className = 'badge bg-secondary';
         }
     }
 
