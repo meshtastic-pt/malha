@@ -165,6 +165,26 @@ def api_analytics():
         return jsonify({"error": str(e)}), 500
 
 
+@api_bp.route("/activity-timeline")
+def api_activity_timeline():
+    """API endpoint for the dashboard activity timeline (24h / 7d / 30d / all)."""
+    try:
+        range_key = request.args.get("range", "7d")
+        # Viewer's UTC offset in minutes (east positive), used to align buckets
+        # with local calendar days/hours. Clamped to the real-world UTC-12..
+        # UTC+14 range so it can't explode the rollup table or cache.
+        tz_offset = request.args.get("tz_offset", default=0, type=int)
+        tz_offset = max(-720, min(840, tz_offset))
+
+        timeline = AnalyticsService.get_activity_timeline(
+            range_key=range_key, tz_offset_minutes=tz_offset
+        )
+        return safe_jsonify(timeline)
+    except Exception as e:
+        logger.error(f"Error in API activity timeline: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @api_bp.route("/packets")
 def api_packets():
     """API endpoint for packet data."""
@@ -829,6 +849,31 @@ def api_node_location_history(node_id):
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         logger.error(f"Error in API node location history: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@api_bp.route("/node/<node_id>/telemetry")
+def api_node_telemetry(node_id):
+    """API endpoint for a node's telemetry history charts.
+
+    Query param ``range`` is one of ``1d``/``7d``/``30d``/``all`` (default 7d).
+    """
+    logger.info(f"API node telemetry endpoint accessed for node {node_id}")
+    try:
+        start = request.args.get("start", type=float)
+        end = request.args.get("end", type=float)
+        if start is not None and end is not None and end > start:
+            data = NodeService.get_node_telemetry_history(node_id, start=start, end=end)
+        else:
+            range_key = request.args.get("range", "7d")
+            if range_key not in NodeService.TELEMETRY_RANGES:
+                range_key = "7d"
+            data = NodeService.get_node_telemetry_history(node_id, range_key=range_key)
+        return safe_jsonify(data)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.error(f"Error in API node telemetry: {e}")
         return jsonify({"error": str(e)}), 500
 
 
