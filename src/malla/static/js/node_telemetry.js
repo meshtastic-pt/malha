@@ -17,26 +17,27 @@
   "use strict";
 
   const METRIC_LABELS = {
-    temperature: "Temperature",
-    relative_humidity: "Humidity",
-    barometric_pressure: "Pressure",
-    gas_resistance: "Gas Resistance",
+    temperature: "Temperatura",
+    relative_humidity: "Humidade",
+    barometric_pressure: "Pressão",
+    gas_resistance: "Resistência do gás",
     iaq: "IAQ",
     lux: "Lux",
-    battery_level: "Battery",
-    voltage: "Voltage",
-    channel_utilization: "Channel Util",
-    air_util_tx: "Air Util TX",
+    battery_level: "Bateria",
+    voltage: "Tensão",
+    channel_utilization: "Utilização do canal",
+    air_util_tx: "Utilização do ar TX",
   };
 
   // One chart per group; only related metrics share a chart.
   const CHART_GROUPS = [
     {
-      title: "Environment",
+      key: "environment",
+      title: "Ambiente",
       metrics: ["temperature", "relative_humidity", "barometric_pressure", "gas_resistance", "iaq", "lux"],
     },
-    { title: "Power", metrics: ["battery_level", "voltage"] },
-    { title: "Radio", metrics: ["channel_utilization", "air_util_tx"] },
+    { key: "power", title: "Energia", metrics: ["battery_level", "voltage"] },
+    { key: "radio", title: "Rádio", metrics: ["channel_utilization", "air_util_tx"] },
   ];
 
   const COLORS = ["#0e7490", "#f59e0b", "#6366f1", "#16a34a", "#dc3545", "#0891b2"];
@@ -175,6 +176,16 @@
       this._detailTimer = null;
       this.card = document.getElementById("telemetry-card");
       this.chartsEl = document.getElementById("telemetry-charts");
+      this.tabsEl = document.getElementById("telemetry-tabs");
+      if (!this.tabsEl && this.chartsEl && this.chartsEl.parentElement) {
+        this.tabsEl = document.createElement("ul");
+        this.tabsEl.id = "telemetry-tabs";
+        this.tabsEl.className = "nav nav-pills telemetry-tabs mb-3";
+        this.tabsEl.setAttribute("role", "tablist");
+        this.tabsEl.style.display = "none";
+        this.chartsEl.parentElement.insertBefore(this.tabsEl, this.chartsEl);
+      }
+      this.activeGroup = null;
       this.loadingEl = document.getElementById("telemetry-loading");
       this.emptyEl = document.getElementById("telemetry-empty");
       this.hintEl = document.getElementById("telemetry-hint");
@@ -208,6 +219,12 @@
           else this.resetZoom();
         });
       }
+      if (this.tabsEl) {
+        this.tabsEl.addEventListener("shown.bs.tab", (e) => {
+          this.activeGroup = e.target.dataset.group;
+          requestAnimationFrame(() => this.charts.forEach((chart) => chart.resize()));
+        });
+      }
       // Re-render with new colours if the light/dark theme changes.
       new MutationObserver(() => this.load()).observe(document.documentElement, {
         attributes: true,
@@ -237,9 +254,9 @@
         this.latestTs = data && data.latest != null ? data.latest : this.fullMax;
         this.updateOffline(this.latestTs);
       } catch (err) {
-        console.error("Failed to load telemetry", err);
+        console.error("Não foi possível carregar a telemetria", err);
         if (this.loadingEl) this.loadingEl.style.display = "none";
-        this.showEmpty(true, "Failed to load telemetry.");
+        this.showEmpty(true, "Não foi possível carregar a telemetria.");
       }
     }
 
@@ -259,7 +276,7 @@
         this.loadedMin = this.fullMin;
         this.loadedMax = this.fullMax;
       } catch (err) {
-        console.error("Failed to load telemetry window", err);
+        console.error("Não foi possível carregar o período de telemetria", err);
       }
     }
 
@@ -272,9 +289,14 @@
     render(series) {
       this.fullMin = Infinity;
       this.fullMax = -Infinity;
-      for (const group of CHART_GROUPS) {
-        const metrics = group.metrics.filter((m) => series[m] && series[m].points && series[m].points.length);
-        if (!metrics.length) continue;
+      const availableGroups = CHART_GROUPS.map((group) => ({
+        group,
+        metrics: group.metrics.filter((m) => series[m] && series[m].points && series[m].points.length),
+      })).filter((item) => item.metrics.length);
+      if (!availableGroups.some((item) => item.group.key === this.activeGroup)) {
+        this.activeGroup = availableGroups.length ? availableGroups[0].group.key : null;
+      }
+      for (const { group, metrics } of availableGroups) {
         metrics.forEach((m) => {
           const pts = series[m].points;
           this.fullMin = Math.min(this.fullMin, pts[0][0]);
@@ -283,7 +305,7 @@
         this.charts.push(this.buildChart(group, metrics, series));
       }
       if (this.hintEl) this.hintEl.style.display = this.charts.length ? "" : "none";
-      if (!this.charts.length) this.showEmpty(true, "No telemetry reported by this node.");
+      if (!this.charts.length) this.showEmpty(true, "Este node não comunicou dados de telemetria.");
       this.updateStats();
     }
 
@@ -294,23 +316,42 @@
         return;
       }
       this.offlineEl.innerHTML =
-        '<i class="bi bi-exclamation-triangle"></i> No telemetry since ' + fmt(latest, "datetime");
+        '<i class="bi bi-exclamation-triangle"></i> Sem telemetria desde ' + fmt(latest, "datetime");
       this.offlineEl.style.display = "";
     }
 
     buildChart(group, metrics, series) {
+      const tabId = "telemetry-" + group.key;
+      const active = group.key === this.activeGroup;
+      const item = document.createElement("li");
+      item.className = "nav-item";
+      item.setAttribute("role", "presentation");
+      const button = document.createElement("button");
+      button.className = "nav-link" + (active ? " active" : "");
+      button.type = "button";
+      button.dataset.bsToggle = "tab";
+      button.dataset.bsTarget = "#" + tabId;
+      button.dataset.group = group.key;
+      button.setAttribute("role", "tab");
+      button.setAttribute("aria-controls", tabId);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+      button.textContent = group.title;
+      item.appendChild(button);
+      if (this.tabsEl) {
+        this.tabsEl.appendChild(item);
+        this.tabsEl.style.display = "flex";
+      }
+
       const col = document.createElement("div");
-      col.className = "col-12";
-      const heading = document.createElement("h6");
-      heading.className = "text-muted mb-1";
-      heading.textContent = group.title;
+      col.id = tabId;
+      col.className = "tab-pane fade" + (active ? " show active" : "");
+      col.setAttribute("role", "tabpanel");
       const wrap = document.createElement("div");
       wrap.style.height = "320px";
       const canvas = document.createElement("canvas");
       wrap.appendChild(canvas);
       const statsEl = document.createElement("div");
       statsEl.className = "tele-stats small mt-1 mb-2";
-      col.appendChild(heading);
       col.appendChild(wrap);
       col.appendChild(statsEl);
       this.chartsEl.appendChild(col);
@@ -752,6 +793,10 @@
       this.charts.forEach((c) => c.destroy());
       this.charts = [];
       if (this.chartsEl) this.chartsEl.innerHTML = "";
+      if (this.tabsEl) {
+        this.tabsEl.innerHTML = "";
+        this.tabsEl.style.display = "none";
+      }
     }
   }
 

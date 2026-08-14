@@ -15,17 +15,17 @@
                         <div id="node-search-results" class="node-search-results"></div>
                     </div>
                     <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-outline-secondary" onclick="zoomGraphIn()" title="Zoom in">
+                        <button type="button" class="btn btn-outline-secondary" onclick="zoomGraphIn()" title="Aumentar zoom">
                             <i class="bi bi-plus-lg"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="zoomGraphOut()" title="Zoom out">
+                        <button type="button" class="btn btn-outline-secondary" onclick="zoomGraphOut()" title="Diminuir zoom">
                             <i class="bi bi-dash-lg"></i>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="centerCombinedGraph()">
                             <i class="bi bi-arrows-move"></i> Centrar
                         </button>
                         <button type="button" class="btn btn-outline-secondary" onclick="resetCombinedGraphZoom()">
-                            <i class="bi bi-zoom-out"></i> Reset
+                            <i class="bi bi-zoom-out"></i> Repor
                         </button>
                     </div>
                 </div>
@@ -38,7 +38,7 @@
                 <div class="col-12">
                     <div class="text-muted mb-1" style="font-size: 0.8rem;">
                         <i class="bi bi-info-circle"></i>
-                        Click a node to focus all receptions through it · click a reception below for its exact route · wheel to zoom · drag background to pan
+                        Clique num node para destacar todas as receções que passam por ele · clique numa receção abaixo para ver a rota exata · use a roda para ampliar · arraste o fundo para deslocar
                     </div>
                     <div id="combined-traceroute-graph" class="traceroute-graph-container">
                         <div class="text-center" id="combined-graph-loader">
@@ -578,7 +578,7 @@ function hopChip(strip, opts) {
     top.append('span').attr('class', 'idx').text(opts.idx);
     top.append('span').attr('class', 'chip-name').text(opts.label);
     if (opts.snr != null) {
-        top.append('span').attr('class', 'snr').attr('title', 'avg SNR on this hop').text(fmtSnr(opts.snr));
+        top.append('span').attr('class', 'snr').attr('title', 'SNR médio neste salto').text(fmtSnr(opts.snr));
     }
     if (opts.full && opts.full !== opts.label) chip.append('span').attr('class', 'chip-full').text(stripParens(opts.full));
     if (opts.distKm != null) chip.append('span').attr('class', 'chip-dist').text(opts.distKm);
@@ -611,7 +611,7 @@ function loadCombinedTracerouteGraph() {
     if (!container || !window.packetGraphData || window.packetGraphData.nodes.length === 0) {
         setChildren(container,
             el('div', { className: 'd-flex align-items-center justify-content-center h-100' },
-                el('p', { className: 'text-muted' }, 'No graph data available.')
+                el('p', { className: 'text-muted' }, 'Não existem dados disponíveis para o gráfico.')
             )
         );
         return;
@@ -841,7 +841,7 @@ function loadCombinedTracerouteGraph() {
         .attr('class', 'hop-header')
         .attr('x', d => colX[d]).attr('y', 18)
         .attr('text-anchor', 'middle')
-        .text(d => d === 0 ? 'SOURCE' : 'hop ' + d);
+        .text(d => d === 0 ? 'ORIGEM' : 'salto ' + d);
 
     const EDGE_COLOR = '#64748b'; // neutral: edge width carries the traffic signal
 
@@ -857,7 +857,7 @@ function loadCombinedTracerouteGraph() {
 
     edges.append('title').text(d => {
         const a = nodeById.get(d.source), b = nodeById.get(d.target);
-        return `${a ? a.full : shortId(d.source)} → ${b ? b.full : shortId(d.target)}\n${packetsOnEdge[d.source + '-' + d.target] || 0} packets · avg SNR ${d.avg_snr != null ? d.avg_snr.toFixed(1) + ' dB' : 'n/a'}`;
+        return `${a ? a.full : shortId(d.source)} → ${b ? b.full : shortId(d.target)}\n${packetsOnEdge[d.source + '-' + d.target] || 0} pacotes · SNR médio ${d.avg_snr != null ? d.avg_snr.toFixed(1) + ' dB' : 'n/d'}`;
     });
 
     // gateway connections: dashed
@@ -924,9 +924,9 @@ function loadCombinedTracerouteGraph() {
             const details = [
                 tooltipLine('Name', d.full || d.label),
                 tooltipLine('ID', shortId(d.id)),
-                tooltipLine('Type', d.type === 'gateway' ? 'Gateway' : 'Router'),
-                tooltipLine('Relayed', String(relayCount[d.id] || 0)),
-                tooltipLine('Heard', String(heardCount[d.id] || 0))
+                tooltipLine('Tipo', d.type === 'gateway' ? 'Gateway' : 'Router'),
+                tooltipLine('Retransmitidos', String(relayCount[d.id] || 0)),
+                tooltipLine('Recebidos', String(heardCount[d.id] || 0))
             ];
             setGraphTooltip(tooltip, event,
                 tooltipWithTitle(`${d.is_source ? '🚀 ' : ''}${d.full || d.label}`, ...details));
@@ -949,8 +949,8 @@ function loadCombinedTracerouteGraph() {
                 tooltipWithTitle('RF Link',
                     tooltipLine('From', a ? a.full : shortId(d.source)),
                     tooltipLine('To', b ? b.full : shortId(d.target)),
-                    tooltipLine('Packets', String(packetsOnEdge[d.source + '-' + d.target] || 0)),
-                    tooltipLine('Avg SNR', d.avg_snr != null ? d.avg_snr.toFixed(1) + ' dB' : 'n/a')));
+                    tooltipLine('Pacotes', String(packetsOnEdge[d.source + '-' + d.target] || 0)),
+                    tooltipLine('SNR médio', d.avg_snr != null ? d.avg_snr.toFixed(1) + ' dB' : 'n/d')));
         })
         .on('mouseout', function(event, d) {
             d3.select(this).attr('stroke-width', d => 1 + 3.5 * Math.log10(1 + (packetsOnEdge[d.source + '-' + d.target] || 1)));
@@ -1188,7 +1188,7 @@ function loadCombinedTracerouteGraph() {
                 });
             }
             strip.append('span').style('margin-left', '8px').style('font-size', '12px').style('color', 'var(--bs-secondary-color)')
-                .text(`· hop ${bestPrefix ? bestPrefix.length - 1 : '?'} · ${recs.length} receptions · ${gws.size} gateways · ${lastHops.size} last hops — click a reception below for its exact route`);
+                .text(`· salto ${bestPrefix ? bestPrefix.length - 1 : '?'} · ${recs.length} receções · ${gws.size} gateways · ${lastHops.size} últimos saltos — clique numa receção abaixo para ver a rota exata`);
             return;
         }
         const p = paths.find(p => p.packet_id === tracedPacketId);
@@ -1226,8 +1226,8 @@ function loadCombinedTracerouteGraph() {
         const sum = strip.append('span').style('margin-left', '10px').style('display', 'inline-flex')
             .style('align-items', 'center').style('gap', '8px');
         sum.append('span').attr('class', 'snr-badge')
-            .text(`reception SNR ${p.avg_snr != null ? fmtSnr(p.avg_snr) : 'n/a'}`);
-        sum.append('span').style('font-size', '11px').style('color', 'var(--bs-secondary-color)').text(`· ${p.hop_count} hops`);
+            .text(`SNR da receção ${p.avg_snr != null ? fmtSnr(p.avg_snr) : 'n/d'}`);
+        sum.append('span').style('font-size', '11px').style('color', 'var(--bs-secondary-color)').text(`· ${p.hop_count} saltos`);
     }
 
     // ================= Sidebar: mesh packet -> last hop -> receptions =================
@@ -1235,7 +1235,7 @@ function loadCombinedTracerouteGraph() {
         const gg = d3.select('#reception-groups');
         gg.selectAll('*').remove();
         if (paths.length === 0) {
-            gg.append('small').attr('class', 'text-muted').text('No receptions.');
+            gg.append('small').attr('class', 'text-muted').text('Sem receções.');
             return;
         }
         meshGroups.forEach((recs, mid) => {
@@ -1249,7 +1249,7 @@ function loadCombinedTracerouteGraph() {
             gg.append('div').attr('class', 'meshhead')
                 .html(`<b>Mesh pkt !${mid.toString(16).padStart(8, '0')}</b>`);
             gg.append('div').attr('class', 'muted')
-                .text(`${recs.length} reception${recs.length !== 1 ? 's' : ''} · ${lastHops.length} last hop${lastHops.length !== 1 ? 's' : ''}${avgSnr != null ? ' · avg SNR ' + avgSnr.toFixed(1) + ' dB' : ''}`);
+                .text(`${recs.length} ${recs.length !== 1 ? 'receções' : 'receção'} · ${lastHops.length} ${lastHops.length !== 1 ? 'últimos saltos' : 'último salto'}${avgSnr != null ? ' · SNR médio ' + avgSnr.toFixed(1) + ' dB' : ''}`);
             lastHops.sort((a, b) => byLast[b].length - byLast[a].length).forEach(last => {
                 const ps = byLast[last];
                 const grp = gg.append('div').attr('class', 'gwgroup');
@@ -1260,11 +1260,11 @@ function loadCombinedTracerouteGraph() {
                 ps.forEach(p => {
                     const gw = nodeById.get(p.gateway_node_id);
                     const row = grp.append('div').attr('class', 'gw rec').attr('data-id', p.gateway_node_id).datum(p)
-                        .attr('title', `${p.nodes.map(nid => (nodeById.get(nid) || {}).full || shortId(nid)).join(' → ')}${p.gateway_node_id != null ? ' → ' + ((nodeById.get(p.gateway_node_id) || {}).full || shortId(p.gateway_node_id)) : ''} · ${p.hop_count} hops · avg SNR ${p.avg_snr != null ? p.avg_snr.toFixed(1) + ' dB' : 'n/a'}`)
+                        .attr('title', `${p.nodes.map(nid => (nodeById.get(nid) || {}).full || shortId(nid)).join(' → ')}${p.gateway_node_id != null ? ' → ' + ((nodeById.get(p.gateway_node_id) || {}).full || shortId(p.gateway_node_id)) : ''} · ${p.hop_count} saltos · SNR médio ${p.avg_snr != null ? p.avg_snr.toFixed(1) + ' dB' : 'n/d'}`)
                         .on('click', () => traceReception(p.packet_id));
                     row.append('span').text(gw ? gw.label : shortId(p.gateway_node_id));
                     const right = row.append('span').attr('class', 'cnt');
-                    right.append('span').text(`${p.hop_count}h · ${p.avg_snr != null ? p.avg_snr.toFixed(1) + 'dB' : 'n/a'}`);
+                    right.append('span').text(`${p.hop_count}s · ${p.avg_snr != null ? p.avg_snr.toFixed(1) + 'dB' : 'n/d'}`);
                     right.append('a').attr('class', 'pkt-link')
                         .attr('href', `/packet/${p.packet_id}`)
                         .attr('target', '_blank')
@@ -1363,7 +1363,7 @@ function showLinkDetails(sourceNode, targetNode, linkData) {
     const hopsButton = buttonLink({
         href: '#',
         className: 'btn btn-outline-primary btn-sm',
-        title: 'View hops between these nodes',
+        title: 'Ver os saltos entre estes nodes',
         iconClass: 'bi bi-diagram-3',
         text: 'Hops'
     });
@@ -1391,10 +1391,10 @@ function showLinkDetails(sourceNode, targetNode, linkData) {
             ),
             el('div', { className: 'row mb-3' },
                 el('div', { className: 'col-4' }, el('strong', null, 'Observations:'), el('br'), badge(String(linkData.value), 'bg-info')),
-                el('div', { className: 'col-4' }, el('strong', null, 'Type:'), el('br'), badge(linkData.is_bidirectional ? 'Bidirectional' : 'Unidirectional', linkData.is_bidirectional ? 'bg-success' : 'bg-warning')),
-                el('div', { className: 'col-4' }, el('strong', null, 'Avg SNR:'), el('br'), snrBadge)
+                el('div', { className: 'col-4' }, el('strong', null, 'Tipo:'), el('br'), badge(linkData.is_bidirectional ? 'Bidirecional' : 'Unidirecional', linkData.is_bidirectional ? 'bg-success' : 'bg-warning')),
+                el('div', { className: 'col-4' }, el('strong', null, 'SNR médio:'), el('br'), snrBadge)
             ),
-            el('div', { className: 'mb-3' }, el('strong', null, 'Packets:'), textNode(` ${linkData.packet_ids.join(', ')}`)),
+            el('div', { className: 'mb-3' }, el('strong', null, 'Pacotes:'), textNode(` ${linkData.packet_ids.join(', ')}`)),
             el('div', { style: { marginTop: '20px' } }, hopsButton)
         )
     );

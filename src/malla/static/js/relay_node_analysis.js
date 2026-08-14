@@ -47,7 +47,7 @@ class RelayNodeAnalysis {
 
             const response = await fetch(`/api/node/${this.nodeId}/relay-node-analysis?limit=50`);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Erro HTTP! Estado: ${response.status}`);
             }
             const data = await response.json();
 
@@ -128,7 +128,7 @@ class RelayNodeAnalysis {
                 });
                 candidatesCell.appendChild(fragment(candidateNodes));
             } else {
-                candidatesCell.appendChild(el('span', { className: 'text-muted' }, 'No matching 0-hop nodes'));
+                candidatesCell.appendChild(el('span', { className: 'text-muted' }, 'Sem nodes correspondentes a 0 saltos'));
             }
             row.appendChild(candidatesCell);
 
@@ -147,9 +147,9 @@ class RelayNodeAnalysis {
             el('tr', null,
                 el('td', { colspan: '5', className: 'text-center text-muted py-3' },
                     icon('bi bi-info-circle'),
-                    textNode(' No relay node data available for this gateway.'),
+                    textNode(' Não existem dados de nodes retransmissores para este gateway.'),
                     el('br'),
-                    el('small', null, 'This node may not have reported any packets with relay_node information.')
+                    el('small', null, 'Este node poderá não ter comunicado pacotes com informação relay_node.')
                 )
             )
         );
@@ -170,7 +170,7 @@ class RelayNodeAnalysis {
             el('tr', null,
                 el('td', { colspan: '5', className: 'text-center text-danger py-3' },
                     icon('bi bi-exclamation-triangle'),
-                    textNode(` Error loading relay node analysis: ${error.message}`)
+                    textNode(` Erro ao carregar a análise dos nodes retransmissores: ${error.message}`)
                 )
             )
         );

@@ -377,40 +377,45 @@
             <!-- Telemetry History -->
             <div class="card mb-4" id="telemetry-card" data-node-id="{{ node.node_id }}">
                 <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h5 class="mb-0"><i class="bi bi-thermometer-half"></i> Telemetry History</h5>
+                    <h5 class="mb-0"><i class="bi bi-thermometer-half"></i> Histórico de telemetria</h5>
                     <div class="d-flex flex-wrap gap-2">
-                        <div class="btn-group btn-group-sm" role="group" id="telemetry-range" aria-label="Telemetry time range">
+                        <div class="btn-group btn-group-sm" role="group" id="telemetry-range" aria-label="Período da telemetria">
                             <button type="button" class="btn btn-outline-primary" data-range="1d">1D</button>
                             <button type="button" class="btn btn-outline-primary active" data-range="7d">7D</button>
                             <button type="button" class="btn btn-outline-primary" data-range="30d">30D</button>
-                            <button type="button" class="btn btn-outline-primary" data-range="all">All</button>
+                            <button type="button" class="btn btn-outline-primary" data-range="all">Tudo</button>
                         </div>
-                        <div class="btn-group btn-group-sm" role="group" id="telemetry-zoom" aria-label="Telemetry zoom">
-                            <button type="button" class="btn btn-outline-secondary" data-zoom="in" title="Zoom in"><i class="bi bi-zoom-in"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" data-zoom="out" title="Zoom out"><i class="bi bi-zoom-out"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" data-zoom="reset" title="Reset zoom"><i class="bi bi-arrow-counterclockwise"></i></button>
-                            <button type="button" class="btn btn-outline-secondary" data-zero title="Start axes at zero"><b>0</b></button>
+                        <div class="btn-group btn-group-sm" role="group" id="telemetry-zoom" aria-label="Zoom da telemetria">
+                            <button type="button" class="btn btn-outline-secondary" data-zoom="in" title="Aumentar zoom"><i class="bi bi-zoom-in"></i></button>
+                            <button type="button" class="btn btn-outline-secondary" data-zoom="out" title="Diminuir zoom"><i class="bi bi-zoom-out"></i></button>
+                            <button type="button" class="btn btn-outline-secondary" data-zoom="reset" title="Repor zoom"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            <button type="button" class="btn btn-outline-secondary" data-zero title="Iniciar os eixos em zero"><b>0</b></button>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <div id="telemetry-loading" class="text-center text-muted" style="display: none; min-height: 240px; align-items: center; justify-content: center; gap: .5rem;">
-                        <div class="spinner-border spinner-border-sm" role="status"></div> Loading telemetry…
+                        <div class="spinner-border spinner-border-sm" role="status"></div> A carregar telemetria…
                     </div>
                     <div id="telemetry-empty" class="text-center text-muted" style="display: none; min-height: 240px; align-items: center; justify-content: center;">
-                        No telemetry reported by this node.
+                        Este node não comunicou dados de telemetria.
                     </div>
                     <div id="telemetry-offline" class="alert alert-warning py-1 px-2 small mb-2" style="display: none;"></div>
                     <div id="telemetry-hint" class="text-muted small mb-2" style="display: none;">
-                        <i class="bi bi-search"></i> Drag to select a time range, double-click to zoom in, or use the buttons. Hover a legend item to focus a metric.
+                        <i class="bi bi-search"></i> Arraste para selecionar um período, faça duplo clique para ampliar ou utilize os botões. Passe o cursor sobre a legenda para destacar uma métrica.
                     </div>
-                    <div id="telemetry-charts" class="row g-4"></div>
+                    <ul id="telemetry-tabs" class="nav nav-pills telemetry-tabs mb-3" role="tablist" style="display: none;"></ul>
+                    <div id="telemetry-charts" class="tab-content"></div>
                 </div>
             </div>
             <style>
                 .tele-stats { line-height: 1.9; }
                 .tele-stat { white-space: nowrap; }
                 .tele-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+                .telemetry-tabs { gap: .4rem; padding: .3rem; border-radius: .65rem; background: var(--bs-tertiary-bg); }
+                .telemetry-tabs .nav-link { padding: .4rem .9rem; border-radius: .45rem; color: var(--bs-secondary-color); font-weight: 600; }
+                .telemetry-tabs .nav-link:hover { color: var(--bs-body-color); background: color-mix(in srgb, var(--bs-primary) 10%, transparent); }
+                .telemetry-tabs .nav-link.active { color: #fff; background: var(--bs-primary); box-shadow: 0 2px 7px rgb(var(--bs-primary-rgb) / 28%); }
             </style>
 
             <!-- Location Information -->

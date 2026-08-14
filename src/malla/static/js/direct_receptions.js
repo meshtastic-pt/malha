@@ -110,9 +110,9 @@ class DirectReceptionsChart {
     updateDescription(direction) {
         const description = document.getElementById('direct-receptions-description');
         if (direction === 'received') {
-            description.textContent = 'Packets received directly (0 hops) by this gateway from other nodes.';
+            description.textContent = 'Pacotes recebidos diretamente (0 saltos) por este gateway a partir de outros nodes.';
         } else {
-            description.textContent = 'Packets from this node received directly (0 hops) by other gateways.';
+            description.textContent = 'Pacotes deste node recebidos diretamente (0 saltos) por outros gateways.';
         }
     }
 
@@ -124,8 +124,8 @@ class DirectReceptionsChart {
             el('div', { className: 'd-flex align-items-center justify-content-center h-100' },
                 el('div', { className: 'text-center text-muted' },
                     el('i', { className: 'bi bi-info-circle', style: { fontSize: '2rem' } }),
-                    el('div', { className: 'mt-2' }, `No direct ${direction} data available`),
-                    el('div', { className: 'small' }, 'Try switching to the other direction')
+                    el('div', { className: 'mt-2' }, 'Não existem dados de receções diretas nesta direção'),
+                    el('div', { className: 'small' }, 'Experimente selecionar a direção oposta')
                 )
             )
         );
@@ -143,13 +143,13 @@ class DirectReceptionsChart {
             el('div', { className: 'd-flex align-items-center justify-content-center h-100' },
                 el('div', { className: 'text-center text-danger' },
                     el('i', { className: 'bi bi-exclamation-triangle', style: { fontSize: '2rem' } }),
-                    el('div', { className: 'mt-2' }, 'Error loading direct receptions data'),
+                    el('div', { className: 'mt-2' }, 'Erro ao carregar os dados das receções diretas'),
                     el('div', { className: 'small' }, error.message)
                 )
             )
         );
 
-        this.clearLegendTable('Error loading data');
+        this.clearLegendTable('Erro ao carregar os dados');
     }
 
     /**
@@ -207,8 +207,8 @@ class DirectReceptionsChart {
                 },
                 customdata: packetIds,
                 hovertemplate: '<b>%{fullData.name}</b><br>' +
-                              'Time: %{x}<br>' +
-                              'Value: %{y}<br>' +
+                              'Hora: %{x}<br>' +
+                              'Valor: %{y}<br>' +
                               '<extra></extra>'
             });
         });
@@ -221,7 +221,7 @@ class DirectReceptionsChart {
         const layout = {
             title: '',
             xaxis: {
-                title: 'Time',
+                title: 'Hora',
                 type: 'date',
                 fixedrange: false // Allow zooming on x-axis
             },
@@ -428,7 +428,7 @@ class DirectReceptionsChart {
     /**
      * Clear the legend table
      */
-    clearLegendTable(message = 'No data available') {
+    clearLegendTable(message = 'Não existem dados disponíveis') {
         const tbody = document.querySelector('#direct-receptions-legend tbody');
         if (tbody) {
             tbody.replaceChildren(
