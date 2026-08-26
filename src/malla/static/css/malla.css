@@ -697,6 +697,10 @@ a {
 }
 
 /* Leaflet map dark mode support */
+[data-bs-theme=dark] .osm-standard-tiles {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
 [data-bs-theme=dark] .leaflet-popup-content-wrapper,
 [data-bs-theme=dark] .leaflet-popup-tip {
   background: var(--bs-body-bg) !important;

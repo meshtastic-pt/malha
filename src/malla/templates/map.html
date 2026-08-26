@@ -469,23 +469,6 @@ controls_section, stats_section, legend_section, sidebar_styles %}
     let firstDisplay = true; // prevent recenter after initial load
     let currentHopDepth = 1; // max hop depth to display around selected node
 
-    // Update map theme based on current theme setting
-    function updateMapTheme() {
-        if (!map || !lightTileLayer || !darkTileLayer) return;
-
-        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-        const newTileLayer = isDark ? darkTileLayer : lightTileLayer;
-
-        // Remove current tile layer if it exists
-        if (currentTileLayer) {
-            map.removeLayer(currentTileLayer);
-        }
-
-        // Add new tile layer
-        newTileLayer.addTo(map);
-        currentTileLayer = newTileLayer;
-    }
-
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     // Check if sidebar should be collapsed by default (from URL parameter)
@@ -506,10 +489,6 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeInterface();
             initMap();
 
-                // Listen for theme changes
-                window.addEventListener('themeChanged', function (event) {
-                    updateMapTheme();
-                });
             } else {
                 setTimeout(waitForJQuery, 50);
             }
@@ -701,29 +680,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Map tile layers for different themes
-    let lightTileLayer, darkTileLayer, currentTileLayer;
+    // OpenStreetMap base layer (dark mode is applied with CSS)
+    let baseTileLayer;
 
     // Initialize the map
     function initMap() {
         // Create map centered on a default location (will be updated when data loads)
         map = L.map('map').setView([40.0, -95.0], 4);
 
-        // Create light and dark tile layers
-        lightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
+        baseTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            className: 'osm-standard-tiles',
+            maxZoom: 19
         });
-
-        darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        });
-
-        // Add appropriate tile layer based on current theme
-        updateMapTheme();
+        baseTileLayer.addTo(map);
 
         // Initialize marker cluster group
         markerClusterGroup = L.markerClusterGroup({

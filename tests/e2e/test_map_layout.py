@@ -31,6 +31,22 @@ class TestMapLayout:
         expect(page.locator("#mapError")).to_be_hidden()
 
     @pytest.mark.e2e
+    def test_openstreetmap_attribution_is_visible_and_linked(
+        self, page: Page, test_server_url
+    ):
+        """Keep the OSM credit visible on the interactive map."""
+        page.goto(f"{test_server_url}/map")
+
+        attribution = page.locator("#map .leaflet-control-attribution")
+        expect(attribution).to_be_visible()
+        expect(attribution).to_contain_text("OpenStreetMap")
+        expect(
+            attribution.locator(
+                'a[href="https://www.openstreetmap.org/copyright"]'
+            )
+        ).to_be_visible()
+
+    @pytest.mark.e2e
     def test_map_loads_node_data(self, page: Page, test_server_url):
         """Test that the map loads and displays node data."""
         page.goto(f"{test_server_url}/map")
