@@ -962,7 +962,7 @@ function updateChartsForTheme() {
         createNodeActivityChart(analyticsData.node_statistics);
         createGatewayActivityChart(analyticsData.gateway_distribution);
         createSignalDistributionChart(analyticsData.signal_quality);
-        createHopDistributionChart(analyticsData.temporal_patterns);
+        createHopDistributionChart(analyticsData.hop_distribution);
         createPacketTypesChart(analyticsData.packet_types);
     }
 }
@@ -991,7 +991,7 @@ async function loadAnalyticsData() {
         createNodeActivityChart(analyticsData.node_statistics);
         createGatewayActivityChart(analyticsData.gateway_distribution);
         createSignalDistributionChart(analyticsData.signal_quality);
-        createHopDistributionChart(analyticsData.temporal_patterns);
+        createHopDistributionChart(analyticsData.hop_distribution);
         createPacketTypesChart(analyticsData.packet_types);
         populateTopNodesTable(analyticsData.top_nodes);
 
@@ -1335,7 +1335,7 @@ function createHopDistributionChart(hopDistribution) {
     hideLoadingSpinner('hopDistributionChart');
     const ctx = document.getElementById('hopDistributionCanvas');
     if (!ctx) return;
-    if (!hopDistribution || hopDistribution.length === 0) return;
+    if (!Array.isArray(hopDistribution) || hopDistribution.length === 0) return;
 
     if (chartInstances.hopDistributionChart) {
         chartInstances.hopDistributionChart.destroy();

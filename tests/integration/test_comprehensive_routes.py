@@ -24,6 +24,20 @@ class TestMainRoutes:
         assert b"Nodes ativos" in response.data
 
     @pytest.mark.integration
+    def test_dashboard_uses_dedicated_hop_distribution(self, client):
+        """The hop chart must receive the list returned by the analytics API."""
+        response = client.get("/")
+        assert response.status_code == 200
+        assert (
+            b"createHopDistributionChart(analyticsData.hop_distribution)"
+            in response.data
+        )
+        assert (
+            b"createHopDistributionChart(analyticsData.temporal_patterns)"
+            not in response.data
+        )
+
+    @pytest.mark.integration
     def test_map_route(self, client):
         """Test the map view route."""
         response = client.get("/map")
@@ -227,6 +241,7 @@ class TestAPIStatsEndpoints:
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, dict)
+        assert isinstance(data["hop_distribution"], list)
 
     @pytest.mark.integration
     @pytest.mark.api
