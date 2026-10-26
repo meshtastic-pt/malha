@@ -68,6 +68,28 @@ class TestMapLayout:
         assert stats_nodes and int(stats_nodes) > 0, "Should have node statistics"
 
     @pytest.mark.e2e
+    def test_initial_fit_includes_every_node(self, page: Page, test_server_url):
+        """Geographic extremes such as Portuguese islands remain in view."""
+        page.goto(f"{test_server_url}/map")
+        page.wait_for_selector("#mapLoading", state="hidden", timeout=DEFAULT_TIMEOUT)
+        page.wait_for_timeout(1000)  # Initial fit is intentionally delayed by 500 ms.
+
+        fit_result = page.evaluate(
+            """() => ({
+                markerCount: nodeMarkers.length,
+                outside: nodeMarkers
+                    .map(marker => marker.getLatLng())
+                    .filter(latLng => !map.getBounds().contains(latLng))
+                    .map(latLng => [latLng.lat, latLng.lng]),
+            })"""
+        )
+
+        assert fit_result["markerCount"] > 0
+        assert fit_result["outside"] == [], (
+            f"Nodes outside the initial map bounds: {fit_result['outside']}"
+        )
+
+    @pytest.mark.e2e
     def test_custom_node_markers_display(self, page: Page, test_server_url):
         """Test that custom node markers with roles are displayed correctly."""
         page.goto(f"{test_server_url}/map")
