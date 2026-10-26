@@ -22,13 +22,14 @@ from ..services.analytics_service import AnalyticsService
 from ..services.location_service import LocationService
 from ..services.meshtastic_service import MeshtasticService
 from ..services.node_service import NodeService
-from ..services.traceroute_service import TracerouteService
+from ..services.traceroute_service import DEFAULT_GRAPH_PACKET_LIMIT, TracerouteService
 from ..utils.node_utils import (
     convert_node_id,
     get_bulk_node_names,
     get_bulk_node_short_names,
 )
 from ..utils.serialization_utils import convert_bytes_to_base64, sanitize_floats
+from ..utils.signal_quality import is_plausible_traceroute_snr
 from ..utils.traceroute_utils import parse_traceroute_payload
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,35 @@ CHAT_RELAY_CANDIDATE_LOOKUP_LIMIT = 256
 _chat_relay_candidate_cache: dict[
     tuple[int, int], tuple[float, list[dict[str, Any]]]
 ] = {}
+
+# TTL cache for the set of node ids involved in traceroute RF hops (including
+# intermediate route nodes). Refreshed by the /traceroute-hops/nodes endpoint;
+# the protobuf payload parsing it replaces is too expensive to repeat per request.
+_HOP_NODES_CACHE_TTL_SECONDS = 300
+_hop_nodes_cache: tuple[float, frozenset[int]] | None = None
+
+
+def _clamp_limit(default: int, maximum: int) -> int:
+    """Read and bound the untrusted ``?limit=`` query parameter to [1, maximum].
+
+    ``limit`` is passed through to a SQL ``LIMIT`` clause, where SQLite treats a
+    negative value as "no limit" (returning the entire table) and an oversized
+    value forces the database to materialise an unbounded result set. Clamp it,
+    falling back to ``default`` when the parameter is missing or non-numeric.
+    """
+    raw = request.args.get("limit", default, type=int)
+    if raw is None or raw < 1:
+        return default
+    return min(raw, maximum)
+
+
+def _clamp_page() -> int:
+    """Read the untrusted ``?page=`` parameter, forcing it to be >= 1.
+
+    Guards against a negative ``(page - 1) * limit`` offset.
+    """
+    raw = request.args.get("page", 1, type=int)
+    return raw if raw is not None and raw >= 1 else 1
 
 
 def _prune_chat_relay_candidate_cache(now: float) -> None:
@@ -190,8 +220,8 @@ def api_packets():
     """API endpoint for packet data."""
     logger.info("API packets endpoint accessed")
     try:
-        limit = request.args.get("limit", 100, type=int)
-        page = request.args.get("page", 1, type=int)
+        limit = _clamp_limit(default=100, maximum=1000)
+        page = _clamp_page()
         offset = (page - 1) * limit
 
         # Build filters
@@ -284,8 +314,8 @@ def api_nodes():
     """API endpoint for node data (with optional search)."""
     logger.info("API nodes endpoint accessed")
     try:
-        limit = request.args.get("limit", 100, type=int)
-        page = request.args.get("page", 1, type=int)
+        limit = _clamp_limit(default=100, maximum=10000)
+        page = _clamp_page()
         search = request.args.get("search", "").strip()
         offset = (page - 1) * limit
 
@@ -334,10 +364,9 @@ def api_nodes_search():
     logger.info("API nodes search endpoint accessed")
     try:
         query = request.args.get("q", "").strip()
-        limit = request.args.get("limit", 20, type=int)
+        limit = _clamp_limit(default=20, maximum=100)
 
-        # Limit the search limit to prevent abuse
-        limit = min(limit, 100)
+        # limit is already clamped to [1, 100] by _clamp_limit above
 
         # Check if database tables exist before calling NodeRepository
         db_ready = False
@@ -440,10 +469,9 @@ def api_gateways_search():
     logger.info("API gateways search endpoint accessed")
     try:
         query = request.args.get("q", "").strip()
-        limit = request.args.get("limit", 20, type=int)
+        limit = _clamp_limit(default=20, maximum=100)
 
-        # Limit the search limit to prevent abuse
-        limit = min(limit, 100)
+        # limit is already clamped to [1, 100] by _clamp_limit above
 
         # Get all gateways first
         all_gateways = PacketRepository.get_unique_gateway_ids()
@@ -742,7 +770,6 @@ def api_locations():
             hours=hours,
             include_indirect=False,
             filters=network_filters,
-            limit_packets=2000,
         )
 
         # 2. Get packet links (used by get_node_locations and returned in response)
@@ -842,7 +869,7 @@ def api_node_location_history(node_id):
     """API endpoint for node location history."""
     logger.info(f"API node location history endpoint accessed for node {node_id}")
     try:
-        limit = request.args.get("limit", 100, type=int)
+        limit = _clamp_limit(default=100, maximum=2000)
         history = NodeService.get_node_location_history(node_id, limit=limit)
         return safe_jsonify(history)
     except ValueError as e:
@@ -882,7 +909,7 @@ def api_node_direct_receptions(node_id):
     """API endpoint for bidirectional direct receptions (0-hop packets)."""
     logger.info(f"API direct receptions endpoint accessed for node {node_id}")
     try:
-        limit = request.args.get("limit", 1000, type=int)
+        limit = _clamp_limit(default=1000, maximum=5000)
         direction = request.args.get("direction", "received", type=str)
 
         # Validate direction parameter
@@ -922,7 +949,7 @@ def api_node_relay_node_analysis(node_id):
     """
     logger.info(f"API relay node analysis endpoint accessed for node {node_id}")
     try:
-        limit = request.args.get("limit", 50, type=int)
+        limit = _clamp_limit(default=50, maximum=1000)
 
         # Convert node_id using helper to support hex strings or int
         node_id_int = convert_node_id(node_id)
@@ -1014,42 +1041,113 @@ def api_traceroute_hops_nodes():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Get nodes that have been involved in traceroutes (either as source or destination)
-        query = """
-            SELECT DISTINCT
-                ni.node_id,
-                ni.long_name,
-                ni.short_name,
-                ni.hw_model,
-                printf('!%08x', ni.node_id) as hex_id
-            FROM node_info ni
-            WHERE ni.node_id IN (
-                SELECT DISTINCT from_node_id FROM packet_history
-                WHERE portnum_name = 'TRACEROUTE_APP' AND from_node_id IS NOT NULL
-                UNION
-                SELECT DISTINCT to_node_id FROM packet_history
-                WHERE portnum_name = 'TRACEROUTE_APP' AND to_node_id IS NOT NULL
-            )
-            ORDER BY ni.long_name, ni.short_name
-        """
+        # Collect all nodes involved in recent traceroutes: initiators, targets
+        # and intermediate route nodes. Route arrays live inside raw_payload
+        # blobs so they cannot be extracted in SQL; parse them in Python using
+        # the same 7-day window as the hop/link analysis endpoints so every
+        # listed node can actually be analyzed (and so map "View History"
+        # links resolve for hop-only nodes). The parse is expensive, so the
+        # resulting id set is cached briefly.
+        global _hop_nodes_cache
+        now = time.time()
+        if (
+            _hop_nodes_cache is not None
+            and now - _hop_nodes_cache[0] < _HOP_NODES_CACHE_TTL_SECONDS
+        ):
+            hop_node_ids = set(_hop_nodes_cache[1])
+        else:
+            from datetime import datetime, timedelta
 
-        cursor.execute(query)
-        nodes_data = [dict(row) for row in cursor.fetchall()]
+            window_end = datetime.now()
+            window_start = window_end - timedelta(days=7)
+            cursor.execute(
+                f"""
+                SELECT
+                    id, from_node_id, to_node_id, raw_payload
+                FROM packet_history
+                WHERE portnum_name = 'TRACEROUTE_APP'
+                  AND processed_successfully = 1
+                  AND raw_payload IS NOT NULL
+                  AND timestamp >= ? AND timestamp <= ?
+                ORDER BY timestamp DESC
+                LIMIT {DEFAULT_GRAPH_PACKET_LIMIT}
+                """,
+                (window_start.timestamp(), window_end.timestamp()),
+            )
+
+            BROADCAST_NODE_ID = 4294967295  # 0xFFFFFFFF
+            hop_node_ids = set()
+            for packet in cursor.fetchall():
+                # RF hop endpoints are consecutive nodes of the sequence
+                # from -> route... -> to (and the same for the return path),
+                # so the union of all those node ids is exactly the set of
+                # nodes that can appear as a hop endpoint.
+                route_data = parse_traceroute_payload(packet["raw_payload"])
+                packet_node_ids = [
+                    packet["from_node_id"],
+                    packet["to_node_id"],
+                    *route_data["route_nodes"],
+                    *route_data["route_back"],
+                ]
+                for hop_node_id in packet_node_ids:
+                    if hop_node_id is not None and hop_node_id != BROADCAST_NODE_ID:
+                        hop_node_ids.add(hop_node_id)
+
+            _hop_nodes_cache = (now, frozenset(hop_node_ids))
+
+        # Fetch node info for all involved nodes
+        nodes_data: dict[int, dict[str, Any]] = {}
+        if hop_node_ids:
+            ordered_hop_ids = sorted(hop_node_ids)
+            placeholders = ",".join("?" * len(ordered_hop_ids))
+            cursor.execute(
+                f"""
+                SELECT DISTINCT
+                    ni.node_id,
+                    ni.long_name,
+                    ni.short_name,
+                    ni.hw_model,
+                    printf('!%08x', ni.node_id) as hex_id
+                FROM node_info ni
+                WHERE ni.node_id IN ({placeholders})
+                """,
+                ordered_hop_ids,
+            )
+            for row in cursor.fetchall():
+                nodes_data[row["node_id"]] = dict(row)
+
+            # Nodes without a node_info record still need a pickable entry
+            for hop_node_id in ordered_hop_ids:
+                if hop_node_id not in nodes_data:
+                    nodes_data[hop_node_id] = {
+                        "node_id": hop_node_id,
+                        "long_name": None,
+                        "short_name": None,
+                        "hw_model": None,
+                        "hex_id": f"!{hop_node_id:08x}",
+                    }
+
         conn.close()
         db_time = time.time() - db_start
 
         # Get location data for these nodes only (avoid decoding positions for the whole network)
         location_start = time.time()
-        node_id_list = [n["node_id"] for n in nodes_data]
+        node_id_list = [n["node_id"] for n in nodes_data.values()]
         locations_list = LocationRepository.get_node_locations(
             {"node_ids": node_id_list}
         )
         location_map = {loc["node_id"]: loc for loc in locations_list}
         location_time = time.time() - location_start
 
-        # Combine node info with location data
+        # Combine node info with location data, sorted by display name
         nodes = []
-        for node in nodes_data:
+        ordered_nodes = sorted(
+            nodes_data.values(),
+            key=lambda n: (
+                (n["long_name"] or n["short_name"] or n["hex_id"] or "").lower()
+            ),
+        )
+        for node in ordered_nodes:
             node_id = node["node_id"]
             display_name = node["long_name"] or node["short_name"] or f"!{node_id:08x}"
 
@@ -1170,7 +1268,7 @@ def api_traceroute_link(node1_id, node2_id):
 
                     direction_counts[direction] = direction_counts.get(direction, 0) + 1
 
-                    if target_hop.snr is not None:
+                    if is_plausible_traceroute_snr(target_hop.snr):
                         snr_values.append(target_hop.snr)
 
                     # Create route_hops structure for UI - include ALL RF hops (forward and return)
@@ -1185,7 +1283,11 @@ def api_traceroute_link(node1_id, node2_id):
                                 "to_node_id": hop.to_node_id,
                                 "from_node_name": hop.from_node_name,
                                 "to_node_name": hop.to_node_name,
-                                "snr": hop.snr,
+                                # Null garbage payload SNR so the per-hop rows
+                                # can't display corrupt values as real signal.
+                                "snr": hop.snr
+                                if is_plausible_traceroute_snr(hop.snr)
+                                else None,
                                 "direction": hop.direction,  # Include direction info (forward_rf, return_rf)
                                 "is_target_hop": (
                                     (
@@ -1230,7 +1332,11 @@ def api_traceroute_link(node1_id, node2_id):
                         "to_node_name": tr_packet.to_node_name,
                         "gateway_id": tr_packet.gateway_id,
                         "gateway_node_name": gateway_node_name,
-                        "hop_snr": target_hop.snr,
+                        # Null out garbage SNR so the SNR-over-time chart
+                        # (which autoscales over hop_snr) can't be flattened.
+                        "hop_snr": target_hop.snr
+                        if is_plausible_traceroute_snr(target_hop.snr)
+                        else None,
                         "route_hops": route_hops,
                         "complete_path_display": tr_packet.format_path_display(
                             "display"
@@ -1328,8 +1434,8 @@ def api_packets_data():
     logger.info("API packets modern endpoint accessed")
     try:
         # Get parameters
-        page = request.args.get("page", type=int, default=1)
-        limit = request.args.get("limit", type=int, default=100)
+        page = _clamp_page()
+        limit = _clamp_limit(default=100, maximum=1000)
         search = request.args.get("search", default="")
         sort_by = request.args.get("sort_by", default="timestamp")
         sort_order = request.args.get("sort_order", default="desc")
@@ -1622,8 +1728,8 @@ def api_nodes_data():
     logger.info("API nodes modern endpoint accessed")
     try:
         # Get parameters
-        page = request.args.get("page", type=int, default=1)
-        limit = request.args.get("limit", type=int, default=100)
+        page = _clamp_page()
+        limit = _clamp_limit(default=100, maximum=10000)
         search = request.args.get("search", default="")
         sort_by = request.args.get("sort_by", default="last_packet_time")
         sort_order = request.args.get("sort_order", default="desc")
@@ -1706,8 +1812,8 @@ def api_traceroute_data():
     logger.info("API traceroute modern endpoint accessed")
     try:
         # Get parameters
-        page = request.args.get("page", type=int, default=1)
-        limit = request.args.get("limit", type=int, default=100)
+        page = _clamp_page()
+        limit = _clamp_limit(default=100, maximum=1000)
         search = request.args.get("search", default="")
         sort_by = request.args.get("sort_by", default="timestamp")
         sort_order = request.args.get("sort_order", default="desc")

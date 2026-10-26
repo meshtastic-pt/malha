@@ -13,8 +13,25 @@ from typing import Any
 from ..database.connection import get_db_connection
 from ..database.repositories import PacketRepository
 from ..utils.node_utils import get_bulk_node_names
+from ..utils.signal_quality import rssi_valid_sql, snr_valid_sql
 
 logger = logging.getLogger(__name__)
+
+
+def _plotly_escape(value: object) -> str:
+    """Escape untrusted text for Plotly's HTML-like hover/label grammar.
+
+    Node names originate from the mesh and are attacker-controllable, so encode
+    the markup delimiters before they are concatenated into hover text; the
+    surrounding template tags (e.g. ``<br>``) stay literal because we own them
+    (CWE-79).
+    """
+    return (
+        str(value)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
 
 
 class GatewayService:
@@ -74,13 +91,13 @@ class GatewayService:
 
             # Get gateway distribution (top 20)
             cursor.execute(
-                """
+                f"""
                 SELECT
                     gateway_id,
                     COUNT(*) as packet_count,
                     COUNT(DISTINCT from_node_id) as unique_sources,
-                    AVG(CAST(rssi AS FLOAT)) as avg_rssi,
-                    AVG(CAST(snr AS FLOAT)) as avg_snr,
+                    AVG(CASE WHEN {rssi_valid_sql()} THEN CAST(rssi AS FLOAT) END) as avg_rssi,
+                    AVG(CASE WHEN {snr_valid_sql()} THEN CAST(snr AS FLOAT) END) as avg_snr,
                     MAX(timestamp) as last_seen
                 FROM packet_history
                 WHERE gateway_id IS NOT NULL
@@ -408,7 +425,7 @@ class GatewayService:
             "x": gateway1_rssi,
             "y": gateway2_rssi,
             "text": [
-                f"Packet from {p.get('from_node_name', 'Unknown')}<br>Time: {p['timestamp_str']}"
+                f"Packet from {_plotly_escape(p.get('from_node_name', 'Unknown'))}<br>Time: {p['timestamp_str']}"
                 for p in common_packets
                 if p["gateway1_rssi"] is not None and p["gateway2_rssi"] is not None
             ],
@@ -418,7 +435,7 @@ class GatewayService:
             "x": gateway1_snr,
             "y": gateway2_snr,
             "text": [
-                f"Packet from {p.get('from_node_name', 'Unknown')}<br>Time: {p['timestamp_str']}"
+                f"Packet from {_plotly_escape(p.get('from_node_name', 'Unknown'))}<br>Time: {p['timestamp_str']}"
                 for p in common_packets
                 if p["gateway1_snr"] is not None and p["gateway2_snr"] is not None
             ],

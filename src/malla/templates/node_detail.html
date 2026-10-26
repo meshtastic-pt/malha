@@ -6,6 +6,7 @@
 {% block extra_css %}
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% include 'components/openfreemap_css.html' %}
 <style>
     .card-metric {
         text-align: center;
@@ -910,6 +911,8 @@
 {% block extra_js %}
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% include 'components/openfreemap_js.html' %}
+<script src="{{ url_for('static', filename='js/openfreemap.js') }}?v={{ ASSET_VERSION }}"></script>
 
 <!-- Direct Receptions Chart Component -->
 <script src="{{ url_for('static', filename='js/direct_receptions.js') }}"></script>
@@ -1037,17 +1040,14 @@ function loadCurrentLocationMap() {
     const currentLocation = JSON.parse(locationDataScript.textContent);
 
     // Initialize map centered on current location
-    const currentMap = L.map('current-location-map').setView([
+    const currentMap = L.map('current-location-map', {...window.openFreeMapLeafletMapOptions}).setView([
         currentLocation.latitude,
         currentLocation.longitude
     ], 15);
 
-    // Add the standard OpenStreetMap layer; dark mode is applied with CSS.
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        className: 'osm-standard-tiles',
-        maxZoom: 19
-    }).addTo(currentMap);
+    // Add OpenFreeMap vector basemap (WebGL)
+    const overlay = createOpenFreeMapOverlay();
+    if (overlay) overlay.addTo(currentMap);
 
     // Add marker for current location
     const marker = L.marker([currentLocation.latitude, currentLocation.longitude]).addTo(currentMap);
@@ -1084,17 +1084,14 @@ async function loadLocationHistoryMap() {
 
         // Initialize map centered on the most recent location
         const mostRecentLocation = data.location_history[0];
-        const map = L.map('location-history-map').setView([
+        const map = L.map('location-history-map', {...window.openFreeMapLeafletMapOptions}).setView([
             mostRecentLocation.latitude,
             mostRecentLocation.longitude
         ], 13);
 
-        // Add the standard OpenStreetMap layer; dark mode is applied with CSS.
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            className: 'osm-standard-tiles',
-            maxZoom: 19
-        }).addTo(map);
+        // Add OpenFreeMap vector basemap (WebGL)
+        const overlay = createOpenFreeMapOverlay();
+        if (overlay) overlay.addTo(map);
 
         // Calculate age-based colors and add markers
         const now = Date.now() / 1000; // Current time in seconds
@@ -1162,10 +1159,13 @@ async function loadLocationHistoryMap() {
             }).addTo(map);
         }
 
-        // Fit map to show all markers
+        // Fit map to show all markers (skip zero-area bounds: a stationary node makes
+        // fitBounds compute an infinite zoom, which crashes with "Invalid LatLng (NaN, NaN)")
         if (data.location_history.length > 1) {
             const bounds = L.latLngBounds(data.location_history.map(loc => [loc.latitude, loc.longitude]));
-            map.fitBounds(bounds, { padding: [20, 20] });
+            if (bounds.isValid() && !bounds.getNorthEast().equals(bounds.getSouthWest())) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
         }
 
         // Update location count

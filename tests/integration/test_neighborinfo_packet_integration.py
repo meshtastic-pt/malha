@@ -152,8 +152,8 @@ class TestNeighborInfoPacketIntegration:
         # Check that the page contains neighbor information
         html = response.get_data(as_text=True)
         assert "NEIGHBORINFO_APP" in html
-        assert "Neighbor Information Report" in html
-        assert "Neighbors Found:" in html
+        assert "Relatório de informação:" in html
+        assert "Vizinhos Encontrados:" in html
         assert "5" in html  # Number of neighbors
 
         # Check for specific neighbor data
@@ -219,9 +219,9 @@ class TestNeighborInfoPacketIntegration:
 
         html = response.get_data(as_text=True)
         assert "NEIGHBORINFO_APP" in html
-        assert "Neighbors Found:" in html
+        assert "Vizinhos Encontrados:" in html
         assert "0" in html  # Zero neighbors
-        assert "No neighbors reported" in html
+        assert "Nenhum vizinho reportado" in html
 
     @pytest.mark.skipif(not protobuf_available, reason="Protobuf not available")
     def test_neighborinfo_packet_with_unknown_nodes(self, app, client, temp_database):
@@ -290,13 +290,13 @@ class TestNeighborInfoPacketIntegration:
 
         html = response.get_data(as_text=True)
         assert "NEIGHBORINFO_APP" in html
-        assert "Neighbors Found:" in html
+        assert "Vizinhos Encontrados:" in html
         assert "1" in html  # Number of neighbors
 
         # Check for the actual node ID format that appears in the template
         assert "!99999999" in html  # The hex format of node_id 2576980377
         assert "5.0 dB" in html  # SNR value
-        assert "Excellent" in html  # Signal quality
+        assert "Excelente" in html  # Signal quality
 
     @pytest.mark.skipif(not protobuf_available, reason="Protobuf not available")
     def test_neighborinfo_packet_decode_error(self, app, client, temp_database):

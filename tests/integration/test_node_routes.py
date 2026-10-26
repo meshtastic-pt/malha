@@ -122,10 +122,10 @@ class TestNodeRoutes:
         response_text = response.data.decode("utf-8")
 
         # Basic information section
-        assert "Node Information" in response_text
-        assert "Total Packets" in response_text
-        assert "Destinations" in response_text
-        assert "Avg RSSI" in response_text
+        assert "Informação Node" in response_text
+        assert "Total de pacotes" in response_text
+        assert "Destinos" in response_text
+        assert "Média RSSI" in response_text
 
         # Check for node metrics
         assert "metric-value" in response_text
@@ -147,12 +147,12 @@ class TestNodeRoutes:
         response_text = response.data.decode("utf-8")
 
         # Should show packet count greater than 0
-        assert "Total Packets" in response_text
+        assert "Total de pacotes" in response_text
 
         # Check for protocol breakdown section if there are packets
-        if "Protocol Usage" in response_text:
-            assert "Protocol" in response_text
-            assert "Count" in response_text
+        if "Utilização do Protocolo" in response_text:
+            assert "Protocolo" in response_text
+            assert "Contagem" in response_text
 
     @pytest.mark.integration
     def test_node_detail_navigation_links(self, client):
@@ -165,9 +165,9 @@ class TestNodeRoutes:
         response_text = response.data.decode("utf-8")
 
         # Check for quick action links
-        assert "View All Packets" in response_text
+        assert "Ver todos os pacotes" in response_text
         assert f"/packets?from_node={node_id}" in response_text
 
         # Check for traceroute link
-        assert "View Traceroutes" in response_text
+        assert "Ver Traceroutes" in response_text
         assert f"/traceroute?from_node={node_id}" in response_text

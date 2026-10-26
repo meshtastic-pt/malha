@@ -41,6 +41,65 @@ def test_packets_sorting(client, sort_by, api_field):
 @pytest.mark.integration
 @pytest.mark.api
 @pytest.mark.parametrize(
+    "malicious",
+    [
+        "id;DROP TABLE packet_history",
+        "(SELECT CASE WHEN 1=1 THEN timestamp ELSE id END)",
+        "1=1",
+        "timestamp-- ",
+        "rssi UNION SELECT 1",
+    ],
+)
+def test_packets_sort_by_injection_is_neutralized(client, malicious):
+    """A malicious sort_by must never reach the SQL ORDER BY clause.
+
+    Unknown sort columns fall back to the default ordering, so the endpoint
+    returns 200 with the same rows as the default timestamp-desc query rather
+    than a 500 from a broken/injected statement.
+    """
+    resp = client.get(
+        "/api/packets/data",
+        query_string={
+            "limit": 25,
+            "sort_by": malicious,
+            "sort_order": "desc",
+            "group_packets": "false",
+        },
+    )
+    assert resp.status_code == 200
+
+    baseline = client.get(
+        "/api/packets/data",
+        query_string={
+            "limit": 25,
+            "sort_by": "timestamp",
+            "sort_order": "desc",
+            "group_packets": "false",
+        },
+    ).get_json()["data"]
+    got = resp.get_json()["data"]
+    assert [row.get("id") for row in got] == [row.get("id") for row in baseline]
+
+
+@pytest.mark.integration
+@pytest.mark.api
+def test_packets_sort_order_injection_is_neutralized(client):
+    """A malicious sort_order must be normalized to ASC/DESC, never interpolated."""
+    resp = client.get(
+        "/api/packets/data",
+        query_string={
+            "limit": 25,
+            "sort_by": "timestamp",
+            "sort_order": "asc); DROP TABLE packet_history;--",
+            "group_packets": "false",
+        },
+    )
+    assert resp.status_code == 200
+
+
+@pytest.mark.integration
+@pytest.mark.api
+@pytest.mark.parametrize(
     "sort_by,api_field",
     [
         ("from_node", "from_node_id"),

@@ -13,8 +13,8 @@ class TestGatewayComparisonRoutes:
         """Test that the gateway comparison page loads successfully."""
         response = client.get("/gateway/compare")
         assert response.status_code == 200
-        assert b"Gateway Comparison" in response.data
-        assert b"Select two gateways above to start the comparison" in response.data
+        assert "Comparação de Gateways".encode() in response.data
+        assert "Selecione dois gateways acima para iniciar a comparação".encode() in response.data
 
     def test_gateway_compare_with_valid_gateways(self, client):
         """Test gateway comparison with valid gateway selection."""
@@ -31,7 +31,7 @@ class TestGatewayComparisonRoutes:
                 f"/gateway/compare?gateway1={gateway1}&gateway2={gateway2}"
             )
             assert response.status_code == 200
-            assert b"Gateway Comparison" in response.data
+            assert "Comparação de Gateways".encode() in response.data
 
     def test_gateway_compare_with_same_gateway(self, client):
         """Test gateway comparison with same gateway selected for both."""
@@ -46,14 +46,14 @@ class TestGatewayComparisonRoutes:
                 f"/gateway/compare?gateway1={gateway_id}&gateway2={gateway_id}"
             )
             assert response.status_code == 200
-            assert b"Please select two different gateways" in response.data
+            assert "Por favor selecione dois gateways diferentes".encode() in response.data
 
     def test_gateway_compare_with_invalid_gateway(self, client):
         """Test gateway comparison with invalid gateway ID."""
         response = client.get("/gateway/compare?gateway1=invalid&gateway2=also_invalid")
         assert response.status_code == 200
         # Should still load the page but show no comparison data
-        assert b"Gateway Comparison" in response.data
+        assert "Comparação de Gateways".encode() in response.data
 
     def test_gateway_api_compare_endpoint(self, client):
         """Test the API endpoint for gateway comparison."""

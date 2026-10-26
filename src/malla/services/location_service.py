@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from ..database.repositories import LocationRepository
+from ..utils.signal_quality import rssi_valid_sql, snr_valid_sql
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +135,6 @@ class LocationService:
                     hours=hours,
                     include_indirect=False,
                     filters=network_filters,
-                    limit_packets=2000,
                 )
         except Exception as e:
             logger.warning(f"Failed to get network topology data: {e}")
@@ -385,7 +385,6 @@ class LocationService:
                     hours=hours,
                     include_indirect=False,
                     filters=network_filters,
-                    limit_packets=2000,
                 )
 
             # Convert network links to map-compatible format
@@ -948,8 +947,8 @@ class LocationService:
                     from_node_id,
                     gateway_id,
                     COUNT(*)               AS packet_count,
-                    AVG(rssi) AS avg_rssi,
-                    AVG(snr) AS avg_snr,
+                    AVG(CASE WHEN {rssi_valid_sql()} THEN rssi END) AS avg_rssi,
+                    AVG(CASE WHEN {snr_valid_sql()} THEN snr END) AS avg_snr,
                     MAX(timestamp)         AS last_seen
                 FROM packet_history
                 {where_sql}

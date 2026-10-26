@@ -30,6 +30,11 @@ class TestMapLayout:
         # Verify no error state
         expect(page.locator("#mapError")).to_be_hidden()
 
+        # WebGL vector basemap overlay must have mounted (canvas exists even before tiles load)
+        expect(page.locator(".leaflet-gl-layer canvas")).to_be_visible(
+            timeout=DEFAULT_TIMEOUT
+        )
+
     @pytest.mark.e2e
     def test_openstreetmap_attribution_is_visible_and_linked(
         self, page: Page, test_server_url
@@ -245,7 +250,7 @@ class TestMapLayout:
         links_checkbox.click()
 
         # Test refresh button
-        refresh_button = page.locator("button:has-text('Refresh')")
+        refresh_button = page.locator("button:has-text('Atualizar')")
         expect(refresh_button).to_be_visible()
         refresh_button.click()
 

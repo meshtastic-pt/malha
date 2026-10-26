@@ -17,6 +17,12 @@ from ..config import get_config
 from ..utils.decryption import try_decrypt_mesh_packet
 from ..utils.formatting import format_time_ago
 from ..utils.node_utils import convert_node_id, get_bulk_node_short_names
+from ..utils.signal_quality import (
+    is_plausible_rssi,
+    is_plausible_snr,
+    rssi_valid_sql,
+    snr_valid_sql,
+)
 from .connection import get_db_connection
 
 logger = logging.getLogger(__name__)
@@ -264,8 +270,8 @@ class DashboardRepository:
                     COUNT(*) as total_packets,
                     COUNT(DISTINCT CASE WHEN from_node_id IS NOT NULL THEN from_node_id END) as active_nodes_24h,
                     COUNT(CASE WHEN timestamp > ? THEN 1 END) as recent_packets,
-                    AVG(CASE WHEN rssi IS NOT NULL AND rssi != 0 THEN rssi END) as avg_rssi,
-                    AVG(CASE WHEN snr IS NOT NULL THEN snr END) as avg_snr,
+                    AVG(CASE WHEN {rssi_valid_sql()} THEN rssi END) as avg_rssi,
+                    AVG(CASE WHEN {snr_valid_sql()} THEN snr END) as avg_snr,
                     SUM(CASE WHEN processed_successfully = 1 THEN 1 ELSE 0 END) as successful_packets,
                     CASE WHEN COUNT(*) > 0
                          THEN ROUND(SUM(CASE WHEN processed_successfully = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1)
@@ -625,10 +631,12 @@ class PacketRepository:
                         {p["gateway_id"] for p in packets_in_group if p["gateway_id"]}
                     )
                     rssi_values = [
-                        p["rssi"] for p in packets_in_group if p["rssi"] is not None
+                        p["rssi"]
+                        for p in packets_in_group
+                        if is_plausible_rssi(p["rssi"])
                     ]
                     snr_values = [
-                        p["snr"] for p in packets_in_group if p["snr"] is not None
+                        p["snr"] for p in packets_in_group if is_plausible_snr(p["snr"])
                     ]
                     hop_values = [
                         p["hop_count"]
@@ -804,6 +812,27 @@ class PacketRepository:
                 cursor.execute(count_query, params)
                 total_count = cursor.fetchone()[0]
 
+                # Whitelist the sort column and direction before interpolating them
+                # into the ORDER BY clause. order_by/order_dir originate from
+                # untrusted request parameters, so anything outside this allowlist
+                # must never reach the SQL text (prevents SQL injection).
+                valid_order_columns = {
+                    "timestamp",
+                    "from_node_id",
+                    "to_node_id",
+                    "portnum_name",
+                    "gateway_id",
+                    "channel_id",
+                    "mesh_packet_id",
+                    "rssi",
+                    "snr",
+                    "payload_length",
+                    "hop_count",
+                    "relay_node",
+                }
+                order_column = order_by if order_by in valid_order_columns else "timestamp"
+                order_dir_sql = "DESC" if order_dir.lower() == "desc" else "ASC"
+
                 # Main query
                 query = f"""
                     SELECT
@@ -816,7 +845,7 @@ class PacketRepository:
                         (hop_start - hop_limit) as hop_count
                     FROM packet_history
                     {where_clause}
-                    ORDER BY {order_by} {order_dir.upper()}
+                    ORDER BY {order_column} {order_dir_sql}
                     LIMIT ? OFFSET ?
                 """
 
@@ -907,8 +936,10 @@ class PacketRepository:
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            # Build WHERE clause
-            where_conditions = ["rssi IS NOT NULL", "snr IS NOT NULL"]
+            # Build WHERE clause. This feeds the signal-quality scatter chart:
+            # restrict to plausible values so one garbage row (or the rssi=0
+            # "not provided" sentinel) cannot destroy the chart axes.
+            where_conditions = [rssi_valid_sql(), snr_valid_sql()]
             params = []
 
             if filters.get("gateway_id"):
@@ -1064,10 +1095,10 @@ class PacketRepository:
                 WHERE p1.gateway_id = ?
                     AND p2.gateway_id = ?
                     AND p1.mesh_packet_id IS NOT NULL
-                    AND p1.rssi IS NOT NULL
-                    AND p1.snr IS NOT NULL
-                    AND p2.rssi IS NOT NULL
-                    AND p2.snr IS NOT NULL
+                    AND {rssi_valid_sql("p1.rssi")}
+                    AND {snr_valid_sql("p1.snr")}
+                    AND {rssi_valid_sql("p2.rssi")}
+                    AND {snr_valid_sql("p2.snr")}
                     AND p1.hop_limit IS NOT NULL
                     AND p2.hop_limit IS NOT NULL
                     {where_clause}
@@ -1318,13 +1349,26 @@ class NodeRepository:
                         COALESCE(stats.packet_count_24h, 0) as packet_count_24h,
                         COALESCE(gstats.gateway_packet_count_24h, 0) as gateway_packet_count_24h,
                         COALESCE(stats.last_packet_time, ni.last_updated) as last_packet_time,
-                        datetime(COALESCE(stats.last_packet_time, ni.last_updated), 'unixepoch') as last_packet_str
+                        datetime(COALESCE(stats.last_packet_time, ni.last_updated), 'unixepoch') as last_packet_str,
+                        stats.avg_rssi,
+                        stats.avg_snr
                     FROM node_info ni
                     LEFT JOIN (
                         SELECT
                             from_node_id as node_id,
                             COUNT(*) as packet_count_24h,
-                            MAX(timestamp) as last_packet_time
+                            MAX(timestamp) as last_packet_time,
+                            -- RSSI/SNR only mean anything on direct (0-hop)
+                            -- receptions; relayed packets carry the last
+                            -- relay's signal, not this node's.
+                            AVG(CASE WHEN hop_start BETWEEN 0 AND 7
+                                      AND hop_start = hop_limit
+                                      AND {rssi_valid_sql()}
+                                     THEN CAST(rssi AS FLOAT) END) as avg_rssi,
+                            AVG(CASE WHEN hop_start BETWEEN 0 AND 7
+                                      AND hop_start = hop_limit
+                                      AND {snr_valid_sql()}
+                                     THEN CAST(snr AS FLOAT) END) as avg_snr
                         FROM packet_history
                         WHERE timestamp > (strftime('%s', 'now') - 86400)
                         GROUP BY from_node_id
@@ -1365,7 +1409,9 @@ class NodeRepository:
                         0 as packet_count_24h,
                         0 as gateway_packet_count_24h,
                         ni.last_updated as last_packet_time,
-                        datetime(ni.last_updated, 'unixepoch') as last_packet_str
+                        datetime(ni.last_updated, 'unixepoch') as last_packet_str,
+                        NULL as avg_rssi,
+                        NULL as avg_snr
                     FROM node_info ni
                     {where_clause}
                     ORDER BY {order_column} {order_dir}
@@ -1421,17 +1467,17 @@ class NodeRepository:
 
             # Aggregate only packet_history here so SQLite can use the sender-focused index.
             cursor.execute(
-                """
+                f"""
                 SELECT
                     COUNT(*) as total_packets,
                     MAX(timestamp) as last_seen,
                     MIN(timestamp) as first_seen,
                     COUNT(DISTINCT to_node_id) as unique_destinations,
                     COUNT(DISTINCT gateway_id) as unique_gateways,
-                    AVG(CASE WHEN hop_start IS NULL OR hop_limit IS NULL OR hop_start = hop_limit
-                         THEN CAST(rssi AS FLOAT) END) as avg_rssi,
-                    AVG(CASE WHEN hop_start IS NULL OR hop_limit IS NULL OR hop_start = hop_limit
-                         THEN CAST(snr AS FLOAT) END) as avg_snr,
+                    AVG(CASE WHEN (hop_start IS NULL OR hop_limit IS NULL OR hop_start = hop_limit)
+                         AND {rssi_valid_sql()} THEN CAST(rssi AS FLOAT) END) as avg_rssi,
+                    AVG(CASE WHEN (hop_start IS NULL OR hop_limit IS NULL OR hop_start = hop_limit)
+                         AND {snr_valid_sql()} THEN CAST(snr AS FLOAT) END) as avg_snr,
                     AVG(CASE WHEN hop_start IS NOT NULL AND hop_limit IS NOT NULL
                         THEN (hop_start - hop_limit) ELSE NULL END) as avg_hops
                 FROM packet_history
@@ -1585,7 +1631,7 @@ class NodeRepository:
                     grouped_packets[mesh_id]["gateway_count"] += 1
 
                     # Update min/max values
-                    if row["rssi"] is not None:
+                    if is_plausible_rssi(row["rssi"]):
                         if (
                             grouped_packets[mesh_id]["min_rssi"] is None
                             or row["rssi"] < grouped_packets[mesh_id]["min_rssi"]
@@ -1597,7 +1643,7 @@ class NodeRepository:
                         ):
                             grouped_packets[mesh_id]["max_rssi"] = row["rssi"]
 
-                    if row["snr"] is not None:
+                    if is_plausible_snr(row["snr"]):
                         if (
                             grouped_packets[mesh_id]["min_snr"] is None
                             or row["snr"] < grouped_packets[mesh_id]["min_snr"]
@@ -1884,12 +1930,12 @@ class NodeRepository:
             )
 
             # Get protocol breakdown
-            protocol_query = """
+            protocol_query = f"""
             SELECT
                 portnum_name,
                 COUNT(*) as count,
-                AVG(CAST(rssi AS FLOAT)) as avg_rssi,
-                AVG(CAST(snr AS FLOAT)) as avg_snr
+                AVG(CASE WHEN {rssi_valid_sql()} THEN CAST(rssi AS FLOAT) END) as avg_rssi,
+                AVG(CASE WHEN {snr_valid_sql()} THEN CAST(snr AS FLOAT) END) as avg_snr
             FROM packet_history
             WHERE from_node_id = ?
             GROUP BY portnum_name
@@ -1912,7 +1958,7 @@ class NodeRepository:
                 )
 
             # Get received gateways information (gateways that have received packets from this node)
-            gateways_query = """
+            gateways_query = f"""
             WITH top_gateways AS (
                 SELECT
                     p.gateway_id,
@@ -1929,17 +1975,17 @@ class NodeRepository:
                 p.gateway_id,
                 COUNT(*) as packet_count,
                 MAX(p.timestamp) as last_received,
-                AVG(CAST(p.rssi AS FLOAT)) as avg_rssi,
-                AVG(CAST(p.snr AS FLOAT)) as avg_snr,
+                AVG(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as avg_rssi,
+                AVG(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as avg_snr,
                 MIN(CASE WHEN p.hop_start IS NOT NULL AND p.hop_limit IS NOT NULL
                     THEN (p.hop_start - p.hop_limit) ELSE NULL END) as min_hops,
                 MAX(CASE WHEN p.hop_start IS NOT NULL AND p.hop_limit IS NOT NULL
                     THEN (p.hop_start - p.hop_limit) ELSE NULL END) as max_hops,
                 AVG(CASE WHEN p.hop_start IS NOT NULL AND p.hop_limit IS NOT NULL
                     THEN (p.hop_start - p.hop_limit) ELSE NULL END) as avg_hops,
-                AVG(CASE WHEN p.hop_start = p.hop_limit
+                AVG(CASE WHEN p.hop_start = p.hop_limit AND {rssi_valid_sql("p.rssi")}
                     THEN CAST(p.rssi AS FLOAT) ELSE NULL END) as direct_rssi,
-                AVG(CASE WHEN p.hop_start = p.hop_limit
+                AVG(CASE WHEN p.hop_start = p.hop_limit AND {snr_valid_sql("p.snr")}
                     THEN CAST(p.snr AS FLOAT) ELSE NULL END) as direct_snr,
                 MAX(tg.direct_packet_count) as direct_packet_count
             FROM top_gateways tg
@@ -2095,7 +2141,7 @@ class NodeRepository:
                         stats["hop_samples"] += 1
 
                     # Only consider RSSI for direct (0-hop) receptions
-                    if hop_val == 0 and gw.get("rssi") is not None:
+                    if hop_val == 0 and is_plausible_rssi(gw.get("rssi")):
                         stats["rssi_samples"].append(gw["rssi"])
 
             # Resolve display names for gateways (may be node IDs)
@@ -2536,16 +2582,16 @@ class NodeRepository:
             cursor = conn.cursor()
 
             # Query to get relay_node values with counts and signal stats for packets reported by this gateway
-            relay_query = """
+            relay_query = f"""
             SELECT
                 relay_node,
                 COUNT(*) as count,
-                AVG(rssi) as avg_rssi,
-                AVG(snr) as avg_snr,
-                MIN(rssi) as min_rssi,
-                MAX(rssi) as max_rssi,
-                MIN(snr) as min_snr,
-                MAX(snr) as max_snr
+                AVG(CASE WHEN {rssi_valid_sql()} THEN rssi END) as avg_rssi,
+                AVG(CASE WHEN {snr_valid_sql()} THEN snr END) as avg_snr,
+                MIN(CASE WHEN {rssi_valid_sql()} THEN rssi END) as min_rssi,
+                MAX(CASE WHEN {rssi_valid_sql()} THEN rssi END) as max_rssi,
+                MIN(CASE WHEN {snr_valid_sql()} THEN snr END) as min_snr,
+                MAX(CASE WHEN {snr_valid_sql()} THEN snr END) as max_snr
             FROM packet_history
             WHERE gateway_id = ?
                 AND relay_node IS NOT NULL
@@ -2752,18 +2798,18 @@ class NodeRepository:
             gateway_hex_id = f"!{gateway_node_id:08x}"
 
             # First get aggregated statistics per node
-            stats_query = """
+            stats_query = f"""
                 SELECT
                     p.from_node_id,
                     ni.long_name,
                     ni.short_name,
                     COUNT(*) as packet_count,
-                    AVG(CAST(p.rssi AS FLOAT)) as rssi_avg,
-                    MIN(CAST(p.rssi AS FLOAT)) as rssi_min,
-                    MAX(CAST(p.rssi AS FLOAT)) as rssi_max,
-                    AVG(CAST(p.snr AS FLOAT)) as snr_avg,
-                    MIN(CAST(p.snr AS FLOAT)) as snr_min,
-                    MAX(CAST(p.snr AS FLOAT)) as snr_max,
+                    AVG(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_avg,
+                    MIN(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_min,
+                    MAX(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_max,
+                    AVG(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_avg,
+                    MIN(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_min,
+                    MAX(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_max,
                     MIN(p.timestamp) as first_seen,
                     MAX(p.timestamp) as last_seen
                 FROM packet_history p
@@ -2781,14 +2827,16 @@ class NodeRepository:
             cursor.execute(stats_query, (gateway_hex_id, gateway_node_id))
             stats_rows = cursor.fetchall()
 
-            # Then get individual packet data for chart plotting
-            packets_query = """
+            # Then get individual packet data for chart plotting; the chart
+            # autoscales its axes, so null out garbage per field (a row with a
+            # valid RSSI but missing SNR must still contribute its RSSI point).
+            packets_query = f"""
                 SELECT
                     p.id AS packet_id,
                     p.timestamp,
                     p.from_node_id,
-                    p.rssi,
-                    p.snr
+                    CASE WHEN {rssi_valid_sql("p.rssi")} THEN p.rssi END AS rssi,
+                    CASE WHEN {snr_valid_sql("p.snr")} THEN p.snr END AS snr
                 FROM packet_history p
                 WHERE p.gateway_id = ?
                   AND p.from_node_id IS NOT NULL
@@ -2890,18 +2938,18 @@ class NodeRepository:
                 gateway_hex_id = f"!{node_id:08x}"
 
                 # First get aggregated statistics per node
-                stats_query = """
+                stats_query = f"""
                     SELECT
                         p.from_node_id,
                         ni.long_name,
                         ni.short_name,
                         COUNT(*) as packet_count,
-                        AVG(CAST(p.rssi AS FLOAT)) as rssi_avg,
-                        MIN(CAST(p.rssi AS FLOAT)) as rssi_min,
-                        MAX(CAST(p.rssi AS FLOAT)) as rssi_max,
-                        AVG(CAST(p.snr AS FLOAT)) as snr_avg,
-                        MIN(CAST(p.snr AS FLOAT)) as snr_min,
-                        MAX(CAST(p.snr AS FLOAT)) as snr_max,
+                        AVG(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_avg,
+                        MIN(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_min,
+                        MAX(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_max,
+                        AVG(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_avg,
+                        MIN(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_min,
+                        MAX(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_max,
                         MIN(p.timestamp) as first_seen,
                         MAX(p.timestamp) as last_seen
                     FROM packet_history p
@@ -2917,24 +2965,6 @@ class NodeRepository:
                     LIMIT ?
                 """
 
-                # Then get individual packet data for chart plotting
-                packets_query = """
-                    SELECT
-                        p.id AS packet_id,
-                        p.timestamp,
-                        p.from_node_id,
-                        p.rssi,
-                        p.snr
-                    FROM packet_history p
-                    WHERE p.gateway_id = ?
-                      AND p.from_node_id IS NOT NULL
-                      AND p.from_node_id != ?
-                      AND p.hop_start IS NOT NULL
-                      AND p.hop_limit IS NOT NULL
-                      AND p.hop_start = p.hop_limit
-                    ORDER BY p.timestamp
-                """
-
                 cursor.execute(stats_query, (gateway_hex_id, node_id, limit))
                 stats_rows = cursor.fetchall()
 
@@ -2945,14 +2975,18 @@ class NodeRepository:
                 ]
 
                 if selected_node_ids:
+                    # Individual packet data for chart plotting; the chart
+                    # autoscales its axes, so null out garbage per field (a row
+                    # with a valid RSSI but missing SNR must still contribute
+                    # its RSSI point).
                     placeholders = ",".join(["?"] * len(selected_node_ids))
                     packets_query = f"""
                         SELECT
                             p.id AS packet_id,
                             p.timestamp,
                             p.from_node_id,
-                            p.rssi,
-                            p.snr
+                            CASE WHEN {rssi_valid_sql("p.rssi")} THEN p.rssi END AS rssi,
+                            CASE WHEN {snr_valid_sql("p.snr")} THEN p.snr END AS snr
                         FROM packet_history p
                         WHERE p.gateway_id = ?
                           AND p.from_node_id IS NOT NULL
@@ -3024,16 +3058,16 @@ class NodeRepository:
                 node_hex_id = f"!{node_id:08x}"
 
                 # First get aggregated statistics per gateway
-                stats_query = """
+                stats_query = f"""
                     SELECT
                         p.gateway_id,
                         COUNT(*) as packet_count,
-                        AVG(CAST(p.rssi AS FLOAT)) as rssi_avg,
-                        MIN(CAST(p.rssi AS FLOAT)) as rssi_min,
-                        MAX(CAST(p.rssi AS FLOAT)) as rssi_max,
-                        AVG(CAST(p.snr AS FLOAT)) as snr_avg,
-                        MIN(CAST(p.snr AS FLOAT)) as snr_min,
-                        MAX(CAST(p.snr AS FLOAT)) as snr_max,
+                        AVG(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_avg,
+                        MIN(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_min,
+                        MAX(CASE WHEN {rssi_valid_sql("p.rssi")} THEN CAST(p.rssi AS FLOAT) END) as rssi_max,
+                        AVG(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_avg,
+                        MIN(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_min,
+                        MAX(CASE WHEN {snr_valid_sql("p.snr")} THEN CAST(p.snr AS FLOAT) END) as snr_max,
                         MIN(p.timestamp) as first_seen,
                         MAX(p.timestamp) as last_seen
                     FROM packet_history p
@@ -3048,14 +3082,17 @@ class NodeRepository:
                     LIMIT ?
                 """
 
-                # Then get individual packet data for chart plotting
-                packets_query = """
+                # Then get individual packet data for chart plotting; the chart
+                # autoscales its axes, so null out garbage per field (a row with
+                # a valid RSSI but missing SNR must still contribute its RSSI
+                # point).
+                packets_query = f"""
                     SELECT
                         p.id AS packet_id,
                         p.timestamp,
                         p.gateway_id,
-                        p.rssi,
-                        p.snr
+                        CASE WHEN {rssi_valid_sql("p.rssi")} THEN p.rssi END AS rssi,
+                        CASE WHEN {snr_valid_sql("p.snr")} THEN p.snr END AS snr
                     FROM packet_history p
                     WHERE p.from_node_id = ?
                       AND p.gateway_id IS NOT NULL
@@ -3517,10 +3554,12 @@ class TracerouteRepository:
                     unique_gateways = list(set(gateway_ids))
 
                     rssi_values = [
-                        p["rssi"] for p in packets_in_group if p["rssi"] is not None
+                        p["rssi"]
+                        for p in packets_in_group
+                        if is_plausible_rssi(p["rssi"])
                     ]
                     snr_values = [
-                        p["snr"] for p in packets_in_group if p["snr"] is not None
+                        p["snr"] for p in packets_in_group if is_plausible_snr(p["snr"])
                     ]
                     hop_values = []
                     for p in packets_in_group:

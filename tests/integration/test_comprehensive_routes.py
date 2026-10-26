@@ -19,9 +19,9 @@ class TestMainRoutes:
         response = client.get("/")
         assert response.status_code == 200
         assert b"Dashboard" in response.data
-        assert b"Total Messages" in response.data
-        assert b"Total Nodes" in response.data
-        assert b"Active Nodes" in response.data
+        assert b"Mensagens" in response.data
+        assert b"Nodes conhecidos" in response.data
+        assert b"Nodes ativos" in response.data
 
     @pytest.mark.integration
     def test_map_route(self, client):
@@ -47,7 +47,7 @@ class TestMainRoutes:
         """Test the longest links analysis route."""
         response = client.get("/longest-links")
         assert response.status_code == 200
-        assert b"Longest Links" in response.data
+        assert b"An\xc3\xa1lise das liga\xc3\xa7\xc3\xb5es mais longas" in response.data
 
 
 class TestPacketRoutes:

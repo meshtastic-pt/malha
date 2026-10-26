@@ -6,26 +6,31 @@ import pytest
 
 
 TEMPLATES_DIR = Path(__file__).parents[2] / "src" / "malla" / "templates"
-MAP_TEMPLATES = ("map.html", "node_detail.html", "packet_detail.html")
-OSM_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-OSM_ATTRIBUTION = (
-    '&copy; <a href="https://www.openstreetmap.org/copyright">'
-    "OpenStreetMap</a> contributors"
+STATIC_DIR = Path(__file__).parents[2] / "src" / "malla" / "static"
+MAP_TEMPLATES = (
+    "map.html",
+    "node_detail.html",
+    "packet_detail.html",
+    "line_of_sight.html",
 )
 
 
 @pytest.mark.parametrize("template_name", MAP_TEMPLATES)
-def test_maps_use_standard_openstreetmap_tiles_with_attribution(template_name):
+def test_maps_use_shared_openfreemap_assets(template_name):
     template = (TEMPLATES_DIR / template_name).read_text(encoding="utf-8")
 
-    assert OSM_TILE_URL in template
-    assert OSM_ATTRIBUTION in template
+    assert "components/openfreemap_css.html" in template
+    assert "components/openfreemap_js.html" in template
+    assert "js/openfreemap.js" in template
     assert "basemaps.cartocdn.com" not in template
     assert "carto.com/attributions" not in template
 
 
-def test_all_openstreetmap_layers_have_attribution():
-    for template_name in MAP_TEMPLATES:
-        template = (TEMPLATES_DIR / template_name).read_text(encoding="utf-8")
+def test_openfreemap_supports_both_themes_and_required_attribution():
+    script = (STATIC_DIR / "js" / "openfreemap.js").read_text(encoding="utf-8")
 
-        assert template.count(OSM_TILE_URL) == template.count(OSM_ATTRIBUTION)
+    assert "https://tiles.openfreemap.org/styles/liberty" in script
+    assert "https://tiles.openfreemap.org/styles/dark" in script
+    assert "https://www.openstreetmap.org/copyright" in script
+    assert ">OpenStreetMap</a> contributors" in script
+    assert ">OpenFreeMap</a>" in script

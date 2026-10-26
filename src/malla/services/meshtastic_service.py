@@ -117,6 +117,7 @@ class MeshtasticService:
                 # Special cases for better display names
                 display_name_map = {
                     "Text Message": "Text Messages",
+                    "Position": "Posição",
                     "Nodeinfo": "Node Info",
                     "Neighborinfo": "Neighbor Info",
                     "Store Forward": "Store and Forward",

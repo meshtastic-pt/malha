@@ -163,12 +163,12 @@ class TestPacketsFilters:
             f"Expected 'SMS' column for TEXT_MESSAGE_APP, got: {updated_header_texts}"
         )
 
-        # Should have "Channel" column (always visible)
+        # Should have "Canal" column (always visible)
         channel_column_found = any(
-            "Channel" in header for header in updated_header_texts
+            "Canal" in header for header in updated_header_texts
         )
         assert channel_column_found, (
-            f"Expected 'Channel' column, got: {updated_header_texts}"
+            f"Expected 'Canal' column, got: {updated_header_texts}"
         )
 
         # Switch back to "Todos Tipos" and verify columns change back
@@ -223,9 +223,9 @@ class TestPacketsFilters:
             f"but got headers: {header_texts}. This indicates columns are not being updated when URL parameters are restored."
         )
 
-        # Should have "Channel" column (always visible)
-        channel_column_found = any("Channel" in header for header in header_texts)
-        assert channel_column_found, f"Expected 'Channel' column, got: {header_texts}"
+        # Should have "Canal" column (always visible)
+        channel_column_found = any("Canal" in header for header in header_texts)
+        assert channel_column_found, f"Expected 'Canal' column, got: {header_texts}"
 
         print("✅ URL parameter column restoration test passed")
 

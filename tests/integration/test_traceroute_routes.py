@@ -19,16 +19,16 @@ class TestTracerouteRoutes:
         """Test that the traceroute page loads successfully."""
         response = client.get("/traceroute")
         assert response.status_code == 200
-        assert b"Traceroute Analysis" in response.data
-        assert b"Source Node" in response.data
-        assert b"Destination Node" in response.data
+        assert "Análise de Traceroutes".encode() in response.data
+        assert "Node de Origem".encode() in response.data
+        assert "Node de Destino".encode() in response.data
 
     @pytest.mark.integration
     def test_traceroute_page_with_filters(self, client):
         """Test traceroute page with query parameters."""
         response = client.get("/traceroute?from_node=305419896&to_node=2271560481")
         assert response.status_code == 200
-        assert b"Traceroute Analysis" in response.data
+        assert "Análise de Traceroutes".encode() in response.data
 
     @pytest.mark.integration
     @patch("src.malla.database.repositories.NodeRepository.get_available_from_nodes")
@@ -69,9 +69,9 @@ class TestTracerouteRoutes:
 
         # Should contain the node picker components (JavaScript-based)
         assert "node-picker-input" in response_text
-        assert "Source Node" in response_text
-        assert "Destination Node" in response_text
-        assert "Route Node" in response_text
+        assert "Node de Origem" in response_text
+        assert "Node de Destino" in response_text
+        assert "Node da Rota" in response_text
 
         # Should contain the JavaScript for node picker functionality
         assert "node-picker.js" in response_text
@@ -102,11 +102,9 @@ class TestTracerouteRoutes:
         assert response.status_code == 200
 
         # Should still load the page successfully
-        assert b"Traceroute Analysis" in response.data
+        assert "Análise de Traceroutes".encode() in response.data
         # Check for the specific placeholder texts used in traceroute template
-        assert b"All source nodes" in response.data
-        assert b"All destination nodes" in response.data
-        assert b"All route nodes" in response.data
+        assert "Todos os Nodes".encode() in response.data
 
     @pytest.mark.integration
     @patch("src.malla.database.repositories.NodeRepository.get_available_from_nodes")
@@ -237,9 +235,9 @@ class TestTracerouteTemplateIntegration:
         assert 'name="route_node"' in response_text
 
         # Should contain the labels for all three dropdowns
-        assert "Source Node" in response_text
-        assert "Destination Node" in response_text
-        assert "Route Node" in response_text
+        assert "Node de Origem" in response_text
+        assert "Node de Destino" in response_text
+        assert "Node da Rota" in response_text
 
 
 class TestTracerouteRouteNodeFilter:

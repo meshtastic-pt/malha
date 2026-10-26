@@ -17,15 +17,15 @@ class TestExcludeFieldsUI:
         # Check for exclude_from field
         assert 'name="exclude_from"' in content
         assert 'id="exclude_from"' in content
-        assert "Exclude From Node" in content
+        assert "Excluir o Node" in content
 
         # Check for exclude_to field
         assert 'name="exclude_to"' in content
         assert 'id="exclude_to"' in content
-        assert "Exclude To Node" in content
+        assert "Excluir para Node" in content
 
         # Check for proper placeholders
-        assert 'placeholder="No exclusions"' in content
+        assert 'placeholder="Sem exclusões"' in content
 
     def test_exclude_parameters_accepted_by_api(self, client):
         """Test that the API accepts exclude_from and exclude_to parameters."""
