@@ -702,8 +702,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the map
     function initMap() {
-        // Create map centered on a default location (will be updated when data loads)
-        map = L.map('map', { ...window.openFreeMapLeafletMapOptions }).setView([40.0, -95.0], 4);
+        // Iniciar em Portugal continental; o enquadramento é ajustado quando os nodes carregam.
+        map = L.map('map', { ...window.openFreeMapLeafletMapOptions }).setView([39.5, -8.0], 6);
 
         updateMapTheme();
 
