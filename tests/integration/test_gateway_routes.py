@@ -46,7 +46,7 @@ class TestGatewayComparisonRoutes:
                 f"/gateway/compare?gateway1={gateway_id}&gateway2={gateway_id}"
             )
             assert response.status_code == 200
-            assert "Por favor selecione dois gateways diferentes".encode() in response.data
+            assert b"Por favor selecione dois gateways diferentes" in response.data
 
     def test_gateway_compare_with_invalid_gateway(self, client):
         """Test gateway comparison with invalid gateway ID."""

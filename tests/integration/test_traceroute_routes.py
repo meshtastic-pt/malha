@@ -20,8 +20,8 @@ class TestTracerouteRoutes:
         response = client.get("/traceroute")
         assert response.status_code == 200
         assert "Análise de Traceroutes".encode() in response.data
-        assert "Node de Origem".encode() in response.data
-        assert "Node de Destino".encode() in response.data
+        assert b"Node de Origem" in response.data
+        assert b"Node de Destino" in response.data
 
     @pytest.mark.integration
     def test_traceroute_page_with_filters(self, client):
@@ -104,7 +104,7 @@ class TestTracerouteRoutes:
         # Should still load the page successfully
         assert "Análise de Traceroutes".encode() in response.data
         # Check for the specific placeholder texts used in traceroute template
-        assert "Todos os Nodes".encode() in response.data
+        assert b"Todos os Nodes" in response.data
 
     @pytest.mark.integration
     @patch("src.malla.database.repositories.NodeRepository.get_available_from_nodes")

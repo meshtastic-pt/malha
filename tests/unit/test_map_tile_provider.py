@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-
 TEMPLATES_DIR = Path(__file__).parents[2] / "src" / "malla" / "templates"
 STATIC_DIR = Path(__file__).parents[2] / "src" / "malla" / "static"
 MAP_TEMPLATES = (
