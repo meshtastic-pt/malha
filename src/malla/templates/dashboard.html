@@ -162,50 +162,167 @@
         white-space: nowrap;
     }
 
-    .top-nodes-table {
-        margin: 0;
-        border-collapse: collapse;
-        font-size: 0.875rem;
+    .top-nodes-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
     }
 
-    .top-nodes-table thead th {
-        color: #fff;
-        background: var(--bs-primary);
-        border: 0;
-        font-size: 0.8rem;
-        font-weight: 700;
-        padding: 0.55rem 0.75rem;
+    .top-node-item {
+        --rank-accent: var(--bs-primary);
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-rows: auto auto;
+        align-items: center;
+        gap: 0.7rem 0.85rem;
+        min-width: 0;
+        padding: 0.9rem;
+        border: 1px solid color-mix(in srgb, var(--rank-accent) 28%, var(--bs-border-color));
+        border-radius: 0.8rem;
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--rank-accent) 9%, var(--bs-body-bg)),
+            color-mix(in srgb, var(--bs-body-color) 2%, var(--bs-body-bg)));
+        box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.08);
+        transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .top-nodes-table thead th:first-child {
-        border-radius: 0.45rem 0 0 0;
+    .top-node-item:hover {
+        border-color: color-mix(in srgb, var(--rank-accent) 55%, var(--bs-border-color));
+        box-shadow: 0 0.45rem 1rem rgba(0, 0, 0, 0.12);
+        transform: translateY(-1px);
     }
 
-    .top-nodes-table thead th:last-child {
-        border-radius: 0 0.45rem 0 0;
+    .top-node-item.rank-1 {
+        --rank-accent: #d9a514;
     }
 
-    .top-nodes-table tbody tr {
-        background: transparent;
-        transition: background-color 0.15s ease;
+    .top-node-item.rank-2 {
+        --rank-accent: #9ca3af;
     }
 
-    .top-nodes-table tbody tr:hover {
-        background: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+    .top-node-item.rank-3 {
+        --rank-accent: #c4773b;
     }
 
-    .top-nodes-table tbody td {
-        border-bottom: 1px solid var(--bs-border-color);
-        padding: 0.5rem 0.75rem;
-        vertical-align: middle;
+    .top-node-rank {
+        display: inline-flex;
+        grid-row: 1 / -1;
+        align-items: center;
+        justify-content: center;
+        width: 2.65rem;
+        height: 2.65rem;
+        border: 1px solid color-mix(in srgb, var(--rank-accent) 40%, transparent);
+        border-radius: 0.75rem;
+        color: var(--rank-accent);
+        background: color-mix(in srgb, var(--rank-accent) 14%, transparent);
+        font-size: 0.9rem;
+        font-weight: 900;
+    }
+
+    .top-node-rank .bi {
+        margin-right: 0.18rem;
+        font-size: 0.78rem;
+    }
+
+    .top-node-identity {
+        min-width: 0;
     }
 
     .top-node-name {
-        font-weight: 700;
+        display: block;
         min-width: 0;
         overflow: hidden;
+        color: var(--bs-body-color);
+        font-size: 0.92rem;
+        font-weight: 800;
+        line-height: 1.25;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .top-node-name:hover {
+        color: var(--bs-primary);
+    }
+
+    .top-node-details {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.35rem;
+    }
+
+    .top-node-signal {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border-radius: 999px;
+        padding: 0.18rem 0.48rem;
+        background: color-mix(in srgb, currentColor 10%, transparent);
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1.25;
+        white-space: nowrap;
+    }
+
+    .top-node-signal.is-success { color: var(--bs-success); }
+    .top-node-signal.is-warning { color: #d9a514; }
+    .top-node-signal.is-info { color: var(--bs-info); }
+    .top-node-signal.is-danger { color: var(--bs-danger); }
+    .top-node-signal.is-muted { color: var(--bs-secondary-color); }
+
+    .top-node-hardware {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--bs-secondary-color);
+        font-size: 0.7rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .top-node-count {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .top-node-count strong {
+        display: block;
+        color: var(--rank-accent);
+        font-size: 1.15rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .top-node-count span {
+        color: var(--bs-secondary-color);
+        font-size: 0.68rem;
+        font-weight: 600;
+    }
+
+    .top-node-activity {
+        grid-column: 2 / -1;
+        height: 0.28rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--bs-secondary-color) 16%, transparent);
+    }
+
+    .top-node-activity-bar {
+        width: var(--activity-width, 0%);
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg,
+            color-mix(in srgb, var(--rank-accent) 75%, var(--bs-primary)),
+            var(--rank-accent));
+    }
+
+    .top-nodes-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        min-height: 7rem;
+        color: var(--bs-secondary-color);
     }
 
     .metric-grid {
@@ -336,6 +453,18 @@
             align-items: flex-start;
             flex-direction: column;
             gap: 0.65rem;
+        }
+
+        .top-nodes-list {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .top-node-item {
+            padding: 0.8rem;
+        }
+
+        .top-node-signal {
+            white-space: normal;
         }
     }
 </style>
@@ -730,20 +859,12 @@
                             <span class="visually-hidden">A Carregar...</span>
                         </div>
                     </div>
-                    <div class="table-responsive" style="display: none;" id="topNodesTableContainer">
-                        <table class="table top-nodes-table" id="topNodesTable">
-                            <thead>
-                                <tr>
-                                    <th>Node</th>
-                                    <th class="text-end">Mensagens</th>
-                                    <th class="text-end">Sinal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
+                    <div class="top-nodes-empty" id="topNodesEmpty" style="display: none;">
+                        <i class="bi bi-inbox"></i>
+                        <span>Sem atividade registada nas últimas 24 horas.</span>
                     </div>
+                    <div class="top-nodes-list" id="topNodesRanking" style="display: none;"
+                         aria-label="Ranking dos nodes mais ativos"></div>
                 </div>
             </div>
         </div>
@@ -993,7 +1114,7 @@ async function loadAnalyticsData() {
         createSignalDistributionChart(analyticsData.signal_quality);
         createHopDistributionChart(analyticsData.hop_distribution);
         createPacketTypesChart(analyticsData.packet_types);
-        populateTopNodesTable(analyticsData.top_nodes);
+        populateTopNodesRanking(analyticsData.top_nodes);
 
     } catch (error) {
         console.error('Error loading analytics data:', error);
@@ -1457,71 +1578,129 @@ function createPacketTypesChart(packetTypes) {
     });
 }
 
-function populateTopNodesTable(topNodes) {
-    if (!topNodes || topNodes.length === 0) return;
+function populateTopNodesRanking(topNodes) {
+    const loading = document.getElementById('topNodesLoading');
+    const ranking = document.getElementById('topNodesRanking');
+    const emptyState = document.getElementById('topNodesEmpty');
+    if (!loading || !ranking || !emptyState) return;
 
-    document.getElementById('topNodesLoading').style.display = 'none';
-    document.getElementById('topNodesTableContainer').style.display = 'block';
+    loading.style.display = 'none';
+    ranking.replaceChildren();
 
-    const tbody = document.querySelector('#topNodesTable tbody');
-    if (!tbody) return;
+    if (!Array.isArray(topNodes) || topNodes.length === 0) {
+        ranking.style.display = 'none';
+        emptyState.style.display = 'flex';
+        return;
+    }
 
-    tbody.replaceChildren();
+    emptyState.style.display = 'none';
+    ranking.style.display = 'grid';
 
-    topNodes.slice(0, 10).forEach((node) => {
+    const visibleNodes = topNodes.slice(0, 10);
+    const maxPacketCount = Math.max(...visibleNodes.map(node => node.packet_count || 0), 1);
+
+    visibleNodes.forEach((node, index) => {
         const nodeName = node.display_name || `!${node.node_id.toString(16).padStart(8, '0')}`;
+        const packetCount = node.packet_count || 0;
+        const activityPercentage = Math.max(3, Math.round((packetCount / maxPacketCount) * 100));
 
         // Averages cover only direct (0-hop) receptions in the last 24h —
         // relayed packets carry the relay's signal, not this node's.
         const rssi = Number.isFinite(node.avg_rssi) ? node.avg_rssi : null;
         const snr = Number.isFinite(node.avg_snr) ? node.avg_snr : null;
-        let signalCell;
+        let signalTone;
+        let signalIcon;
+        let signalLabel;
+        let signalValue;
+        let signalTitle;
         if (rssi !== null) {
-            let signalClass, quality;
             if (rssi > -70) {
-                signalClass = 'text-success';
-                quality = 'Excelente';
+                signalTone = 'success';
+                signalLabel = 'Excelente';
             } else if (rssi > -80) {
-                signalClass = 'text-warning';
-                quality = 'Bom';
+                signalTone = 'warning';
+                signalLabel = 'Bom';
             } else if (rssi > -90) {
-                signalClass = 'text-info';
-                quality = 'Razoável';
+                signalTone = 'info';
+                signalLabel = 'Razoável';
             } else {
-                signalClass = 'text-danger';
-                quality = 'Fraco';
+                signalTone = 'danger';
+                signalLabel = 'Fraco';
             }
-            let title = `${quality} — RSSI médio de receções diretas (24 h)`;
-            if (snr !== null) title += `, SNR ${snr.toFixed(1)} dB`;
-            signalCell = el('span', { className: signalClass, title },
-                `${Math.round(rssi)} dBm`);
+            signalIcon = 'bi bi-reception-4';
+            signalValue = `${Math.round(rssi)} dBm`;
+            signalTitle = `${signalLabel} — RSSI médio de receções diretas (24 h)`;
+            if (snr !== null) signalTitle += `, SNR ${snr.toFixed(1)} dB`;
         } else if (snr !== null) {
-            const signalClass = snr >= 5 ? 'text-success'
-                : snr >= 0 ? 'text-warning'
-                : snr >= -5 ? 'text-info' : 'text-danger';
-            signalCell = el('span', {
-                className: signalClass,
-                title: 'SNR médio de receções diretas (24 h); sem RSSI válido'
-            }, `SNR ${snr.toFixed(1)} dB`);
+            signalTone = snr >= 5 ? 'success' : snr >= 0 ? 'warning' : snr >= -5 ? 'info' : 'danger';
+            signalIcon = 'bi bi-reception-3';
+            signalLabel = 'Sinal direto';
+            signalValue = `SNR ${snr.toFixed(1)} dB`;
+            signalTitle = 'SNR médio de receções diretas (24 h); sem RSSI válido';
         } else {
-            signalCell = el('span', {
-                className: 'text-muted',
-                title: 'Nenhum gateway recebeu este node diretamente nas últimas 24 h'
-            }, 'Apenas retransmitido');
+            signalTone = 'muted';
+            signalIcon = 'bi bi-arrow-repeat';
+            signalLabel = 'Retransmitido';
+            signalValue = '';
+            signalTitle = 'Nenhum gateway recebeu este node diretamente nas últimas 24 h';
         }
 
-        const row = el('tr', null,
-            el('td', null,
+        const rank = index + 1;
+        const rankClass = rank <= 3 ? ` rank-${rank}` : '';
+        const signalContents = [
+            el('i', { className: signalIcon, 'aria-hidden': 'true' }),
+            el('span', null, signalLabel)
+        ];
+        if (signalValue) signalContents.push(el('strong', null, signalValue));
+
+        const details = [
+            el('span', {
+                className: `top-node-signal is-${signalTone}`,
+                title: signalTitle
+            }, ...signalContents)
+        ];
+        if (node.hw_model) {
+            details.push(el('span', { className: 'top-node-hardware' }, node.hw_model));
+        }
+
+        const item = el('article', {
+            className: `top-node-item${rankClass}`
+        },
+            el('div', { className: 'top-node-rank', 'aria-label': `Posição ${rank}` },
+                rank <= 3 ? el('i', {
+                    className: 'bi bi-trophy-fill',
+                    'aria-hidden': 'true'
+                }) : null,
+                `#${rank}`
+            ),
+            el('div', { className: 'top-node-identity' },
                 el('a', {
                     href: safePath(`/node/${encodeURIComponent(String(node.node_id))}`),
-                    className: 'top-node-name text-decoration-none d-block'
-                }, nodeName)
+                    className: 'top-node-name text-decoration-none'
+                }, nodeName),
+                el('div', { className: 'top-node-details' }, ...details)
             ),
-            el('td', { className: 'text-end' }, badge(String(node.packet_count || 0), 'bg-primary')),
-            el('td', { className: 'text-end' }, signalCell)
+            el('div', {
+                className: 'top-node-count',
+                title: `${packetCount} mensagens nas últimas 24 horas`
+            },
+                el('strong', null, packetCount.toLocaleString('pt-PT')),
+                el('span', null, packetCount === 1 ? 'mensagem' : 'mensagens')
+            ),
+            el('div', {
+                className: 'top-node-activity',
+                role: 'progressbar',
+                'aria-label': `Atividade relativa de ${nodeName}`,
+                'aria-valuenow': String(activityPercentage),
+                'aria-valuemin': '0',
+                'aria-valuemax': '100'
+            }, el('div', {
+                className: 'top-node-activity-bar',
+                style: { width: `${activityPercentage}%` }
+            }))
         );
 
-        tbody.appendChild(row);
+        ranking.appendChild(item);
     });
 }
 </script>
