@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
 
+    {# Analytics is loaded by this consent controller only after an explicit opt-in. #}
+    <script src="{{ url_for('static', filename='js/cookie-consent.js') }}" defer></script>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -356,6 +359,10 @@
                         <i class="bi bi-shield-check"></i>
                         Política de Privacidade
                     </a>
+                    <button class="footer-pill" id="cookie-settings-button" type="button">
+                        <i class="bi bi-cookie"></i>
+                        Cookies
+                    </button>
                 </div>
 
                 <div class="footer-notes">
@@ -367,6 +374,24 @@
             </div>
         </div>
     </footer>
+
+    <section class="cookie-consent" id="cookie-consent" role="dialog" aria-modal="false"
+             aria-labelledby="cookie-consent-title" aria-describedby="cookie-consent-description" hidden>
+        <div class="cookie-consent-copy">
+            <h2 id="cookie-consent-title">A sua privacidade</h2>
+            <p id="cookie-consent-description">
+                Usamos armazenamento estritamente necessário para memorizar a sua escolha neste navegador.
+                Com a sua autorização, o Rybbit recolhe páginas visitadas, origem da visita, tipo de dispositivo
+                e região aproximada para produzir estatísticas e melhorar este site. Pode rejeitar sem perder acesso
+                e retirar o consentimento a qualquer momento em “Cookies”.
+                <a href="https://meshtastic.pt/privacy" target="_blank" rel="noopener noreferrer">Saiba mais na Política de Privacidade</a>.
+            </p>
+        </div>
+        <div class="cookie-consent-actions" aria-label="Preferências de analítica">
+            <button class="btn cookie-consent-action" id="cookie-consent-reject" type="button">Rejeitar</button>
+            <button class="btn cookie-consent-action" id="cookie-consent-accept" type="button">Aceitar</button>
+        </div>
+    </section>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
